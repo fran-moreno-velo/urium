@@ -1,0 +1,459 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style2 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="0" cellpadding="0">
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler 
+Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF" class="auto-style1">
+    <font size="6">Lecture 01</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF" class="auto-style1">
+    <font size="6">Lexical analyzer</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style2">GOALS</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+      <li>Describe the Deterministic Finite Automaton that implements the 
+	  lexical definition of URIUM.</li>
+      <li>Describe the handwritten code that implements a lexical analyzer for 
+	  the URIUM compiler.</li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style2">SOURCE CODE</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">The 
+	source code for this lecture contains 6 files distributed in two packages. 
+	The <strong>urium.parser</strong> package contains the classes dedicated to 
+	developing the lexical analyzer. The <strong>urium</strong> package contains the
+	<strong>UriumCompiler</strong> class, which in this case is limited to 
+	checking the operation of the lexical analyzer.</p>
+    <ul>
+      <li><a href="lecture01/lecture01.rar">Access to code</a></li>
+    </ul>
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber5">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style2">DETERMINISTIC FINITE AUTOMATON</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+    The URIUM lexical specification consists of the description of the 
+	Deterministic Finite Automata associated with each lexical category. These 
+	automata can be combined to form a single DFA in which the final states are 
+	related to the lexical categories to be recognized. The content of the DFA 
+	that develops the URIUM lexical specification is described in detail below.</p>
+    <ul>
+      <li>Comments and blanks:</li>
+    </ul>
+    <blockquote>
+      <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+      The language accepts comments as defined in C, C++ and Java, that is, the 
+	  multiline comment (starting with &quot;/*&quot; and ending with &quot;*/&quot;) and the 
+	  single-line comment (starting with &quot;//&quot; and ending with a newline). Blank 
+	  characters are spaces, tabs and newlines. The following image shows the 
+	  part of the DFA that handles comments and blanks. State 4 corresponds to 
+	  the final state of a multiline comment. State 6 corresponds to the final 
+	  state of a single-line comment. State 7 is the final state of blanks. 
+	  State 1 is a final state associated with the DIV operator, that is, with 
+	  division.</p>
+    </blockquote>
+    <p align="center"><img border="1" src="lecture01/DFA1.png" alt="Deterministic Finite Automaton Part 1" align="middle" width="300" /></p>
+    <ul>
+      <li>Identifiers and reserved words</li>
+    </ul>
+    <blockquote>
+      <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+      Identifiers begin with a letter or an underscore and may be followed by 
+	  any number of letters, digits and underscores. Keywords are first 
+	  recognized as identifiers. The lexical analyzer checks the recognized 
+	  lexeme in state 8. If the lexeme corresponds to a keyword, the 
+	  corresponding token is generated, and otherwise, an identifier token is 
+	  generated.</p>
+    </blockquote>
+    <p align="center"><img border="1" src="lecture01/DFA2.png" alt="Deterministic Finite Automaton Part 2" align="middle" width="300" /></p>
+    <ul>
+      <li>Integer literals</li>
+    </ul>
+    <blockquote>
+      <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+      Integer literals can be defined in four different formats: decimal, octal, 
+	  hexadecimal, and binary. The decimal format must start with a digit 1 
+	  through 9, followed by digits 0 through 9. The octal format starts with a 
+	  digit 0 followed by digits 0 through 7. The hexadecimal format starts with 
+	  &quot;0x&quot; or &quot;0X&quot; followed by hexadecimal digits (0-9, a-f, A-F). The binary 
+	  format starts with &quot;0b&quot; or &quot;0B&quot; followed by binary digits (0 or 1).</p>
+    </blockquote>
+    <p align="center"><img border="1" src="lecture01/DFA3.png" alt="Deterministic Finite Automaton Part 3" width="300" /></p>
+    <ul>
+      <li>Char literals</li>
+    </ul>
+    <blockquote>
+      <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+      Character literals begin and end with a single quote. They support three 
+	  formats: printable characters are enclosed in single quotes. Non-printable 
+	  characters are denoted by an escape (backslash) character: \n denotes a 
+	  line feed; \r denotes a carriage return; \t denotes a tab; \\ denotes a 
+	  backslash; \' denotes a single quote; \&quot; denotes a double quote. The third 
+	  format uses the octal ASCII code for the desired character, preceded by 
+	  the escape character.</p>
+    </blockquote>
+    <p align="center"><img border="1" src="lecture01/DFA4.png" alt="Deterministic Finite Automaton Part 4" width="300" /></p>
+    <ul>
+      <li>Separators</li>
+    </ul>
+    <blockquote>
+      <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+      The language separators are parentheses, braces, comma, dot, and 
+	  semicolon.</p>
+    </blockquote>
+    <p align="center"><img border="1" src="lecture01/DFA5.png" alt="Deterministic Finite Automaton Part 5" width="300" /></p>
+    <ul>
+      <li>Logical operators</li>
+    </ul>
+    <blockquote>
+      <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+      The logical operators included are AND, OR, and NOT. The comparison 
+	  operators are: equal, not equal, greater than, greater than or equal, less 
+	  than, and less than or equal.</p>
+    </blockquote>
+    <p align="center"><img border="1" src="lecture01/DFA6.png" alt="Deterministic Finite Automaton Part 6" width="300" /></p>
+    <ul>
+      <li>Arithmetic operators</li>
+    </ul>
+    <blockquote>
+      <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+      The arithmetic operators included in the language are addition, 
+	  subtraction, multiplication, division, and remainder. (The division 
+	  operator is recognized in state 1.)</p>
+    </blockquote>
+    <p align="center"><img border="1" src="lecture01/DFA7.png" alt="Deterministic Finite Automaton Part 7" width="300" /></p>
+    &nbsp;</td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber4">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><font color="#FFFFFF"><b>CODE STRUCTURE</b></font></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10">
+    <p>
+    &nbsp;</p>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+    The classes dedicated to developing the lexical analyzer are found in the
+	<strong>urium.parser</strong> package.
+	<span class="HwtZe" jsaction="mouseup:Sxi9L,BR6jm; mousedown:qjlr0e" jsname="jqKxS" lang="en">
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	These classes are described below.</span></span></span></p>
+    <ul>
+      <li>
+    <p>
+    <b>urium.parser.TokenConstants</b>:</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+    Interface that defines the codes associated with the different lexical 
+	categories of URIUM.</p>
+    </blockquote>
+    <ul>
+      <li>
+    <p>
+    <b>urium.parser.Token</b>:</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+    This class describes a token (a lexical component). The token attributes are 
+	as follows: the lexical category to which it belongs 
+	(<em>kind</em>), the token's lexeme (<em>lexeme</em>), the row in which the token begins in 
+	the input file (<em>row</em>), and the starting column in the input file (<em>column</em>). 
+	The constructor receives these values &#8203;&#8203;as arguments. The remaining 
+	methods are getters and setters for these attributes.</p>
+    </blockquote>
+    <ul>
+      <li>
+    <p>
+    <b>urium.parser.LexicalError</b>:</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+    This class describes a lexical error. The error is identified by the 
+	character causing it and the row and column where it is located in the input 
+	file. This information is used to create the error message describing the 
+	lexical error.</p>
+    </blockquote>
+    <ul>
+      <li>
+    <p>
+    <b>urium.parser.BufferedCharStream</b>:</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+    This class develops a double-buffered input data stream that optimizes 
+	access to a character file and allows backtracking when reading. The lexical 
+	analyzer accesses the input file through this class, allowing it to move 
+	both forward and backward in the character stream. The class is also 
+	responsible for computing the row and column to which each of the characters 
+	stored in the buffer belongs at any given time. The class provides the 
+	following public methods: <em>getNextChar()</em>, to get the next character 
+	in the input string; <em>getRow()</em>, to get the row containing the last 
+	character read; <em>getColumn()</em>, to get the column containing the last 
+	character read; <em>retract(int)</em>, to move back a certain number of 
+	characters in the input stream; and <em>close()</em>, to close the data 
+	stream. The class has the following fields: <em>stream</em>, which stores 
+	the input data stream; <em>buffer</em>, which stores the bytes read from the 
+	input stream; <em>row</em>, which contains the row number corresponding to 
+	each character stored in the buffer; <em>column</em>, which contains the 
+	column number corresponding to each character stored in the buffer; <em>
+	index</em>, which contains the position of the last character requested by 
+	the lexical analyzer; and <em>half</em>, which indicates whether the last 
+	block read was stored at the bottom or top of the buffer. The <em>load()</em> 
+	method is responsible for reading a block of 1024 bytes from the input 
+	stream and storing it in the lower or upper part of the buffer, as well as 
+	updating the row and column values &#8203;&#8203;corresponding to the loaded block. </p>
+    </blockquote>
+    <ul>
+      <li>
+    <p>
+    <b>urium.parser.Lexer</b>:</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+    This is the class that develops the URIUM lexical analyzer. The most 
+	important method of this class is <em>getNextToken()</em>, which obtains the 
+	next token from the input stream. This method simply calls the private <em>
+	tokenize()</em> method until a non-null value is obtained. The <em>
+	tokenize()</em> method applies the deterministic finite automaton to obtain 
+	a token from the input stream: it starts from the initial state; it performs 
+	all possible transitions of the automaton until it reaches a state in which 
+	there are no transitions for the corresponding character; it goes back to 
+	the last final state reached in the transitions, returning to the input 
+	stream the characters read in these last transitions; and it returns the 
+	lexical component associated with the final state reached and the list of 
+	characters read. When the final state corresponds to a comment or a blank, 
+	the method returns null. The method works by storing the characters that 
+	allowed the final state to be reached in the variable <em>lexeme</em>, and 
+	the characters read from the last final state to the current state in the 
+	variable <em>tainting</em>. The class is completed with the methods <em>
+	transition(int,char)</em>, which contains the transitions of the 
+	deterministic finite automaton described in the previous section;<em> 
+	isFinal(int)</em>, which indicates the final states of the automaton; and
+	<em>getToken(int, String, int, int)</em>, which generates the lexical 
+	component associated with each final state.</p>
+    <p>
+    &nbsp;</p>
+    </blockquote>
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber5">
+          <tr>
+              <td width="100%" bgcolor="#000080">
+                  <p align="center">
+                      <span style="background-color: #000080">
+                          <font color="#FFFFFF">
+                              <span style="font-weight: 700">
+                                  THE URIUM COMPILER
+                              </span>
+                          </font>
+                      </span>
+                  </p>
+              </td>
+          </tr>
+          <tr>
+              <td width="100%" style="margin-left: 10; margin-right: 10">
+                  <p>&nbsp;</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The main class of the URIUM compiler is located in the
+					  <strong>urium</strong> package and is called <strong>
+					  UriumCompiler</strong>. This class contains the <em>main()</em> 
+					  method that starts the application. In this lecture, the 
+					  compiler only scans the working directory, opens the '<em>Main.ur</em>' 
+					  file, and runs the lexical analyzer. If an error occurs, 
+					  the compiler generates the '<em>UriumcErrors.txt</em>' 
+					  file with a description of the detected error. If the 
+					  lexical analysis is successful, the compiler generates the 
+					  '<em>UriumcOutput.txt</em>' file with a list of the 
+					  generated tokens.</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The URIUM compiler consists of a file named '<em>uriumc.jar</em>'. 
+					  This file can be run with the command '<em>java -jar 
+					  uriumc.jar</em>'. The source code is distributed as an 
+					  Eclipse IDE project. To generate the '<em>uriumc.jar</em>' 
+					  file, the 'ANT' tool, which is built into the Eclipse 
+					  environment, is used. To do this, run the ANT 
+					  configuration file ('<em>antbuild.xml</em>') using the '<em>Run 
+					  As -&gt; Ant Build</em>' option.
+                  </p>
+                      &nbsp;
+</td>
+          </tr>
+      </table>
+      <p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber5">
+          <tr>
+              <td width="100%" bgcolor="#000080">
+                  <p align="center">
+                      <span style="background-color: #000080">
+                          <font color="#FFFFFF">
+                              <span style="font-weight: 700">
+                                  EXAMPLES
+                              </span>
+                          </font>
+                      </span>
+                  </p>
+              </td>
+          </tr>
+          <tr>
+              <td width="100%" style="margin-left: 10; margin-right: 10">
+                  <p>&nbsp;</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The source code for this lecture includes a directory 
+					  called '<em>examples</em>' that contains several examples 
+					  of applications programmed in URIUM. The '<em>Compilation_scripts</em>' 
+					  subdirectory includes the compiler ('<em>urimc.jar</em>') 
+					  and a script file ('<em>compile.bat</em>') with the 
+					  execution command. To run the compilation, copy these two 
+					  files to the application directory and run the script.</p>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      Below is the content of the '<em>Main.ur</em>' file corresponding 
+					  to the '3+2' example.</p>
+			      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+import urium.Console as Console;
+
+/**
+ * Application that shows the result of a sum
+ */
+library Main {
+
+  /**
+   * Application start procedure
+   */
+  public proc main() {
+    int a=3;
+    int b=2;
+    int c= a+b;
+
+    Console.print(a);
+    Console.print(' ');
+    Console.print('+');
+    Console.print(' ');
+    Console.print(b);
+    Console.print(' ');
+    Console.print('=');
+    Console.print(' ');
+    Console.print(c);
+  }
+}
+            </pre>
+          </td>
+        </tr>
+      </table>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The lexical analyzer generates the file '<em>UriumcOutput.txt</em>' 
+					  with the following content:</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+[Row: 1][Column: 0][Kind: 8] import
+[Row: 1][Column: 7][Kind: 18] urium
+[Row: 1][Column: 12][Kind: 27] .
+[Row: 1][Column: 13][Kind: 18] Console
+[Row: 1][Column: 21][Kind: 1] as
+[Row: 1][Column: 24][Kind: 18] Console
+[Row: 1][Column: 31][Kind: 25] ;
+[Row: 6][Column: 0][Kind: 10] library
+[Row: 6][Column: 8][Kind: 18] Main
+...
+
+            </pre>
+          </td>
+        </tr>
+      </table>				 
+                      &nbsp;
+</td>
+          </tr>
+      </table>
+<p>&nbsp;</p>
+</td>
+</tr>
+</table>
+
+
+
+</body>
+
+</html>

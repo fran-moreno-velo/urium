@@ -1,0 +1,1128 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 05</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Semantic analysis - Body parser</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">GOALS</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+      <li>Complete the description of the two-step parsing structure of the 
+	  URIUM compiler.</li>
+      <li>Describe the URIUM compiler's semantic analyzer dedicated to 
+	  extracting information from the body of procedures in the analyzed 
+	  libraries.</li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">SOURCE CODE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture05/Lecture05.rar">Access to code</a></li>
+    </ul>
+     <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">This 
+	 lecture adds the <strong><em>urium.parser.UriumBodyParser </em></strong>
+	 class, which performs semantic parsing of procedure bodies, and modifies 
+	 the<strong><em> urium.UriumCompiler </em></strong>class to perform this 
+	 parsing on all libraries included in the symbol table.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	URIUM compiler uses a two-step structure to build the symbol table, which 
+	stores all the information analyzed for building an application. The first 
+	step, described in the previous lecture, builds the symbol table and adds 
+	the <strong><em>urium.ast.struct.LibraryDeclaration</em></strong> and
+	<strong><em>urium.ast.struct.Procedure</em></strong> objects with the 
+	headers of the analyzed libraries. The semantic analysis stage is completed 
+	with a second step that analyzes the body of the procedures included in the 
+	URIUM source files.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The<strong><em> 
+	urium.parser.UriumBodyParser</em></strong> class is a modification of the
+	<strong><em>urium.parser.Parser</em></strong> class in which the <em>parse()</em> 
+	method now receives the symbol table and adds information from the procedure 
+	bodies. To perform this semantic analysis, methods have been added that 
+	perform semantic checks and semantic actions to construct the data structure 
+	to be stored in the symbol table. These new methods are described in the 
+	following sections.</p>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">SEMANTIC 
+	VERIFICATIONS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+      <p style="margin-right: 10px; margin-left: 10px" class="style1">The 
+	  objective of semantic analysis is to construct the Abstract Syntax Tree in 
+	  parallel with the syntactic verification process. To achieve this, it is 
+	  necessary to include a series of auxiliary methods that verify the 
+	  correctness of the semantic information obtained in the analysis. These 
+	  methods are subsequently used within the semantic actions that construct 
+	  the data structure. The semantic verification methods included in the<strong><em> 
+	  urium.parser.UriumBodyParser</em></strong> class are listed below.</p>
+        <ul>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyReachableCode(Statement stm, BlockStatement block)</strong>: 
+                Checks that the statement to be added to a block is reachable.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyNonDuplicatedVariable(Token tk, SymbolTable symtab)</strong>: 
+                Checks that a variable is not duplicated, that is, there is no 
+				variable with the same name defined in the same scope..
+                </p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyConditionType(Token tk, Expression expr)</strong>: 
+                Checks that a condition is a boolean expression.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyKnownVariable(Token tk, SymbolTable symtab)</strong>:
+				Checks the existence of a variable in an assignment statement.
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyAssignTypes(Token tk, Variable var, Expression expr)</strong>:
+				Checks that the data types in an assignment statement are 
+				correct.
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyKnownLibrary(Token tk, String name, SymbolTable symtab)</strong>:
+				Checks the existence of a library in the symbol table.
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyKnownProcedure(Token tk, CallParameters param, SymbolTable symtab)</strong>:
+				Checks the existence of a procedure in the active library.
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyKnownProcedure(Token tk, String procname, CallParameters param, LibraryDeclaration library)</strong>:
+				Checks the existence of a public procedure in a certain library 
+				.
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyBooleanTypes(Token tk, Expression exp1, Expression exp2)</strong>:
+				Checks that both operands of a logical expression (AND, OR) are 
+				boolean .
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyRelationTypes(Token tk, int relop, Expression exp1, Expression exp2)</strong>:
+				Checks that the data types of the two operands of a relation are 
+				correct .
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyBooleanType(Token tk, Expression expr)</strong>:
+				Checks that an expression is of boolean type (to be able to 
+				apply NOT).
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyNumericType(Token tk, Expression exp)</strong>: 
+				Checks that an expression is of numeric type (so that '+' and 
+				'-' can be applied).&nbsp;
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyNumericTypes(Token tk, Expression exp1, 
+				Expression exp2)</strong>: Checks that two expressions are of 
+				numeric type (so that '+','-','*'and'/' can be applied) .&nbsp;
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyIntegerTypes(Token tk, Expression exp1, Expression exp2)</strong>:
+				Checks that two expressions are of integer type (so that '%' can 
+				be applied).
+				</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>boolean verifyIntegerValue(Token tk)</strong>:
+				Checks that the value of an integer literal is correct.
+				</p>
+            </li>   
+        </ul>
+      <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">SEMANTIC ACTIONS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+      <p style="margin-right: 10px; margin-left: 10px" class="style1">
+      Semantic actions are methods dedicated to building the structures of the 
+	  Abstract Syntax Tree. These methods are inserted into the syntactic 
+	  verification process so that the AST is built in parallel with the 
+	  syntactic analysis process. The semantic actions included in the<strong><em> 
+	  urium.parser.UriumBodyParser</em></strong> class are listed below.</p>
+        <ul>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>void actionAddStatement(BlockStatement block, Statement stm)</strong>: 
+                Semantic action to add a statement to a block of statements.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>void actionSetProcedureBody(Token tk, BlockStatement block, SymbolTable symtab)</strong>: 
+                Semantic action to assign the body of a procedure.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Variable actionAddDeclaration(SymbolTable symtab, 
+				DataType type,Token tid)</strong>: 
+                Semantic action that adds the declaration of a variable .
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>void actionAddAssignment(BlockStatement block, Token 
+				tid, Variable var, Expression exp)</strong>: 
+                Semantic action that adds an assignment statement.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement actionGetStatementFromBlock(BlockStatement block)</strong>: 
+                Semantic action that obtains the instruction associated with a variable declaration. 
+                If there are no initializations, it returns null. If there is only one initialization, 
+                it returns that assignment. If there is more than one (in a list of declarations), 
+                it returns the block of assignments.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement actionIfStatement(Token tk, Expression cond, Statement thenStm, Statement elseStm)</strong>: 
+				Semantic action that creates an if statement .
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement actionWhileStatement(Token tk, Expression cond, Statement body)</strong>: 
+				Semantic action that creates a while statement.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement actionEndpStatement(Token tk, SymbolTable symtab)</strong>: 
+				Semantic action that creates an end-of-procedure statement.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement actionAssignStatement(Token tk, Expression exp, SymbolTable symtab)</strong>: 
+                Semantic action that creates an assignment statement .
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement actionCallStatement(Token tk, CallParameters param, SymbolTable symtab)</strong>: 
+                Semantic action that creates a call instruction to a procedure 
+				in the same library.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement actionCallStatement(Token tid, String name,&nbsp; CallParameters param, SymbolTable symtab)</strong>: 
+                Semantic action that creates a call instruction to a procedure 
+				in an imported library .
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionOrExpression(Token tk,Expression exp1, Expression exp2)</strong>: 
+                Semantic action that creates a binary expression that defines an OR between two expressions.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionAndExpression(Token tk,Expression exp1, Expression exp2)</strong>: 
+                Semantic action that creates a binary expression that defines an 
+				AND between two expressions.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionRelExpression(Token tk, int op, Expression exp1, Expression exp2)</strong>: 
+                Semantic action that creates a binary expression that defines a 
+				relation between two expressions.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionUnaryExpression(Token tk, int op, Expression exp)</strong>: 
+                Semantic action that creates a unary expression on another 
+				expression.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionSumExpression(Token tk,int op, Expression exp1, Expression exp2)</strong>: 
+                Semantic action that creates a binary expression in the form of 
+				addition or subtraction.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionProdExpression(Token tk,int op, Expression exp1, Expression exp2)</strong>: 
+                Semantic action that creates a binary expression in the form of 
+				a product, division or remainder.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>LiteralExpression actionIntegerLiteral(Token tk)</strong>: 
+                Semantic action that creates a literal of integer type .
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionReferenceExpression(Token tid, SymbolTable symtab)</strong>: 
+                Semantic action that creates a reference to a variable.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionVariableExpression(Token tid, SymbolTable symtab)</strong>: 
+                Semantic action that creates a reference to a variable.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expression actionOutParameter(Token tid, SymbolTable symtab)</strong>: 
+                Semantic action that creates an output parameter.
+                </p>
+            </li>
+        </ul>
+      <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">ATTRIBUTED GRAMMAR 
+	OF THE URIUM LANGUAGE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    Semantic analysis requires modifying the grammar to be analyzed by 
+	incorporating attributes into the symbols in the grammar. These attributes 
+	can be inherited (if they represent information communicated to the symbol 
+	parser) or synthesized (if they represent information that the symbol 
+	constructs in parallel with its syntactic analysis). Semantic actions and 
+	checks are introduced into the syntactic rules to construct the values &#8203;&#8203;of 
+	the synthesized attributes.</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    The semantic analysis of the procedure body starts from a situation in which 
+	the header information for all the libraries involved has already been 
+	analyzed and included in the symbol table. That is, this semantic analysis 
+	starts from a <strong><em>SymbolTable</em></strong> object containing the 
+	list of <strong><em>LibraryDeclaration</em></strong> objects that describe 
+	the libraries to be used. Each <strong><em>LibraryDeclaration</em></strong> 
+	object contains the list of <strong><em>Procedure</em></strong> objects that 
+	describe the procedures included in the library, but initially these <strong>
+	<em>Procedure</em></strong> objects have their <strong><em>body</em></strong> 
+	field set to null, that is, they do not yet contain the description of the 
+	statements for each procedure.</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    The aim of the body parser is to analyze a &quot;.ur&quot; file and first find which 
+	library included in the symbol table it represents. This library is assigned 
+	as the active library. From here, the parser scans the &quot;.ur&quot; file, analyzing 
+	the procedures. Each time it encounters a procedure declaration, it looks 
+	for the associated <strong><em>Procedure</em></strong> object. This object 
+	has already been created in the header parsing stage, although its body 
+	field must be null. The corresponding <strong><em>Procedure</em></strong> 
+	object is assigned as the active procedure, which means that the body to be 
+	analyzed corresponds to that procedure. Once the active procedure is 
+	assigned, the parser scans the procedure body, constructing a <strong><em>
+	BlockStatement</em></strong> object containing the description of the 
+	statements in the procedure body. Finally, this <strong><em>BlockStatement</em></strong> 
+	object is assigned to the <strong>body</strong> field of the active 
+	procedure.</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    Considering the above process, most symbols in the grammar will use the
+	<strong><em>SymbolTable</em></strong> object as an inherited attribute, as 
+	it contains all the information collected so far. The attributes added to 
+	each symbol are described below. The corresponding syntactic rules have been 
+	modified to incorporate calls to the semantic actions that construct the 
+	values &#8203;&#8203;of these attributes. In some cases, where the attribute values 
+	&#8203;&#8203;are easy to calculate, the code has been included directly in the rule 
+	instead of a call to a semantic action.</p>
+        <ul>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>CompilationUnit</strong>:
+                Use the symbol table as an inherited attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ImportClauseList</strong>: 
+                It does not require inherited or synthesized attributes since 
+				all the information it provides has already been included in the 
+				header parsing stage.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ImportClause</strong>: 
+                It does not require inherited or synthesized attributes.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueImportName</strong>:&nbsp; It does not require 
+				inherited or synthesized attributes.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ImportAlias</strong>:&nbsp; It does not require 
+				inherited or synthesized attributes.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>UriumDecl</strong>: 
+                Use the symbol table as an inherited attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>LibraryDecl</strong>: 
+                Use the symbol table as an inherited attribute.
+                </p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueLibraryName</strong>: It does not require 
+				inherited or synthesized attributes.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ProcedureList</strong>: 
+                Use the symbol table as an inherited attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>NativeDecl</strong>: It uses the symbol table as an 
+				inherited attribute. Native libraries will not be covered since 
+				their procedures are only declared, and their body doesn't need 
+				to be processed.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueNativeName</strong>: It does not require 
+				inherited or synthesized attributes.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>NativeProcedureList</strong>: 
+                Use the symbol table as an inherited attribute.
+                </p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ProcedureDecl</strong>: It uses the symbol table as an 
+				inherited attribute. This symbol rule collects information about 
+				the procedure to be analyzed, assigns it as the active 
+				procedure, and analyzes its body.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>NativeProcedureDecl</strong>: Uses the symbol table as 
+				an inherited attribute but does not make any modifications.                 </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Access</strong>: 
+                It does not require inherited or synthesized attributes since 
+				the access type of the procedure (public or private) has already 
+				been recognized in the header parsing stage.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ArgumentDecl</strong>: 
+                It uses a synthesized attribute containing the list of type 
+				codes for the procedure's arguments to be analyzed. This 
+				information is used to search for the procedure within the 
+				active library..
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ArgumentList</strong>: 
+                It uses a list of type codes as an inherited attribute and adds 
+				any new codes it recognizes.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueArgumentList</strong>:&nbsp; It uses a list of 
+				type codes as an inherited attribute and adds any new codes it 
+				recognizes.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Argument</strong>: 
+                Uses a list of type codes as an inherited attribute and adds the 
+				data type of the parsed argument to it.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ArgumentType</strong>: 
+                Parses a data type and returns the <strong><em>DataType</em></strong> 
+				object as a synthesized attribute.
+                </p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Type</strong>: 
+                Parses a basic data type and returns the <strong><em>DataType</em></strong> 
+				object as a synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ProcedureBody</strong>: It receives the symbol table as 
+				an inherited attribute and recognizes the procedure body. To do 
+				this, it creates an empty <strong><em>BlockStatement</em></strong> 
+				object and sends it as an inherited attribute to the <strong>
+				StatementList</strong> symbol so that it can add the procedure 
+				body instructions. Finally, it executes the semantic action
+				<strong>actionSetProcedureBody()</strong> to assign the body to 
+				the active procedure.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>StatementList</strong>: It receives the symbol table and 
+				a <strong><em>BlockStatement</em></strong> object as inherited 
+				attributes. The grammar of this symbol collects the <strong><em>
+				Statement</em></strong> objects generated as attributes 
+				synthesized by the <strong>Statement</strong> symbol and adds 
+				them to the statement block using the<strong> 
+				actionAddStatement()</strong> method.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Statement</strong>: Receives the symbol table as an 
+				inherited attribute and generates a <strong><em>Statement</em></strong> 
+				object as a synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Decl</strong>: This symbol recognizes a list of variable 
+				declarations. It inherits the symbol table as an attribute. It 
+				includes the data type of the declaration, the identifier of the 
+				first variable, and its possible initialization. As semantic 
+				actions, it must add the variable declaration (<strong>actionAddDeclaration()</strong>) 
+				and add the possible initialization as an assignment statement 
+				enclosed in a block. It generates the block with all the 
+				assignment statements corresponding to the initializations of 
+				the declared variables as a synthesized attribute..
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueDecl</strong>: 
+                Continues recognizing a list of variable declarations. It 
+				receives as inherited attributes the symbol table, the data type 
+				of the declaration, and the instruction block used to store the 
+				assignments corresponding to the initializations of the declared 
+				variables.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Assignment</strong>: Recognizes the optional 
+				initialization of a variable in its declaration. It inherits the 
+				symbol table and generates the <strong><em>Expression</em></strong> 
+				object describing the initialization expression (or null if 
+				there is no initialization) as a synthesized attribute.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>IdStm</strong>: Recognizes a statement that begins with 
+				an identifier. It uses the symbol table as an inherited 
+				attribute. The grammar of this symbol takes the initial 
+				identifier and sends it as an inherited attribute to the <strong>
+				ContinueIdStm</strong> symbol, returning the <strong><em>
+				Statement</em></strong> object generated by this symbol as a 
+				synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueIdStm</strong>: It recognizes an instruction 
+				that begins with an identifier. It uses the symbol table and the 
+				instruction's beginning identifier as inherited attributes. 
+				Three cases arise from this identifier. The first is an 
+				assignment instruction. In this case, the <strong><em>Expression</em></strong> 
+				object that describes the right side of the assignment is 
+				collected, and the <strong>actionAssignStatement()</strong> 
+				action is executed. The second option is a call to a procedure 
+				in the same library. In this case, the <strong><em>
+				CallParameters</em></strong> object that describes the call 
+				arguments is collected, and the <strong>actionCallStatement()</strong> 
+				action is executed. The last possibility is a call to a 
+				procedure in an external library. In this case, the full name of 
+				the procedure and the <strong><em>CallParameters</em></strong> 
+				object that describes the call arguments are collected, and the 
+				corresponding <strong>actionCallStatement()</strong> action is 
+				executed. In all three cases, the result of the actions is 
+				returned as a synthesized attribute of the symbol.
+                </p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueDotId</strong>: This symbol recognizes a 
+				complete name consisting of identifiers separated by periods. 
+				The symbol receives the currently recognized string as a 
+				synthesized attribute and adds new dot-identifier chunks to 
+				complete the name.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ProcedureCall</strong>: Recognizes the arguments of a 
+				procedure call. It receives the symbol table as an inherited 
+				attribute and returns a <strong><em>CallParameters</em></strong> 
+				object as a synthesized attribute. The grammar of this symbol 
+				consists of constructing an empty <strong><em>CallParameters</em></strong> 
+				object and passing it as an inherited attribute to the <strong>
+				ParameterList</strong> symbol, which will add the expressions to 
+				this container object. Finally, the object is returned as a 
+				synthesized attribute.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                &nbsp;<strong>ParameterList</strong>: It receives as inherited 
+				attributes the symbol table and a <strong><em>CallParameters</em></strong> 
+				object and stores in this object the list of expressions parsed 
+				as parameters of a call. It recognizes the first expression 
+				using the <strong>Parameter</strong> symbol and the rest using 
+				the <strong>ContinueParameterList</strong> symbol.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueParameterList</strong>: Recognizes the rest of 
+				the parameters of a procedure call and stores them in the
+				<strong><em>CallParameters</em></strong> object.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Parameter</strong>: Recognizes a call parameter, which 
+				can be an expression or a reference to an output variable. It 
+				receives the symbol table as an inherited attribute and returns 
+				the representation of the parameter as a synthesized attribute.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>IfStm</strong>: Recognizes an <em>if</em> statement. It 
+				uses the symbol table as an inherited attribute. The grammar 
+				collects the information associated with this statement 
+				(condition, then statement, and else statement) and launches the 
+				semantic action<strong> actionIfStatement()</strong>, returning 
+				the <strong><em>IfStatement</em></strong> object as a 
+				synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ElseStm</strong>: Recognizes the optional <em>else</em> 
+				clause of an <em>if</em> statement. Uses the symbol table as an 
+				inherited attribute. Generates the <strong><em>Statement</em></strong> 
+				object as a synthesized attribute with the description of the
+				<em>else</em> statement, or a null reference if the <em>else</em> 
+				clause does not appear.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; height: 57px;" class="style1">
+                <strong>WhileStm</strong>: Recognizes a <em>while</em> 
+				statement. It uses the symbol table as an inherited attribute. 
+				The grammar collects the information associated with this 
+				statement (condition and loop body) and launches the semantic 
+				action <strong>actionWhileStatement()</strong>, returning the
+				<strong><em>WhileStatement</em></strong> object as a synthesized 
+				attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>EndpStm</strong>: Recognizes an end-of-procedure 
+				statement. Uses the symbol table as an inherited attribute. 
+				Launches the semantic action <strong>actionEndpStatement()</strong>, 
+				returning the <strong><em>EndpStatement</em></strong> object as 
+				a synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>NoStm</strong>: Recognizes a statement with no content. 
+				Returns a null reference as a synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>BlockStm</strong>: It recognizes a block of statements. 
+				It receives the symbol table as an inherited attribute. First, 
+				it must create a new variable declaration scope (<strong>symtab.createScope()</strong>) 
+				and an empty <strong><em>BlockStatement</em></strong> object to 
+				store the statements recognized in the block. It then calls the
+				<strong>StatementList</strong> symbol using the <strong><em>
+				BlockStatement</em></strong> object as an inherited attribute. 
+				This symbol will be responsible for entering the block's 
+				contents. Finally, the variable declaration scope is destroyed (<strong>symtab.deleteScope()</strong>) 
+				and the <strong><em>BlockStatement</em></strong> object is 
+				returned as a synthesized attribute.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Expr</strong>: This symbol is responsible for 
+				recognizing any type of URIUM expression. It receives the symbol 
+				table as an inherited attribute and generates an <strong><em>
+				Expression</em></strong> object as a synthesized attribute. Its 
+				grammar obtains a first <strong><em>Expression</em></strong> 
+				object as a synthesized attribute of the <strong>AndExpr</strong> 
+				symbol and sends it as an inherited attribute to the <strong>
+				ContinueExpr</strong> symbol, which is responsible for adding 
+				any additional expressions connected by OR operators. It returns 
+				the result of the <strong>ContinueExpr</strong> symbol as a 
+				synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueExpr</strong>: Recognizes an OR operation on a 
+				previously parsed expression. It receives the symbol table and 
+				the already recognized expression as inherited attributes. If it 
+				recognizes an OR operation with a new expression, it executes 
+				the <strong>actionOrExpression()</strong> method to construct a
+				<strong><em>BinaryExpression</em></strong> object describing the 
+				OR operation between the inherited expression and the recognized 
+				one. If no OR operation appears (lambda rule), it simply returns 
+				the inherited expression as a synthesized attribute.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>AndExpr</strong>: Recognizes an expression that can be 
+				composed of AND operators. It receives the symbol table as an 
+				inherited attribute and generates an <strong><em>Expression</em></strong> 
+				object as a synthesized attribute. First, it stores the obtained
+				<strong><em>Expression</em></strong> object as a synthesized 
+				attribute of the <strong>RelExpr</strong> symbol and sends it as 
+				an inherited attribute to the <strong>ContinueAndExpr</strong> 
+				symbol, which is responsible for adding any additional 
+				expressions connected by AND operators. It returns the result of 
+				the <strong>ContinueAndExpr</strong> symbol as a synthesized 
+				attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueAndExpr</strong>: Recognizes an AND operation on 
+				a previously parsed expression. It receives the symbol table and 
+				the already recognized expression as inherited attributes. If an 
+				AND operation is recognized, it executes the <strong>
+				actionAndExpression()</strong> method, which constructs a
+				<strong><em>BinaryExpression</em></strong> object describing the 
+				AND operation between the inherited expression and the 
+				recognized one. If no AND operation appears (lambda rule), it 
+				simply returns the inherited expression as a synthesized 
+				attribute..
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>RelExpr</strong>: Recognizes an expression that may 
+				include a relational operator (equal, not equal, greater than, 
+				etc.). It receives the symbol table as an inherited attribute 
+				and generates an <strong><em>Expression</em></strong> object as 
+				a synthesized attribute. It stores the resulting <strong><em>
+				Expression</em></strong> object as a synthesized attribute of 
+				the <strong>SumExpr</strong> symbol and sends it as an inherited 
+				attribute to the <strong>ContinueRelExpr</strong> symbol, which 
+				is responsible for adding the relational operator if one exists. 
+				It returns the result of the <strong>ContinueRelExpr</strong> 
+				symbol as a synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueRelExpr</strong>: Recognizes a possible 
+				relational operation between a previously parsed expression and 
+				a new expression. It receives the symbol table and the already 
+				recognized expression as inherited attributes. If the relational 
+				operator is recognized, it executes the<strong> 
+				actionRelExpression()</strong> action, which constructs a
+				<strong><em>BinaryExpression</em></strong> object describing the 
+				relational operation. If no relational operation appears (lambda 
+				rule), it simply returns the inherited expression as a 
+				synthesized attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>RelOp</strong>: Recognizes a relational operator. It 
+				does not require any inherited attributes. It returns the code 
+				from the <strong><em>BinaryExpression</em></strong> class that 
+				describes the relational operator as a synthesized attribute..
+                </p>
+            </li>            
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>SumExpr</strong>: It recognizes an arithmetic 
+				expression, that is, an expression that can include addition 
+				operators. It receives the symbol table as an inherited 
+				attribute and generates an <strong><em>Expression</em></strong> 
+				object as a synthesized attribute. The first step is to parse a 
+				possible unary operator (a sign change, for example). It then 
+				stores the obtained <strong><em>Expression</em></strong> object 
+				as a synthesized attribute of the <strong>ProdExpr</strong> 
+				symbol and applies the unary operator to it using the semantic 
+				action <em>actionUnaryExpression()</em>. The next step is to 
+				recognize the <strong>ContinueSumExpr</strong> symbol by passing 
+				it the already analyzed expression as an inherited attribute. 
+				This symbol is responsible for adding possible addition or 
+				subtraction operations to expressions. Finally, it returns the 
+				result of the <strong>ContinueSumExpr</strong> symbol as a 
+				synthesized attribute.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueSumExpr</strong>: Recognizes a possible addition 
+				or subtraction operation between a previously parsed expression 
+				and a new expression. It receives the symbol table and the 
+				already recognized expression as inherited attributes. If it 
+				recognizes the addition or subtraction operator, it executes the
+				<strong>actionSumExpression()</strong> action, which constructs 
+				a <strong><em>BinaryExpression</em></strong> object describing 
+				the arithmetic operation. If no operation appears (lambda rule), 
+				it simply returns the inherited expression as a synthesized 
+				attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>UnOp</strong>: Recognizes a unary operator. It does not 
+				require any inherited attributes. It returns the code from the
+				<strong><em>UnaryExpression</em></strong> class that describes 
+				the operator found as a synthesized attribute.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>SumOp</strong>: Matches an addition or subtraction 
+				operator. It doesn't require any inherited attributes. It 
+				returns the code from the <strong><em>BinaryExpression</em></strong> 
+				class that describes the found operator as a synthesized 
+				attribute.</p>
+            </li>            
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ProdExpr</strong>: Recognizes an expression that can 
+				include multiplication, division, or remainder operators. It 
+				receives the symbol table as an inherited attribute and 
+				generates an <strong><em>Expression</em></strong> object as a 
+				synthesized attribute. It stores the obtained <strong><em>
+				Expression</em></strong> object as a synthesized attribute of 
+				the <strong>Factor</strong> symbol and passes it as an inherited 
+				attribute to the <strong><em>ContinueProdExpr</em></strong> 
+				symbol. This symbol is responsible for adding possible 
+				multiplication or division operations between expressions. 
+				Finally, it returns the result of the <strong>ContinueProdExpr</strong> 
+				symbol as a synthesized attribute..
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ContinueProdExpr</strong>: Recognizes a possible 
+				multiplication or division operation between a previously parsed 
+				expression and a new expression. It receives the symbol table 
+				and the already recognized expression as inherited attributes. 
+				If it recognizes the multiplication or division operator, it 
+				executes the <strong>actionProdExpression()</strong> method, 
+				which constructs a <strong><em>BinaryExpression</em></strong> 
+				object describing the arithmetic operation. If no operation 
+				appears (lambda rule), it simply returns the inherited 
+				expression as a synthesized attribute.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>ProdOp</strong>: Matches a multiplication, division, or 
+				remainder operator. It does not require any inherited 
+				attributes. It returns the code from the <strong><em>
+				BinaryExpression</em></strong> class that describes the operator 
+				found as a synthesized attribute..
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Factor</strong>: Recognizes a factor, that is, an 
+				expression that can be a literal, a reference, or a generic 
+				expression enclosed in parentheses. It receives the symbol table 
+				as an inherited attribute and generates an <strong><em>
+				Expression</em></strong> object as a synthesized attribute. If 
+				it is a literal, it returns the value returned by the <strong>
+				Literal</strong> symbol as a synthesized attribute. If it is a 
+				reference, it returns the value returned by the <strong>
+				Reference</strong> symbol as a synthesized attribute. If it is a 
+				generic expression enclosed in parentheses, it returns the value 
+				returned by the <strong>Expr</strong> symbol as a synthesized 
+				attribute.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Literal</strong>: It recognizes a literal, that is, a 
+				constant value of a certain data type. It receives the symbol 
+				table as an inherited attribute and generates an <strong><em>
+				Expression</em></strong> object as a synthesized attribute. If 
+				it recognizes an integer literal, it constructs the synthesized 
+				attribute using the semantic action <strong><em>
+				actionIntegerLiteral()</em></strong>. If it is a character or 
+				Boolean literal, the corresponding <strong><em>
+				CharLiteralExpression</em></strong> or <strong><em>
+				BooleanLiteralExpression</em></strong> object is created 
+				directly.
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                <strong>Reference</strong>: Recognizes a reference to a 
+				variable. It receives the symbol table as an inherited attribute 
+				and uses the semantic action <strong>actionReferenceExpression()</strong> 
+				to generate a <strong><em>VariableExpression</em></strong> 
+				object, which it returns as a synthesized attribute.
+                </p>
+            </li>
+
+        </ul>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber5">
+          <tr>
+              <td width="100%" bgcolor="#000080">
+                  <p align="center">
+                      <span style="background-color: #000080">
+                          <font color="#FFFFFF">
+                              <span style="font-weight: 700">
+                                  EXAMPLES
+                              </span>
+                          </font>
+                      </span>
+                  </p>
+              </td>
+          </tr>
+          <tr>
+              <td width="100%" style="margin-left: 10; margin-right: 10">
+                  <p>&nbsp;</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The source code for this lecture 
+					  includes the '<em>examples</em>' directory with several examples 
+					  of applications programmed in URIUM. The '<em>Compilation_scripts</em>' 
+					  subdirectory includes the compiler ('<em>urimc.jar</em>') 
+					  and a script file ('<em>compile.bat</em>') with the 
+					  execution command. To run the compilation, copy these two 
+					  files to the application directory and run the script. </p>
+					  
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      To test error handling, the 
+					  directory '<em>0.1_3+2_with_errors'</em> has been included 
+					  with a version of the '3+2' example that includes several 
+					  semantic 
+					  exceptions. The code in the '<em>Main.ur</em>' file in this 
+					  directory is as follows.</p>
+			      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+import urium.Console as Console;
+
+/**
+ * Application that shows the result of a sum
+ */
+library Main {
+
+  /**
+   * Application start procedure
+   */
+  public proc main() {
+    int a=3;
+    int b=2;
+    int c = a + b;
+    
+
+    Consolee.print(a);   // ERROR: Unknown library
+    Console.println();   // ERROR: Unknown procedure  
+    c = a + d;           // ERROR: Unknown variable
+    int cond = a &lt; b;    // ERROR: Type mismatch
+    if( cond ) {         // ERROR: Invalid condition
+       Console.print(a);
+    }
+    int d = 12345678901234567890; // ERROR: Number out of range
+
+    Console.print(a);   
+    Console.print(' ');
+    Console.print('+');
+    Console.print(' ');
+    Console.print(b);
+    Console.print(' ');
+    Console.print('=');
+    Console.print(' ');
+    Console.print(c);
+
+    endp;
+    Console.print('\n');  // ERROR: Unreacheable code
+  }
+
+}
+           </pre>
+          </td>
+        </tr>
+      </table>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The compiler generates the file '<em>UriumCompilationErrors.txt</em>' 
+					  with the following content:</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+            
+[File Main.ur] 7 errors found:
+Parse exception at row 17, column 4.
+  Unknown library.
+Parse exception at row 18, column 4.
+  Unknown procedure.
+Parse exception at row 19, column 12.
+  Unknown variable.
+Parse exception at row 20, column 8.
+  Type mismatch.
+Parse exception at row 21, column 6.
+  Non-boolean expression.
+Parse exception at row 24, column 12.
+  Invalid literal value.
+Parse exception at row 37, column 23.
+  Unreachable code.
+            </pre>
+          </td>
+        </tr>
+      </table>				 
+                      &nbsp;
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+
+
+</td>
+</tr>
+</table>
+
+
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

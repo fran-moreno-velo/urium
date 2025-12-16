@@ -1,0 +1,901 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style5 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+.auto-style6 {
+	text-decoration: underline;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 04</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Semantic analysis - Header parser</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style5">GOALS</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+      <li>Describe the two-step parsing structure of the URIUM compiler.</li>
+      <li>Describe the URIUM compiler's semantic parser dedicated to extracting 
+	  header information from URIUM libraries.</li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">SOURCE CODE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture04/Lecture04.rar">Access to code</a></li>
+    </ul>
+     <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	 content consists of the <strong><em>urium</em></strong>, <strong><em>
+	 urium.ast</em></strong>, and <strong><em>urium.parser</em></strong> 
+	 packages. The <strong><em>urium</em></strong> package contains the <em>
+	 <strong>UriumCompiler</strong></em> class, which represents the main 
+	 application class. The <em><strong>UriumCompilerOptions</strong></em> class 
+	 has been added to this package. The<strong> urium.ast </strong>package 
+	 describes the compiler's abstract syntax tree, as explained in the previous 
+	 lecture. The <strong><em>urium.parser</em></strong> package contains the 
+	 URIUM compiler parser. The <strong><em>SemanticException</em></strong> and
+	 <strong><em>UriumHeaderParser</em></strong> classes have been added since 
+	 the previous lessons.</p>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE TWO-STEP 
+	PARSING STRUCTURE OF THE URIUM COMPILER</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	URIUM language does not use header files that allow predeclaring the 
+	contents of a library; in other words, there are no &quot;.h&quot; or &quot;.hpp&quot; files 
+	like those used in C or C++. This makes it impossible to compile a URIUM 
+	file in a single pass. The reason is that if a single pass is performed, the 
+	compiler only knows the contents of the part of the file that has already 
+	been analyzed, but cannot know the contents of what remains to be analyzed. 
+	If a call to an unknown procedure<em> B()</em> appears in the code of 
+	procedure <em>A()</em>, the compiler cannot know if this is an error or if 
+	procedure <em>B()</em> is defined in the part of the file that remains to be 
+	analyzed.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	solution implemented in the URIUM compiler is to perform two passes. The 
+	first pass is performed with a parser called <em><strong>UriumHeaderParser</strong></em>. The 
+	aim of this first pass is to obtain the declaration of the procedures 
+	defined in the parsed file, but without parsing the body of these 
+	procedures. The result of this first pass is a <strong>
+	<em>urium.ast.struct.LibraryDeclaration</em></strong> data structure containing the 
+	list of procedures described in the file. These procedures are <strong>
+	<em>urium.ast.struct.Procedure</em></strong> objects in which the <strong>body</strong> 
+	field is left empty, that is, the list of procedure instructions is not 
+	included. The main class, <em><strong>UriumCompiler</strong></em>, executes the <em>
+	<strong>UriumHeaderParser</strong></em> parser on the &quot;Main.ur&quot; file and on all files 
+	imported from it, storing the obtained <strong>
+	<em>urium.ast.struct.LibraryDeclaration</em></strong> objects in the symbol table (<strong><em>urium.ast.struct.SymbolTable</em></strong>).</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	second pass is performed with the <em><strong>UriumBodyParser</strong></em> parser, which 
+	will be explained in the next lecture. In this second pass, the symbol table 
+	obtained in the first pass is used and the previously studied &quot;.ur&quot; files 
+	are re-parsed. At the beginning of the analysis of a file, the corresponding
+	<strong><em>urium.ast.struct.LibraryDeclaration</em></strong> object is declared as the active library 
+	(<strong>activeLibrary</strong>) within the symbol table. Each time a 
+	procedure definition is reached in the file, the corresponding <strong>
+	<em>urium.ast.struct.Procedure</em></strong> object created in the first pass is 
+	searched for. In this second pass, the body of the procedure is parsed, 
+	obtaining the list of statements (<strong><em>urium.ast.statement.Statement</em></strong>) 
+	for the procedure and storing it in the <strong>body</strong> field.</p>
+        <p style="margin-right: 10px; margin-left: 10px" class="style1">The 
+		result of the two passes is a symbol table where the <strong>
+		<em>urium.ast.struct.LibraryDeclaration</em></strong> objects contain all the 
+		information for the input URIUM files.</p>
+     <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE urium.parser.SemanticException 
+	CLASS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">The<strong> 
+	<em>urium.parser.SemanticException</em></strong> class describes semantic errors. The 
+	URIUM compiler defines a total of 11 different semantic errors, identified 
+	by 11 constants. These errors are as follows:</p>
+	<ul>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">
+		LIBRARY_NAME_EXCEPTION: This error is generated when the name of a 
+		library does not match the name of its source file.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">
+		DUPLICATE_PROCEDURE_EXCEPTION: Error generated if two procedures with 
+		the same names and argument types are defined in a library.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">
+		DUPLICATE_ARGUMENT_EXCEPTION: Error that occurs if two arguments with 
+		the same name are declared in a procedure.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">DUPLICATE_VARIABLE_EXCEPTION: 
+		Error that occurs if two variables with the same name are declared in a 
+		procedure in the same scope.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">UNKNOWN_LIBRARY_EXCEPTION: 
+		This error is generated if you try to import a non-existent library or 
+		try to use a library that has not been previously imported.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">UNKNOWN_PROCEDURE_EXCEPTION: 
+		Error that occurs when attempting to execute a nonexistent procedure. 
+		The reference to a procedure must match both the name and the data types 
+		used in the call.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">UNKNOWN_VARIABLE_EXCEPTION: 
+		Error thrown when trying to reference a non-existent variable in an 
+		expression.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">INVALID_CONDITION_EXCEPTION: 
+		Error occurs when the data type of the condition of an <em>if</em> or
+		<em>while</em> statement is not a boolean.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">TYPE_MISMATCH_EXCEPTION: 
+		Error that is thrown when incorrect data types are used in an operation 
+		or when in an assignment the data type of the expression does not match 
+		the variable to be assigned.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">NUMBER_FORMAT_EXCEPTION: 
+		Error generated when a numeric literal is out of range.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">UNREACHABLE_CODE_EXCEPTION: 
+		Error that occurs in a statement block when a statement appears after an
+		<em>endp</em> statement.</p>
+		</li>
+	</ul>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE urium.parser.UriumHeaderParser 
+	CLASS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">The <strong>
+	<em>urium.parser.UriumHeaderParser</em></strong> class develops a recursive descent 
+	parser similar to the one presented in Lecture02, but limited to language 
+	header information. To do this, it replaces the parsing of the <em>
+	ProcedureBody</em> symbol with a method that reads a block of code enclosed 
+	in curly braces.</p>
+        <p style="margin-right: 10px; margin-left: 10px" class="style1">The BNF 
+		grammar that describes the header of URIUM files is as follows:</p>
+    <ul>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    CompilationUnit&nbsp; ::=&nbsp; ImportClauseList&nbsp; UriumDecl</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ImportClauseList&nbsp; ::=&nbsp; ImportClause&nbsp; ImportClauseList</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ImportClauseList&nbsp; ::=&nbsp; <b>lambda</b></p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ImportClause&nbsp; :<font face="Symbol">:= </font>&nbsp;<b><u>import</u></b>&nbsp;
+    <u><b>identifier</b></u>&nbsp; ContinueImportName&nbsp; ImportAlias&nbsp; <b><u>semicolon</u></b></p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ContinueImportName ::= <span class="auto-style6"><strong>dot</strong></span>&nbsp;
+	<span class="auto-style6"><strong>identifier</strong></span>&nbsp; 
+	ContinueImportName </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ContinueImportName ::= <strong>lambda</strong> </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ImportAlias ::= <span class="auto-style6"><strong>as</strong></span>&nbsp;
+		<span class="auto-style6"><strong>identifier</strong></span> </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	Importalias ::= <strong>lambda</strong> </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	UriumDecl ::= LibraryDecl </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	UriumDecl ::= NativeDecl </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    LibraryDecl&nbsp; ::=&nbsp; <u><b>library</b></u>&nbsp; <u><b>identifier</b></u>&nbsp;ContinuLibraryName&nbsp;
+    <u><b>lbrace</b></u>&nbsp; ProcedureList <b>&nbsp;<u>rbrace</u></b> </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ContinueLibraryName ::= <span class="auto-style6"><strong>dot</strong></span>&nbsp;
+		<span class="auto-style6"><strong>identifier</strong></span> 
+		ContinuLibraryName </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ContinueLibraryName ::= <strong>lambda</strong> </p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ProcedureList&nbsp; ::=&nbsp; ProcedureDecl&nbsp; ProcedureList</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ProcedureList&nbsp; ::=&nbsp; <b>lambda</b></p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    NativeDecl ::= <span class="auto-style6"><strong>native</strong></span>&nbsp;
+	<span class="auto-style6"><strong>identifier</strong></span>&nbsp; 
+	ContinueNativeName&nbsp; <span class="auto-style6"><strong>lbrace</strong></span>&nbsp; 
+	NativeProcedureList&nbsp; <span class="auto-style6"><strong>rbrace</strong></span> </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ContinueNativeName ::= <span class="auto-style6"><strong>dot</strong></span>&nbsp;
+		<span class="auto-style6"><strong>identifier</strong></span>&nbsp; 
+		ContinueNativeName </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ContinueNativeName ::= <strong>lambda</strong> </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	NativeProcedureList ::= NativeProcedureDecl&nbsp; NativeProcedureList </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	NativeProcedureList ::= <strong>lambda</strong> </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ProcedureDecl&nbsp; ::=&nbsp; Access&nbsp;&nbsp; 
+		<span class="auto-style6"><strong>proc</strong></span>&nbsp;&nbsp; <u><b>identifier</b></u>&nbsp;&nbsp; 
+    ArgumentDecl&nbsp;&nbsp; ProcedureBody</p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	NativeProcedureDecl  ::= Access <u><b>proc </b></u> &nbsp;<u><b>identifier</b></u>&nbsp; ArgumentDecl&nbsp; <b><u>semicolon</u></b></p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    Access ::= <u><b>public</b></u>&nbsp;</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    Access ::=&nbsp; <u><b>private</b></u>&nbsp;</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ArgumentDecl&nbsp; ::=&nbsp; <u><b>lparen</b></u>&nbsp; ArgumentList&nbsp; <u><b>rparen</b></u> </p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ArgumentList&nbsp; ::=&nbsp; Argument&nbsp;&nbsp;ContinueArgumentList</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ArgumentList&nbsp; ::=&nbsp; <b>lambda</b></p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ContinueArgumentList&nbsp; ::=&nbsp; <u><b>
+    comma</b></u>&nbsp; Argument&nbsp; ContinueArgumentList</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ContinueArguments&nbsp; ::=&nbsp; <b>lambda</b></p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    Argument&nbsp; ::=&nbsp; ArgumentType&nbsp; <u><b>identifier</b></u></p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ArgumentType ::= <span class="auto-style6"><strong>out</strong></span>&nbsp; 
+		Type </p>
+      </li>
+		<li>
+    	<p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    	ArgumentType ::= Type </p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    Type ::= <u><b>int</b></u>&nbsp;</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    Type&nbsp; ::=&nbsp; <u><b>char</b></u>&nbsp;</p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    Type&nbsp; ::=&nbsp; <u><b>boolean</b></u> </p>
+      </li>
+      <li>
+    <p style="text-align: justify; margin-right: 10px; margin-bottom: 10px">
+    ProcedureBody&nbsp; ::= <u><b>lbrace</b></u> StatementList <u><b>rbrace</b></u> </p>
+      </li>
+    </ul>
+
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    The <strong><em>urium.parser.UriumHeaderParser</em></strong> class performs not only 
+	syntactical analysis but also semantic analysis. This means that at the same 
+	time as the syntactical analysis is performed, the analysis functions 
+	generate the abstract syntax tree structures that represent the analyzed 
+	library. This requires including a series of functions that perform semantic 
+	verifications and semantic actions.</p>
+        <ul>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>boolean verifyLibraryName(Token, String, LibraryDeclaration)</strong>: 
+					Checks that the library name corresponds to the source file 
+					name.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>boolean verifyNonDuplicatedProcedure(Token, 
+					Procedure, LibraryDeclaration)</strong>: Checks that a 
+					certain procedure has not been previously defined, that is, 
+					that procedures with the same names and data types are not 
+					repeated.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>boolean verifyNonDuplicatedArgument(Token, Function)</strong>: 
+					Checks that arguments with the same name are not repeated in 
+					a procedure.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void actionLibraryProcedure(int, Token, 
+					Vector&lt;Variable&gt; , LibraryDeclaration)</strong>: 
+					Semantic action that creates a procedure within a library.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void actionAddArgument(DataType , Token, Vector&lt;Variable&gt;)</strong>: 
+					Semantic action that adds an argument to an argument list .</p>
+            </li>
+        </ul>
+        <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    To perform semantic analysis, it is necessary to modify the 
+					methods associated with each symbol to add semantic checks 
+					and actions and to return the corresponding data. The 
+					different analysis functions are described below:</p>
+
+		<ul>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>LibraryDeclaration parseCompilationUnit(String)</strong>: 
+					Parses the initial symbol. Returns the LibraryDeclaration 
+					object describing the parsed library as a synthesized 
+					attribute. The argument is used to check that the library 
+					name matches the parsed file name. .</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseImportClauseList(LibraryDeclaration)</strong>: 
+					Parses the list of imported libraries and adds them to the
+					<em>LibraryDeclaration</em> object that describes the 
+					library being parsed .</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseImportClause(LibraryDeclaration)</strong>: 
+					Parses an import clause and adds the name of the imported 
+					library to the library being parsed.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>String parseContinueImportName(String)</strong>: 
+					Libraries in URIUM have compound names, consisting of 
+					identifiers separated by dots. This symbol receives a 
+					compound name and appends successive &quot;dot ids,&quot; returning 
+					the full name.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>String parseImportAlias()</strong>: Gets the alias 
+					assigned to an imported library (or returns null if no alias 
+					is assigned).</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseUriumDecl(LibraryDeclaration)</strong>: 
+					Parses the declaration of a regular library or a native 
+					library and inserts the parsed information into the <em>
+					LibraryDeclaration</em> object used as an argument.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseLibraryDecl(LibraryDeclaration)</strong>: 
+					Parses the declaration of a regular library.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>String parseContinueLibraryName(String)</strong>: 
+					Receives a compound library name and appends successive &quot;dot 
+					ids,&quot; returning the full name.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseProcedureList(LibraryDeclaration)</strong>:&nbsp; 
+					Parses a list of procedures of a regular library and adds 
+					them to the <em>LibraryDeclaration</em> object.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseProcedureDecl(LibraryDeclaration)</strong>: 
+					Parses a procedure defined in a regular library and executes 
+					the semantic action <em>actionLibraryProcedure()</em> to 
+					create a <em>Procedure</em> object and add it to the <em>
+					LibraryDeclaration</em> object (which receives it as an 
+					inherited attribute).</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseNativeDecl(LibraryDeclaration)</strong>: 
+					Parses the declaration of a native library.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>String parseContinueNativeName(String)</strong>: 
+					Receives a compound library name and appends successive &quot;dot 
+					ids,&quot; returning the full name.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseNativeProcedureList(LibraryDeclaration)</strong>: 
+					Parses a list of procedures of a native library and adds 
+					them to the <em>LibraryDeclaration</em> object.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseNativeProcedureDecl(LibraryDeclaration)</strong>: 
+					Parses a procedure defined in the native library and 
+					executes the semantic action <em>actionLibraryProcedure()</em> 
+					to create a <em>Procedure</em> object and add it to the <em>
+					LibraryDeclaration</em> object (which receives it as an 
+					inherited attribute).</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>int parseAccess()</strong>: Parses the <em>Access</em> 
+					symbol. Generates the code corresponding to the access type 
+					found as a synthesized attribute: <em>Access.PUBLIC_ACCESS</em> 
+					or <em>Access.PRIVATE_ACCESS</em>.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>Vector&lt;Variable&gt; parseArgumentDecl()</strong>: 
+					Parses the arguments of a procedure. Generates, as a 
+					synthesized attribute, a vector of <em>Variable</em> objects 
+					that describes the arguments of the analyzed procedure.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>Vector&lt;Variable&gt; parseArgumentList()</strong>: 
+					Parses the list of arguments of a procedure. Generates, as a 
+					synthesized attribute, a vector of <em>Variable</em> objects 
+					that describes the arguments of the analyzed procedure.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseContinueArgumentList(Vector&lt;Variable&gt;)</strong>: 
+					Receives as input a list of variables and stores in it the 
+					rest of the arguments of the procedure being analyzed.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseArgument(Vector&lt;Variable&gt;)</strong>: 
+					Parses a procedure argument. To do this, it gathers 
+					information about the argument's data type and identifier 
+					and executes the semantic action <em>actionAddArgument()</em>. 
+					This action checks that the identifier is not duplicated and 
+					constructs and adds a <em>Variable</em> object with the 
+					description of the parsed argument.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>DataType parseArgumentType()</strong>: Parses the 
+					data type of a procedure. Returns a <em>DataType</em> object 
+					as a synthesized attribute.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>DataType parseType()</strong>: Parses a basic data 
+					type. Returns the data type as a synthesized attribute.</p>
+            </li>
+			<li>
+                <p style="margin-right: 10px; margin-left: 10px" class="style1">
+                    <strong>void parseProcedureBody()</strong>: Parses the body 
+					of a procedure. The header parser doesn't perform any 
+					semantic action at this point, so the function simply 
+					iterates through a block of statements, counting the open 
+					and closed braces to detect the end of the statement block.</p>
+            </li>
+        </ul>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE urium.UriumCompilerOptions 
+	CLASS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">Until now, 
+	the URIUM compiler was limited to analyzing a single source file. At this 
+	point, the compiler has been modified to analyze all source files included 
+	in an application. These source files correspond to the libraries imported 
+	directly and indirectly from the <em>Main.ur</em> file. To locate these 
+	files, the compiler will allow you to specify the working directory and the 
+	include directories as call arguments.</p>
+	<p style="margin-right: 10px; margin-left: 10px" class="style1">The <strong>
+	<em>urium.UriumCompilerOptions</em></strong> class is used to parse compiler 
+	call arguments and store the entered options. The contents of this class are 
+	as follows.</p>
+	<ul>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>
+		File workingdir</strong>: This is the field where the working directory 
+		is stored, that is, the directory where the <em>Main.ur</em> file is 
+		located.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>
+		Vector&lt;File&gt; includeDir</strong>: This is the field where the list of 
+		include directories is stored, that is, the directories in which the 
+		source files of the imported libraries will be searched (in addition to 
+		the working directory).</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1">
+		<strong>UriumCompilerOptions(String[] args)</strong>: Constructor of the 
+		class that uses the arguments of the compiler call as parameters.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>File 
+		getWorkingDir()</strong>: Method that returns the path of the working 
+		directory.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>void 
+		addIncludeDir(File f)</strong>: Method that adds a directory to the 
+		include directory list.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>File 
+		getSourceFile(String name)</strong>: Method that obtains the source file 
+		associated with a library. This method searches for the source file in 
+		the optional directories. The search uses the full library name to 
+		verify the path to the source file. For example, the<em> urium.Console</em> 
+		library must be located in the path &quot;<em>urium/Console.ur</em>&quot;.</p>
+		</li>
+	</ul>
+	<p style="margin-right: 10px; margin-left: 10px" class="style1">The <strong>
+	<em>urium.UriumCompiler</em></strong> class has been modified to parse the 
+	headers of all application source files and store them in the symbol table. 
+	Two new methods have been added to this effect:</p>
+	<ul>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>
+		LibraryDeclaration execHeaderParser(UriumCompilerOptions options, String 
+		filename)</strong>: This method finds a source file and applies the 
+		header parser to it to generate the corresponding <em>LibraryDeclaration</em> 
+		object.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>
+		SymbolTable parseHeaders(UriumCompilerOptions options):</strong> This 
+		method analyzes the '<em>Main.ur</em>' file and all the libraries 
+		imported into the application, storing all the <em>LibraryDeclaration</em> 
+		objects obtained by the header parser in the symbol table. </p>
+		</li>
+	</ul>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">NATIVE LIBRARIES</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">To 
+	facilitate programming in URIUM, some basic libraries have been developed 
+	and distributed with the compiler. These libraries are native because they 
+	require operating system calls. This means that the URIUM compiler will not 
+	generate the object code for these libraries; this object code must be 
+	generated manually.</p>
+	<p style="margin-right: 10px; margin-left: 10px" class="style1">
+	The <strong><em>urium.Console</em></strong> class contains a set of 
+	procedures dedicated to accessing the text console. This allows you to 
+	include input/output procedures in applications written in URIUM.</p>
+	<ul>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>print(char 
+		c)</strong>: Writes a character to the console.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>
+		print(int i)</strong>: Writes an integer to the console.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>printBits(int 
+		i)</strong>: Writes an integer to the console in binary format.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>printHex(int 
+		i)</strong>: Writes an integer to the console in hexadecimal format.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>readInt(out 
+		int i)</strong>: Reads an integer from the console.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>readChar(out 
+		char c)</strong>: Read a character from the console.</p>
+		</li>
+	</ul>
+	<p style="margin-right: 10px; margin-left: 10px" class="style1">
+	The <strong><em>urium.Program</em></strong> class contains procedures 
+	dedicated to accessing the call arguments of applications written in URIUM. 
+	It also contains the <em>exit()</em> procedure for terminating an 
+	application with a specific code.</p>
+	<ul>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>getArgCount(out 
+		int argc)</strong>: Gets the number of arguments.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>getArgLength(int 
+		index, out int length)</strong>: Gets the length of the i-th argument. 
+		Returns -1 if it does not exist.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>getIntArg(int 
+		index, out int arg)</strong>: Gets the i-th argument as an integer. 
+		Returns -1 if it does not exist or is not a number.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>getCharArg(int 
+		index, int pos, out char arg)</strong>: Gets the j-th character of the 
+		i-th argument. Returns '\0' if it does not exist.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px" class="style1"><strong>exit(int 
+		code)</strong>: Ends the program execution.</p>
+		</li>
+	</ul>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber5">
+          <tr>
+              <td width="100%" bgcolor="#000080">
+                  <p align="center">
+                      <span style="background-color: #000080">
+                          <font color="#FFFFFF">
+                              <span style="font-weight: 700">
+                                  EXAMPLES
+                              </span>
+                          </font>
+                      </span>
+                  </p>
+              </td>
+          </tr>
+          <tr>
+              <td width="100%" style="margin-left: 10; margin-right: 10">
+                  <p>&nbsp;</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The source code for this lecture 
+					  includes the '<em>examples</em>' directory with several examples 
+					  of applications programmed in URIUM. The '<em>Compilation_scripts</em>' 
+					  subdirectory includes the compiler ('<em>urimc.jar</em>') 
+					  and a script file ('<em>compile.bat</em>') with the 
+					  execution command. To run the compilation, copy these two 
+					  files to the application directory and run the script. The 
+					  script file has been adapted to add the include directory.</p>
+					  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+  java -jar uriumc.jar -I ../include
+            </pre>
+          </td>
+        </tr>
+      </table>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      To test error detection, the 
+					  directory '<em>0.1_3+2_with_errors'</em> has been included 
+					  with a version of the '3+2' example that includes three 
+					  semantic 
+					  errors. The code in the '<em>Main.ur</em>' file in this 
+					  directory is as follows.</p>
+			      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+import urium.Console as Console;
+
+/**
+* Application that shows the result of a sum
+*/
+library Mainn { // ERROR: Incorrect library name
+
+  /**
+   * Application start procedure
+   */
+  public proc main() {
+    int a=3;
+    int b=2;
+    int c;
+    sum(a, b, out c);
+
+    Console.print(a);
+    Console.print(' ');
+    Console.print('+');
+    Console.print(' ');
+    Console.print(b);
+    Console.print(' ');
+    Console.print('=');
+    Console.print(' ');
+    Console.print(c);
+  }
+
+  /**
+   * Computes the sum of the first two arguments on the third argument
+   */
+  private proc sum(int a, int a, out int c) { // ERROR: Duplicated argument
+    c = a + b;
+  }
+
+  /**
+   * Duplicated procedure
+   */
+  private proc main() { // ERROR: Duplicated procedure
+  }
+}
+           </pre>
+          </td>
+        </tr>
+      </table>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The compiler generates the file '<em>UriumCompilationErrors.txt</em>' 
+					  with the following content:</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+            
+[File Main.ur] 3 errors found:
+Parse exception at row 6, column 8.
+  Library name does not corresponds to file name.
+Parse exception at row 31, column 30.
+  Duplicate argument.
+Parse exception at row 38, column 15.
+  Duplicate procedure.
+            </pre>
+          </td>
+        </tr>
+      </table>				 
+                      &nbsp;
+    </td>
+  </tr>
+</table>
+  <p>&nbsp;</p>
+
+</td>
+</tr>
+</table>
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,1609 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+.auto-style4 {
+	text-decoration: underline;
+}
+.auto-style5 {
+	border: thin solid #000080;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="0" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF" class="auto-style1">
+    <font size="6">Lecture 02</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Syntactic analyzer</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">GOALS</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+      <li>Describe the grammar of the URIUM programming language. </li>
+      <li>Describe the handwritten code that implements a parser for the URIUM programming language.</li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">SOURCE CODE</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The code for this lecture contains eight files, six of which correspond to 
+	the lexical analyzer described in the previous lecture. The added files 
+	correspond to the URIUM language's recursive descent parser and the class 
+	dedicated to describing syntax exceptions.</p>
+    <ul>
+      <li><a href="lecture02/Lecture02.rar">Access to code</a></li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><font color="#FFFFFF"><b>URIUM GRAMMAR IN EBNF FORMAT</b></font></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    A URIUM file describes a library of procedures. Libraries can be standard 
+	(they must be compiled to translate them into assembler) or native 
+	(developed with specific assembly code that must not be overridden). 
+	Procedures consist of a list of statements. Statements can be variable 
+	declarations, conditional (if) statements, loops (while) statements, 
+	procedure calls, or statement blocks. Procedure calls can pass parameters by 
+	value or by reference (with the 'out' modifier). Expressions consist of 
+	literals and references to variables combined using arithmetic and logical 
+	operators.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The grammar of the URIUM programming language in EBNF format is described 
+	below.</p>
+    <ul>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    CompilationUnit&nbsp; :&nbsp; ( ImportClause&nbsp; )*&nbsp; UriumDecl</p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    ImportClause&nbsp; :<font face="Symbol"> </font>&nbsp;<span class="auto-style4"><strong>import</strong></span>&nbsp;
+    <u><b>identifier</b></u>&nbsp;(<span class="auto-style4"><strong>dot</strong></span>&nbsp;
+	<span class="auto-style4"><strong>identifier</strong></span>)*&nbsp; (<span class="auto-style4"><strong>as</strong></span>&nbsp;
+	<span class="auto-style4"><strong>identifier</strong></span>)? <b><u>semicolon</u></b></p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    UriumDecl : LibraryDecl&nbsp; |&nbsp; NativeDecl</p>
+      </li>
+	  <li>
+    	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        LibraryDecl&nbsp; :&nbsp; <u><b>library</b></u>&nbsp; <u><b>identifier</b></u>&nbsp;(<span class="auto-style4"><strong>dot</strong></span>&nbsp;
+		<span class="auto-style4"><strong>identifier</strong></span>)*
+        <u><b>lbrace</b></u>&nbsp; ( ProcedureDecl )* <b>&nbsp;<u>rbrace</u></b></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        NativeDecl&nbsp; :&nbsp; <u><b>native</b></u>&nbsp; <u><b>identifier</b></u>&nbsp;(<span class="auto-style4"><strong>dot</strong></span>&nbsp;
+		<span class="auto-style4"><strong>identifier</strong></span>)*
+        <u><b>lbrace</b></u>&nbsp; ( NativeProcedureDecl )* <b>&nbsp;<u>rbrace</u></b></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        ProcedureDecl&nbsp; :&nbsp; Access&nbsp; <span class="auto-style4">
+		<strong>proc</strong></span>&nbsp;&nbsp; <u><b>identifier</b></u>&nbsp;&nbsp; 
+        ArgumentDecl&nbsp; ProcedureBody</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        NativeProcedureDecl&nbsp; :&nbsp; Access&nbsp; 
+		<span class="auto-style4"><strong>proc</strong></span>&nbsp; <u><b>identifier</b></u>&nbsp;&nbsp; 
+        ArgumentDecl&nbsp;&nbsp;<b><u>semicolon</u></b></p>
+      </li>
+      <li>
+    	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    	Access :&nbsp; <span class="auto-style4"><strong>public</strong></span>&nbsp; 
+		|&nbsp; <span class="auto-style4"><strong>private</strong></span></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        ArgumentDecl&nbsp; :&nbsp; <u><b>lparen</b></u>&nbsp; ( Argument ( <u><b>
+        comma</b></u>&nbsp; Argument )* )? <u><b>rparen</b></u> </p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        Argument&nbsp; :&nbsp; Type&nbsp; <u><b>identifier</b></u></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        Type : <u><b>int</b></u>&nbsp; | <u><b>char</b></u>&nbsp; | <u><b>boolean</b></u></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        ProcedureBody&nbsp; : <u><b>lbrace</b></u> ( Statement )* <u><b>rbrace</b></u> </p>
+      </li>
+      </ul>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    &nbsp;</p>
+      <ul>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Statement&nbsp; :&nbsp; ( Decl | IdStm | IfStm | WhileStm | 
+	EndpStm | 
+    NoStm | BlockStm )</p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Decl&nbsp; :&nbsp; Type&nbsp; <u><b>identifier</b></u>&nbsp; Assignement&nbsp; 
+    ( <u><b>comma</b></u>&nbsp;&nbsp; <u><b>identifier</b></u>&nbsp;&nbsp; 
+    Assignement )*&nbsp; <u><b>semicolon</b></u></p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Assignement&nbsp; :&nbsp; ( <u><b>assign</b></u>&nbsp;&nbsp; Expr&nbsp; )? </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    IfStm&nbsp; :&nbsp; <u><b>if</b></u>&nbsp;&nbsp; <u><b>lparen</b></u>&nbsp;&nbsp; 
+    Expr&nbsp; <u><b>rparen</b></u>&nbsp;&nbsp; Statement&nbsp; ( <b><u>else</u></b>&nbsp; 
+    Statement )? </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    WhileStm&nbsp; :&nbsp; <u><b>while</b></u>&nbsp;&nbsp; <u><b>lparen</b></u>&nbsp; 
+    Expr&nbsp;&nbsp; <u><b>rparen</b></u>&nbsp;&nbsp; Statement</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        EndpStm&nbsp; :&nbsp; <u><b>endp</b></u>&nbsp;&nbsp;
+        <u><b>semicolon</b></u></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        NoStm&nbsp; :&nbsp; <u><b>semicolon</b></u></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        IdStm&nbsp; :&nbsp; <u><b>identifier</b></u>&nbsp; (
+        <u><b>assign</b></u>&nbsp; Expr&nbsp; |&nbsp; 
+        ProcedureCall&nbsp; |&nbsp; <u><b>dot</b></u>&nbsp;&nbsp; <u><b>identifier</b></u>&nbsp; 
+        ProcedureCall )&nbsp; <u><b>semicolon</b></u></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        ProcedureCall&nbsp; :&nbsp; <u><b>lparen</b></u>&nbsp; (&nbsp; Parameter&nbsp; ( <u>
+        <b>comma</b></u>&nbsp; Parameter&nbsp; )* )?&nbsp; <u><b>rparen</b></u> </p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        Parameter&nbsp; :&nbsp; <u><b>out</b></u>&nbsp;&nbsp; <u><b>identifier</b></u>&nbsp; 
+		|&nbsp; Expr</p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    BlockStm&nbsp; :&nbsp; <u><b>lbrace</b></u>&nbsp; ( Statement )*&nbsp; <u>
+    <b>rbrace</b></u></p>
+      </li>
+      </ul>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    &nbsp;</p>
+      <ul>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Expr&nbsp; :&nbsp; AndExpr ( <u><b>or</b></u>&nbsp; AndExpr&nbsp; )*</p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    AndExpr&nbsp; :&nbsp; RelExpr ( <u><b>and</b></u>&nbsp; RelExpr )* </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    RelExpr&nbsp; :&nbsp; SumExpr&nbsp; ( RelOp&nbsp; SumExpr&nbsp; )? </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    RelOp&nbsp; :&nbsp; ( <u><b>eq</b></u>&nbsp; | <u><b>ne</b></u>&nbsp; | <u>
+    <b>gt</b></u>&nbsp; | <u><b>ge</b></u>&nbsp; | <u><b>lt</b></u>&nbsp; | <u>
+    <b>le</b></u>&nbsp; )</p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    SumExpr&nbsp; :&nbsp; UnOp&nbsp; ProdExpr&nbsp; ( SumOp&nbsp;&nbsp; ProdExpr 
+    )* </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    UnOp&nbsp; :&nbsp; ( <u><b>not</b></u> | <u><b>minus</b></u> | <u><b>plus</b></u> 
+    )? </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    SumOp&nbsp; :&nbsp; ( <u><b>minus</b></u> | <u><b>plus</b></u> ) </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    ProdExpr&nbsp; :&nbsp; Factor&nbsp; ( MultOp&nbsp; Factor&nbsp; )*&nbsp; </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    MultOp&nbsp; :&nbsp; ( <u><b>prod</b></u> | <u><b>div</b></u> | <u><b>mod</b></u> 
+    ) </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Factor&nbsp; :&nbsp; ( Literal&nbsp;&nbsp; | Reference&nbsp;&nbsp; |&nbsp;
+    <u><b>lparen</b></u>&nbsp;&nbsp; Expr&nbsp;&nbsp; <u><b>rparen</b></u> ) </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Literal&nbsp; :&nbsp; ( <u><b>integer_literal</b></u>&nbsp; |&nbsp; <u><b>
+    char_literal</b></u>&nbsp; |&nbsp; <u><b>true</b></u>&nbsp;&nbsp; |&nbsp; <u>
+    <b>false</b></u>&nbsp; ) </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Reference&nbsp; :&nbsp; <u><b>identifier</b></u>&nbsp;&nbsp;&nbsp; </p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    &nbsp;</p>
+    </blockquote>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber4">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><font color="#FFFFFF"><b>URIUM GRAMMAR IN BNF FORMAT</b></font></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    To develop a hand-written parser, it is easier to use an LL(1) grammar in 
+	BNF notation. A grammar symbol can be recognized by analyzing the prediction 
+	tokens of its rules. Prediction tokens are the tokens with which a rule can 
+	begin, or the tokens that can follow the symbol if the rule is empty. The 
+	LL(1) condition is that it is possible to determine which rule of a symbol 
+	to parse based on the next token to be parsed. To meet this condition, the 
+	prediction sets of the rules of a symbol must be disjoint sets.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    When transforming the EBNF grammar of URIUM to a BNF grammar the result is 
+	the following:</p>
+    
+    <table style="border: thin solid #000080; margin-left: 10px; margin-right: 10px; clip: rect(auto, auto, auto, auto);" bordercolor="#000080">
+		<tr>
+			<th style="background-color: #3366FF; width: 428px;">Rule</th>
+			<th style="background-color: #3366FF">Prediction set</th>
+		</tr>
+		<tr>
+			<td style="width: 428px">CompilationUnit ::= ImportClauseList 
+			UriumDecl</td>
+			<td><b>import</b>, <b>library</b>, <b>native</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ImportClauseList ::= ImportClause ImportClauseList</td>
+			<td><b>import</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ImportClauseList ::= <b>lambda</b></td>
+			<td><b>library</b>, <b>native</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ImportClause ::= <b><u>import</u></b>  <u><b>identifier</b></u> ContinueImportName  ImportAlias
+			<b><u>semicolon</u></b></td>
+			<td><b>import</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueImportName ::= <b><u>dot</u></b>  <u><b>identifier</b></u> ContinueImportName </td>
+			<td><b>dot</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueImportName ::= <b>lambda</b> </td>
+			<td><b>as</b>, <b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ImportAlias ::= <b><u>as</u></b>  <u><b>identifier</b></u> </td>
+			<td><b>as</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Importalias ::= <b>lambda</b> </td>
+			<td><b>semicolon</b></td>
+		</tr>
+
+		<tr>
+			<td style="width: 428px"> UriumDecl ::= LibraryDecl </td>
+			<td><b>library</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px"> UriumDecl ::= NativeDecl </td>
+			<td><b>native</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px"> LibraryDecl ::= <u><b>library</b></u> <u><b>identifier</b></u> ContinuLibraryName
+                                                      <u><b>lbrace</b></u> ProcedureList <b><u>rbrace</u></b> </td>
+			<td><b>library</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px"> ContinueLibraryName ::= <u><b>dot</b></u> <u><b>identifier</b></u> ContinuLibraryName </td>
+			<td><b>dot</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px"> ContinueLibraryName ::= <b>lambda</b> </td>
+			<td><b>lbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ProcedureList ::= ProcdedureDecl ProcedureList</td>
+			<td><b>public</b>, <b>private</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ProcedureList ::= <b>lambda</b></td>
+			<td><b>rbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px"> NativeDecl ::= <u><b>native</b></u> <u><b>identifier</b></u> ContinueNativeName
+                                                     <u><b>lbrace</b></u> NativeProcedureList <b><u>rbrace</u></b> </td>
+			<td><b>native</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px"> ContinueNativeName ::= <u><b>dot</b></u> <u><b>identifier</b></u> ContinueNativeName </td>
+			<td><b>dot</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px"> ContinueNativeName ::= <b>lambda</b> </td>
+			<td><b>lbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">NativeProcedureList ::= NativeProcedureDecl NativeProcedureList</td>
+			<td><b>public</b>, <b>private</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">NativeProcedureList ::= <b>lambda</b></td>
+			<td><b>rbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ProcedureDecl ::= Access <u><b>proc</b></u> <u><b>identifier</b></u> ArgumentDecl ProcedureBody</td>
+			<td><b>public</b>, <b>private</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">NativeProcedureDecl  ::= Access <u><b>proc</b></u> <u><b>identifier</b></u> ArgumentDecl <b><u>semicolon</u></b></td>
+			<td><b>public</b>, <b>private</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Access ::= <b><u>public</u></b></td>
+			<td><b>public</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Access ::= <b><u>private</u></b></td>
+			<td><b>private</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ArgumentDecl := <u><b>lparen</b></u> ArgumentList <u><b>rparen</b></u></td>
+			<td><b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ArgumentList ::= Argument ContinueArgumentList</td>
+			<td><b>out</b>, <b>int</b>, <b>char</b>, <b>boolean</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ArgumentList ::= <b>lambda</b></td>
+			<td><b>rparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueArgumentList::= <u><b>comma</b></u> Argument ContinueArgumentList</td>
+			<td><b>comma</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueArgumentList::= <b>lambda</b></td>
+			<td><b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Argument ::= ArgumentType <u><b>identifier</b></u></td>
+			<td><b>out</b>, <b>int</b>, <b>char</b>, <b>boolean</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ArgumentType ::= <u><b>out</b></u> Type </td>
+			<td><b>out</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ArgumentType ::=  Type </td>
+			<td><b>int</b>, <b>char</b>, <b>boolean</b></td>
+		</tr>
+
+		<tr>
+			<td style="width: 428px">Type ::= <u><b>int</b></u></td>
+			<td><b>int</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Type ::= <u><b>char</b></u></td>
+			<td><b>char</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Type ::= <u><b>boolean</b></u></td>
+			<td><b>boolean</b></td>
+		</tr>
+
+		<tr>
+			<td style="width: 428px">ProcedureBody ::= <u><b>lbrace</b></u> StatementList <u><b>rbrace</b></u></td>
+			<td><b>lbrace</b></td>
+		</tr>
+		<tr style="background-color: #6699FF">
+			<td style="width: 428px">&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 428px">StatementList ::= Statement StatementList</td>
+			<td><b>int</b>, <b>char</b>, <b>boolean</b>, <b>identifier</b>, <b>if</b>, <b>while</b>, 
+			    <b>endp</b>, <b>semicolon</b>, <b>lbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">StatementList ::= <b>lambda</b></td>
+			<td><b>rbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Statement ::= Decl</td>
+			<td><b>int</b>, <b>char</b>, <b>boolean</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Statement ::= IdStm</td>
+			<td><b>identifier</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Statement ::= IfStm</td>
+			<td><b>if</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Statement ::= WhileStm</td>
+			<td><b>while</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Statement ::= EndpStm</td>
+			<td><b>endp</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Statement ::= NoStm</td>
+			<td><b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Statement ::= BlockStm</td>
+			<td><b>lbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Decl ::= Type <u><b>identifier</b></u> 
+			Assignment ContinueDecl <u><b>semicolon</b></u></td>
+			<td><b>int</b>, <b>char</b>, <b>boolean</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueDecl ::= <u><b>comma</b></u> <u><b>identifier</b></u> Assignment 
+			ContinueDecl</td>
+			<td><b>comma</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueDecl ::= <b>lambda</b></td>
+			<td><b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Assignment ::= <u><b>assign</b></u> Expr</td>
+			<td><b>assign</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Assignment ::= <b>lambda</b></td>
+			<td><b>comma</b>, <b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">IfStm ::= <u><b>if</b></u> <u><b>lparen</b></u> Expr <u><b>rparen</b></u>
+			    Statement ElseStm</td>
+			<td><b>if</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ElseStm ::= <b><u>else</u></b> Statement </td>
+			<td><b>else</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ElseStm ::= <b>lambda</b></td>
+			<td><b>int</b>, <b>char</b>, <b>boolean</b>, <b>identifier</b>, <b>if</b>, <b>while</b>, 
+			    <b>endp</b>, <b>semicolon</b>, <b>lbrace</b>, <b>rbrace</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">WhileStm ::= <u><b>while</b></u> <u><b>lparen</b></u> Expr <u><b>rparen</b></u> Statement</td>
+			<td><b>while</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">EndpStm ::= <u><b>endp</b></u> <u><b>semicolon</b></u></td>
+			<td><b>endp</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">NoStm ::= <u><b>semicolon</b></u></td>
+			<td><b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">IdStm ::= <u><b>identifier</b></u> ContinueIdStm <u><b>semicolon</b></u></td>
+			<td><b>identifier</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueIdStm ::= Assignment</td>
+			<td><b>assign</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueIdStm ::= ProcedureCall</td>
+			<td><b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueIdStm ::= <u><b>dot</b></u> <u><b>identifier</b></u> 
+			ContinueDotId&nbsp; ProcedureCall</td>
+			<td><b>dot</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueDotId ::= <u><b>dot</b></u> <u><b>identifier</b></u> ContinueDotId</td>
+			<td><b>dot</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueDotId ::= <b>lambda</b></td>
+			<td><b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ProcedureCall ::= <u><b>lparen</b></u> ParameterList <u><b>rparen</b></u> </td>
+			<td><b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ParameterList ::= Parameter ContinueParameterList  </td>
+			<td><b>out</b>, <b>identifier</b>, <b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, <b>false</b>, <b>plus</b>, <b>minus</b>,
+			    <b>not</b>, <b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ParameterList ::= <b>lambda</b></td>
+			<td><b>rparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueParameterList ::= <u><b>comma</b></u> Parameter ContinueParameterList  </td>
+			<td><b>comma</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueParameterList ::= <b>lambda</b></td>
+			<td><b>rparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Parameter ::=  <u><b>out</b></u> <u><b>identifier</b></u>  </td>
+			<td><b>out</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Parameter ::=  Expr  </td>
+			<td> <b>identifier</b>, <b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, <b>false</b>, <b>plus</b>, <b>minus</b>,
+			    <b>not</b>, <b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">BlockStm ::= <u><b>lbrace</b></u> StatementList <u><b>rbrace</b></u></td>
+			<td><b>lbrace</b></td>
+		</tr>
+		<tr style="background-color: #6699FF">
+			<td style="width: 428px">&nbsp;</td>
+			<td>&nbsp;</td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Expr ::= AndExpr ContinueExpr</td>
+			<td><b>not</b>, <b>minus</b>, <b>plus</b>, <b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, 
+		        <b>false</b>, <b>identifier</b>, <b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueExpr ::= <u><b>or</b></u> AndExpr 
+			ContinueExpr</td>
+			<td><b>or</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueExpr ::= <b>lambda</b></td>
+			<td><b>comma</b>, <b>rparen</b>, <b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">AndExpr ::= RelExpr ContinueAndExpr</td>
+			<td><b>not</b>, <b>minus</b>, <b>plus</b>, <b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, 
+		        <b>false</b>, <b>identifier</b>, <b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueAndExpr ::= <u><b>and</b></u> RelExpr 
+			ContinueAndExpr</td>
+			<td><b>and</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueAndExpr ::= <b>lambda</b></td>
+			<td><b>or</b>, <b>comma</b>, <b>rparen</b>, <b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">RelExpr ::= SumExpr ContinueRelExpr</td>
+			<td><b>not</b>, <b>minus</b>, <b>plus</b>, <b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, 
+		        <b>false</b>, <b>identifier</b>, <b>lparen</b> </td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueRelExpr ::= RelOp SumExpr</td>
+			<td><b>eq</b>, <b>ne</b>, <b>gt</b>, <b>ge</b>, <b>lt</b>, <b>le</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueRelExpr ::= <b>lambda</b></td>
+			<td><b>and</b>, <b>or</b>, <b>comma</b>, <b>rparen</b>, <b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">RelOp ::= <u><b>eq</b></u></td>
+			<td><b>eq</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">RelOp ::= <u><b>ne</b></u></td>
+			<td><b>ne</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">RelOp ::= <u><b>gt</b></u></td>
+			<td><b>gt</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">RelOp ::= <u><b>ge</b></u></td>
+			<td><b>ge</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">RelOp ::= <u><b>lt</b></u></td>
+			<td><b>lt</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">RelOp ::= <u><b>le</b></u></td>
+			<td><b>le</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">SumExpr ::= UnOp ProdExpr ContinueSumExpr</td>
+			<td><b>not</b>, <b>minus</b>, <b>plus</b>, <b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, 
+		        <b>false</b>, <b>identifier</b>, <b>lparen</b> </td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueSumExpr ::= SumOp ProdExpr ContinueSumExpr</td>
+			<td><b>plus</b>, <b>minus</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueSumExpr ::= <b>lambda</b></td>
+			<td><b>eq</b>, <b>ne</b>, <b>gt</b>, <b>ge</b>, <b>lt</b>, <b>le</b>,
+			    <b>and</b>, <b>or</b>, <b>comma</b>, <b>rparen</b>, <b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">UnOp ::= <u><b>not</b></u></td>
+			<td><b>not</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">UnOp ::= <u><b>minus</b></u></td>
+			<td><b>minus</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">UnOp ::= <u><b>plus</b></u></td>
+			<td><b>plus</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">UnOp ::= <b>lambda</b></td>
+			<td><b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, 
+		        <b>false</b>, <b>identifier</b>, <b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">SumOp ::= <u><b>minus</b></u></td>
+			<td><b>minus</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">SumOp ::= <u><b>plus</b></u></td>
+			<td><b>plus</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ProdExpr ::= Factor ContinueProdExpr</td>
+			<td><b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, 
+		        <b>false</b>, <b>identifier</b>, <b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueProdExpr ::= MultOp Factor ContinueProdExpr</td>
+			<td><b>prod</b>, <b>div</b>, <b>mod</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">ContinueProdExpr ::= <b>lambda</b></td>
+			<td><b>plus</b>, <b>minus</b>, <b>eq</b>, <b>ne</b>, 
+				<b>gt</b>, <b>ge</b>, <b>lt</b>, <b>le</b>, <b>and</b>, <b>or</b>, <b>comma</b>, <b>rparen</b>, <b>semicolon</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">MultOp ::= <u><b>prod</b></u></td>
+			<td><b>prod</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">MultOp ::= <u><b>div</b></u></td>
+			<td><b>div</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">MultOp ::= <u><b>mod</b></u></td>
+			<td><b>mod</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Factor ::= Literal</td>
+			<td><b>integer_literal</b>, <b>char_literal</b>, <b>true</b>, <b>false</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Factor ::= Reference</td>
+			<td><b>identifier</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Factor ::= <u><b>lparen</b></u> Expr <u><b>rparen</b></u></td>
+			<td><b>lparen</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Literal ::= <u><b>integer_literal</b></u></td>
+			<td><b>integer_literal</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Literal ::= <u><b>char_literal</b></u></td>
+			<td><b>char_literal</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Literal ::= <u><b>true</b></u></td>
+			<td><b>true</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Literal ::= <u><b>false</b></u></td>
+			<td><b>false</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">Reference ::= <u><b>identifier</b></u> </td>
+			<td><b>identifier</b></td>
+		</tr>
+	</table>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    &nbsp;</p>
+ 
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">CODE TO PARSE A SYMBOL</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The parser contains a lexical analyzer (<em>lexer</em>) and references to 
+	the last recognized token (<em>prevToken</em>) and the next token to be 
+	recognized (<em>nextToken</em>). To recognize a token, the <em>match()</em> 
+	method is used, which has the following definition:</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+    /**
+     * Consumes a token from the input stream
+     */
+    private void match(int kind) throws SintaxException 
+    {
+        if(nextToken.getKind() == kind) 
+        {
+            prevToken = nextToken;
+            nextToken = lexer.getNextToken();
+        }
+        else throw new SintaxException(nextToken,kind);
+    }
+    
+</pre>
+          </td>
+        </tr>
+      </table>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    To recognize a non-terminal symbol described by several rules, the 
+	prediction sets of these rules must be taken into account. Let be a grammar 
+	containing a symbol A with three syntactic rules and their corresponding 
+	prediction sets:</p>
+	<table style="margin-left: 10px; margin-right: 10px; clip: rect(auto, auto, auto, auto);" bordercolor="#000080" align="center" class="auto-style5">
+		<tr>
+			<th style="background-color: #3366FF; width: 428px;">Rule</th>
+			<th style="background-color: #3366FF">Prediction set</th>
+		</tr>
+		<tr>
+			<td style="width: 428px">&nbsp; A ::=&nbsp; B&nbsp; C&nbsp; D</td>
+			<td><b>token1</b>, <b>token2</b>, <b>token3</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">&nbsp; A ::=&nbsp; <b><u>token7</u></b>&nbsp;&nbsp; E&nbsp;&nbsp; 
+			<b><u>token8</u></b>&nbsp;&nbsp; F</td>
+			<td><b>token7</b></td>
+		</tr>
+		<tr>
+			<td style="width: 428px">&nbsp;&nbsp;A ::= G&nbsp; <b><u>token9</u></b></td>
+			<td><b>token4</b>, <b>token5</b></td>
+		</tr>
+
+    </table>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The method that parses symbol A studies the category of the next token, 
+	checks which prediction set it belongs to, and executes the corresponding 
+	rule. If the next token doesn't belong to any rule, a syntactical error is 
+	generated. </p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+    /**
+     * Parses the &lt;A&gt; symbol
+     * 
+     * &lt;A&gt; ::= &lt;B&gt;  &lt;C&gt;  &lt;D&gt;
+     * &lt;A&gt; ::= TOKEN7  &lt;E&gt;  TOKEN8  &lt;F&gt;
+     * &lt;A&gt; ::= &lt;G&gt; TOKEN9
+     */
+    private void parseA() throws SintaxException
+    {
+        int[] expected = { TOKEN1, TOKEN2, TOKEN3, TOKEN7, TOKEN4, TOKEN5 };
+        switch(nextToken.getKind()) 
+        {
+        case TOKEN1:
+        case TOKEN2:
+        case TOKEN3:
+            parseB();
+            parseC();
+            parseD();
+            break;
+        case TOKEN7:
+            match(TOKEN7);
+            parseE();
+            match(TOKEN8);
+            parseF();
+            break;
+        case TOKEN4:
+        case TOKEN5:
+            parseG();
+            match(TOKEN9);
+            break;
+        default:
+            throw new SintaxException(nextToken,expected);
+        }
+    }    
+
+</pre>
+          </td>
+        </tr>
+      </table>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    &nbsp;</p>
+
+
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">THE SyntaxException CLASS</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">The
+	<em>SintaxException</em> class represents a syntactic error. These errors 
+	occur when the parsed token does not match any of the expected tokens. These 
+	types of exceptions can be thrown in the <em>parse...()</em> methods when 
+	the next token does not belong to the prediction set of any of the symbol's 
+	rules, and in the <em>match()</em> method when the next token does not match 
+	the token to be recognized. The first constructor shown corresponds to the 
+	exception thrown by the <em>match()</em> method, while the second 
+	constructor is the one used in the <em>parse...()</em> methods.</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+package urium.parser;
+
+/**
+ * Class describing a syntactic exception 
+ * 
+ * @author Francisco J. Moreno Velo
+ */
+public class SintaxException extends Exception implements TokenConstants {
+
+    //----------------------------------------------------------------//
+    //                         Private members                        //
+    //----------------------------------------------------------------//
+
+    /**
+     * Serial version uid
+     */
+    private static final long serialVersionUID = 20240002L;
+
+    /**
+     * Error message
+     */
+    private String msg;
+
+    //----------------------------------------------------------------//
+    //                             Constructor                        //
+    //----------------------------------------------------------------//
+
+    /**
+     * Constructor 
+     */
+    public SintaxException(Token token, int expected) 
+    {
+        this.msg = "Sintax exception at row "+token.getRow();
+        msg += ", column "+token.getColumn()+".\n";
+        msg += "  Found "+token.getLexeme()+"\n";
+        msg += "  while expecting "+getLexemeForKind(expected)+".\n";
+    }
+	
+    /**
+     * Constructor 
+     */
+    public SintaxException(Token token, int[] expected) 
+    {
+        this.msg = "Sintax exception at row "+token.getRow();
+        msg += ", column "+token.getColumn()+".\n";
+        msg += "  Found "+token.getLexeme()+"\n";
+        msg += "  while expecting one of\n";
+        for(int i=0; i&lt;expected.length; i++) 
+        {
+            msg += "    "+getLexemeForKind(expected[i])+"\n";
+        }
+    }
+
+    //----------------------------------------------------------------//
+    //                           Public methods                       //
+    //----------------------------------------------------------------//
+	
+    /**
+     * Error message
+     */
+    public String toString() 
+    {
+        return this.msg;
+    }
+	
+    /**
+     * A description for the lexical category
+     */
+    private String getLexemeForKind(int kind) 
+    {
+        switch(kind) 
+        {
+        case AS: return "as";
+        case BOOLEAN: return "boolean";
+        case CHAR:  return "char";
+        case ELSE:  return "else";
+        case ENDP: return "endp";
+        case FALSE: return "false";
+        case IF: return "if";
+        case IMPORT: return "import";
+        case INT: return "int";
+        case LIBRARY: return "library";
+        case NATIVE: return "native";
+        case OUT: return "out";
+        case PRIVATE: return "private";
+        case PROC: return "proc";
+        case PUBLIC: return "public";
+        case TRUE: return "true";
+        case WHILE: return "while";
+        case IDENTIFIER: return "IDENTIFIER";
+        case INTEGER_LITERAL: return "INTEGER_LITERAL";
+        case CHAR_LITERAL: return "CHAR_LITERAL";
+        case LPAREN: return "(";
+        case RPAREN: return ")";
+        case LBRACE: return "{";
+        case RBRACE: return "}";
+        case SEMICOLON: return ";";
+        case COMMA: return "COMMA";
+        case DOT: return "DOT";
+        case ASSIGN: return "=";
+        case EQ: return "==";
+        case LE: return "&lt;=";
+        case LT: return "&lt;";
+        case GE: return "&gt;=";
+        case GT: return "&gt;";
+        case NE: return "!=";
+        case OR: return "||";
+        case AND: return "&amp;&amp;";
+        case NOT: return "!";
+        case PLUS: return "+";
+        case MINUS: return "-";
+        case PROD: return "*";
+        case DIV: return "/";
+        case MOD: return "%";
+        default: return "";
+        }
+    }
+}
+            
+</pre>
+          </td>
+        </tr>
+      </table>
+	
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    &nbsp;</p>
+
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">ERROR HANDLING</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">The 
+	implementation of a recursive descent parser described in the previous 
+	section allows you to check whether a given input file is correct or not. If 
+	an error occurs, the parser aborts its execution by throwing an exception 
+	and reporting that the result is incorrect. When the input file contains 
+	multiple errors, the parser only detects and reports the first one. In a 
+	compilation process, this forces the programmer to correct errors one by one 
+	without knowing in advance how many errors there are in total. To detect all 
+	the syntax errors in an input file, it is necessary to apply error-handling 
+	techniques that allow the parser to resynchronize after an error occurs so 
+	it can continue parsing the input.</p>
+	<p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+	Top-down parsing allows for easy error-handling techniques using 
+	synchronization tokens. The technique consists of analyzing each symbol in 
+	the grammar, considering whether it will be correct, and if a syntactical 
+	error is detected, advancing in the token chain until either the token that 
+	should be at the end of the symbol is consumed or the token corresponding to 
+	the beginning of the next symbol is reached. To handle errors, the 
+	syntactical parser must incorporate two fields that track the number of 
+	errors detected (<em>errorCount</em>) and the error message to display, 
+	grouping all detected errors (<em>errorMsg</em>). When a new error is 
+	detected, the <em>catchError()</em> method must be called, which increments 
+	the error count and adds a description to the error message. The <em>
+	skipTo()</em> method must then be used to advance to one of the 
+	synchronization tokens.</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+    /**
+     * Error counter
+     */
+    private int errorCount;
+
+    /**
+     * Error message
+     */
+    private String errorMsg;
+	
+    /**
+     * Gets the error counter
+     */
+    public int getErrorCount()
+    {
+        return this.errorCount;
+    }
+
+    /**
+     * Gets the error message
+     */
+    public String getErrorMsg()
+    {
+        return this.errorMsg;
+    }
+	
+    /**
+     * Stores a new error
+     */
+    private void catchError(Exception ex)
+    {
+        this.errorCount++;
+        this.errorMsg += ex.toString();
+    }
+
+    /**
+     * Synchronizes the token sequence
+     */
+    private void skipTo(int[] left, int[] right) 
+    {
+        boolean flag = false;
+        if(prevToken.getKind() == EOF || nextToken.getKind() == EOF) flag = true;
+        for(int i=0; i&lt;left.length; i++)
+            if(prevToken.getKind() == left[i]) flag = true;
+        for(int i=0; i&lt;right.length; i++)
+            if(nextToken.getKind() == right[i]) flag = true;
+
+        while(!flag) 
+        {
+            prevToken = nextToken;
+            nextToken = lexer.getNextToken();
+            if(prevToken.getKind() == EOF || nextToken.getKind() == EOF) flag = true;
+            for(int i=0; i&lt;left.length; i++)
+                if(prevToken.getKind() == left[i]) flag = true;
+            for(int i=0; i&lt;right.length; i++)
+                if(nextToken.getKind() == right[i]) flag = true;
+        }
+    }
+	    
+</pre>
+          </td>
+        </tr>
+      </table>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    To include error handling in the parser, the code associated with parsing a 
+	symbol must be wrapped in a try-catch block. If a syntax exception occurs, 
+	the error is captured and the parser is synchronized. For the example in the 
+	previous section, if the synchronization tokens for A are {<em>token10</em>} 
+	on the left and {<em>token11</em>, <em>token12</em>} on the right, the code 
+	would look like this.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+    /**
+     * Parses the &lt;A&gt; symbol
+     * 
+     * &lt;A&gt; ::= &lt;B&gt;  &lt;C&gt;  &lt;D&gt;
+     * &lt;A&gt; ::= TOKEN7  &lt;E&gt;  TOKEN8  &lt;F&gt;
+     * &lt;A&gt; ::= &lt;G&gt; TOKEN9
+     */
+    private void parseA() 
+    {
+        int[] lsync = { TOKEN10 };
+        int[] rsync = { TOKEN11, TOKEN12 };
+        try
+        {
+            int[] expected = { TOKEN1, TOKEN2, TOKEN3, TOKEN7, TOKEN4, TOKEN5 };
+            switch(nextToken.getKind()) 
+            {
+            case TOKEN1:
+            case TOKEN2:
+            case TOKEN3:
+                parseB();
+                parseC();
+                parseD();
+                break;
+            case TOKEN7:
+                match(TOKEN7);
+                parseE();
+                match(TOKEN8);
+                parseF();
+                break;
+            case TOKEN4:
+            case TOKEN5:
+                parseG();
+                match(TOKEN9);
+                break;
+            default:
+                throw new SintaxException(nextToken,expected);
+            }
+        }
+        catch(Exception ex)
+        {
+            catchError(ex);
+            skipTo(lsync,rsync);
+        }
+    }    
+
+</pre>
+          </td>
+        </tr>
+      </table>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    &nbsp;</p>
+
+
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+     <p align="center" class="auto-style3">URIUM TOP-DOWN PARSER</p></td>
+  </tr>
+  <tr>
+    <td width="100%">
+      <p>&nbsp;</p>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      Considering the URIUM LL(1) grammar expressed in BNF notation and the 
+	  prediction sets computed for each rule in the grammar, a recursive descent 
+	  parser can be developed. The implementation of this parser is found in the
+	  <em>Parser</em> class, whose code is shown below. The class contains five 
+	  private members: the lexical analyzer (<em>lexer</em>), the last 
+	  recognized token (<em>prevToken</em>), the lookahead token (<em>nextToken</em>), 
+	  the error counter (<em>errorCount</em>), and the error message aggregator 
+	  (<em>errorMsg</em>). The main method of the class is called <em>parse()</em> 
+	  and executes the parsing process on the input file, recognizing the 
+	  initial symbol of the grammar followed by the end of the file. You can 
+	  verify whether the analysis was correct or not by checking if errors were 
+	  found using the <em>getErrorCount()</em> method.</p>
+	  <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The implementation of the top-down parser consists of generating a method 
+	  for each non-terminal symbol in the grammar. The code for these functions 
+	  is similar for all symbols, so only the function associated with the <em>
+	  CompilationUnit</em> symbol is shown as an example. Token recognition is 
+	  represented by calls to the <em>match()</em> method, which verifies that 
+	  the look-ahead token matches the expected token and consumes it by 
+	  requesting the next input token from the lexical analyzer.
+      </p>
+      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+/**
+ * Urium syntactic analyzer
+ */
+public class Parser implements TokenConstants {
+	
+    //----------------------------------------------------------------//
+    //                         Private members                        //
+    //----------------------------------------------------------------//
+
+    /**
+     * Lexical analyzer
+     */
+    private Lexer lexer;
+
+    /**
+     * Previous token
+     */
+    private Token prevToken;
+
+    /**
+     * Next token
+     */
+    private Token nextToken;
+
+    /**
+     * Error counter
+     */
+    private int errorCount;
+
+    /**
+     * Error message
+     */
+    private String errorMsg;
+
+    //----------------------------------------------------------------//
+    //                             Constructor                        //
+    //----------------------------------------------------------------//
+
+    /**
+     * Constructor
+     */
+    public Parser(File file) throws IOException
+    {
+        this.lexer = new Lexer(file);
+        this.prevToken = null;
+        this.nextToken = lexer.getNextToken();
+        this.errorCount = 0;
+        this.errorMsg = "";
+    }
+
+    //----------------------------------------------------------------//
+    //                           Public methods                       //
+    //----------------------------------------------------------------//
+
+    /**
+     * Gets the error counter
+     */
+    public int getErrorCount()
+    {
+        return this.errorCount;
+    }
+
+    /**
+     * Gets the error message
+     */
+    public String getErrorMsg()
+    {
+        return this.errorMsg;
+    }
+	
+    /**
+     * Parses the input file
+     */
+    public void parse()
+    {
+        int[] lsync = { };
+        int[] rsync = { EOF };
+        try
+        {
+            parseCompilationUnit();
+            match(EOF);
+        }
+        catch(Exception ex)
+        {
+            catchError(ex);
+            skipTo(lsync,rsync);
+        }
+    }
+	
+    //----------------------------------------------------------------//
+    //                          Private methods                       //
+    //----------------------------------------------------------------//
+
+    /**
+     * Consumes a token from the input stream
+     */
+    private void match(int kind) throws SintaxException 
+    {
+        if(nextToken.getKind() == kind) 
+        {
+            prevToken = nextToken;
+            nextToken = lexer.getNextToken();
+        }
+        else throw new SintaxException(nextToken,kind);
+    }
+	
+    /**
+     * Parses the &lt;CompilationUnit&gt; symbol
+     * 
+     * &lt;CompilationUnit&gt; ::= &lt;InportClauseList&gt; &lt;UriumDecl&gt;
+     */
+    private void parseCompilationUnit() 
+    {
+        int[] lsync = { };
+        int[] rsync = { EOF };
+        try
+        {
+            int[] expected = { IMPORT, LIBRARY, NATIVE };
+            switch(nextToken.getKind()) 
+            {
+            case IMPORT:
+            case LIBRARY:
+            case NATIVE:
+                parseImportClauseList();
+                parseUriumDecl();
+                break;
+            default:
+                throw new SintaxException(nextToken,expected);
+            }
+        }
+        catch(Exception ex)
+        {
+            catchError(ex);
+            skipTo(lsync,rsync);
+        }
+    }	
+  ...
+}
+            </pre>
+          </td>
+        </tr>
+      </table>
+      
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      Finally, the <em>UriumCompiler</em> class has been modified to include 
+	  syntactic analysis. The new version looks for the &quot;<em>Main.ur</em>&quot; file 
+	  in the working directory and parses it. If the syntactic analysis is 
+	  successful, a file &quot;<em>UriumcOutput.txt</em>&quot; is generated with the message &quot;<em>Correct</em>.&quot; 
+	  If errors are detected, the file &quot;<em>UriumcOutput.txt</em>&quot; is generated 
+	  with the message &quot;<em>Incorrect</em>,&quot; and a file &quot;<em>UriumCompilationErrors.txt</em>&quot; 
+	  is generated with a description of the detected errors.</p>
+      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+           <pre>
+public class UriumCompiler {
+
+    //----------------------------------------------------------------//
+    //                         Public methods                         //
+    //----------------------------------------------------------------//
+
+    /**
+     * Entry point to the compiler
+     */
+    public static void main(String[] args) 
+    {
+        String path = (args.length == 0 ? System.getProperty("user.dir") : args[0]);
+        File workingdir = new File(path);
+		
+        try
+        {
+            File mainfile = new File(workingdir, "Main.ur");
+            Parser parser = new Parser(mainfile);
+            parser.parse();
+            if(parser.getErrorCount() == 0 ) 
+            {
+                printOutput(workingdir,"Correct");
+            }
+            else 
+            {
+                printError(workingdir, parser.getErrorCount(), parser.getErrorMsg());
+                printOutput(workingdir,"Incorrect");
+            }
+        } 
+        catch(Error err) 
+        {
+            printError(workingdir, 1, err.toString());
+            printOutput(workingdir,"Incorrect");
+        }
+        catch(Exception ex) 
+        {
+            printError(workingdir, 1, ex.toString());
+            printOutput(workingdir,"Incorrect");
+        }
+    }
+		
+  ...
+}
+           </pre>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber5">
+          <tr>
+              <td width="100%" bgcolor="#000080">
+                  <p align="center">
+                      <span style="background-color: #000080">
+                          <font color="#FFFFFF">
+                              <span style="font-weight: 700">
+                                  EXAMPLES
+                              </span>
+                          </font>
+                      </span>
+                  </p>
+              </td>
+          </tr>
+          <tr>
+              <td width="100%" style="margin-left: 10; margin-right: 10">
+                  <p>&nbsp;</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The source code for this lecture includes a directory 
+					  called '<em>examples</em>' that contains several examples 
+					  of applications programmed in URIUM. The '<em>Compilation_scripts</em>' 
+					  subdirectory includes the compiler ('<em>urimc.jar</em>') 
+					  and a script file ('<em>compile.bat</em>') with the 
+					  execution command. To run the compilation, copy these two 
+					  files to the application directory and run the script.</p>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The included examples are correct, so running the compiler 
+					  generates the file '<em>UriumcOutput.txt</em>' with the 
+					  message &quot;<em>Correct</em>.&quot; To test error detection, the 
+					  directory '<em>0.1_3+2_with_errors'</em> has been included 
+					  with a version of the '3+2' example that includes two 
+					  errors. The code in the '<em>Main.ur</em>' file in this 
+					  directory is as follows.</p>
+			      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+import urium.Console as Console;
+
+/**
+* Application that shows the result of a sum
+*/
+library Main {
+
+  /**
+   * Application start procedure
+   */
+  public proc main() {
+    int a=3;
+    int b=2;
+    int c= a b;           // Operator '+' is removed
+
+    Console.print(a)      // Character ';' is removed
+    Console.print(' ');
+    Console.print('+');
+    Console.print(' ');
+    Console.print(b);
+    Console.print(' ');
+    Console.print('=');
+    Console.print(' ');
+    Console.print(c);
+  }
+}
+            </pre>
+          </td>
+        </tr>
+      </table>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The compiler generates the file '<em>UriumCompilationErrors.txt</em>' 
+					  with the following content:</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+[File Main.ur] 2 errors found:
+Sintax exception at row 14, column 13.
+  Found b
+  while expecting one of
+    *
+    /
+    %
+    +
+    -
+    ==
+    !=
+    &gt;
+    &gt;=
+    &lt;
+    &lt;=
+    &amp;&amp;
+    ||
+    COMMA
+    )
+    ;
+Sintax exception at row 17, column 4.
+  Found Console
+  while expecting ;.
+            </pre>
+          </td>
+        </tr>
+      </table>				 
+                      &nbsp;
+    </td>
+  </tr>
+</table>
+      
+<p>&nbsp;</p>
+
+</td>
+</tr>
+</table>
+
+
+
+</body>
+
+</html>

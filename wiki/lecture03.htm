@@ -1,0 +1,786 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 03</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">The Abstract Syntax Tree</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">GOALS</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+      <li>Describe the data structure included into the URIUM compiler to store 
+	  the information parsed from a source file.</li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span class="auto-style3">SOURCE CODE</span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The code in this lecture adds 26 files to the URIUM compiler, distributed in 
+	4 new packages.</p>
+    <ul>
+      <li><a href="lecture03/Lecture03.rar">Access to code</a></li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">PACKAGE STRUCTURE OF 
+	THE ABSTRACT SYNTAX TREE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The aim of the URIUM compiler's parsing phase is to read a source file and 
+	generate a data structure that stores all the information contained in that 
+	source file. This data structure is known as an <em>abstract syntax tree</em>. 
+	The classes used in the URIUM compiler to develop this data structure are 
+	found in the <strong><em>urium.ast</em></strong> package, which in turn includes 
+	three other subpackages. These packages are described below:</p>
+    <ul>
+      <li>
+    <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    <i><b>urium.ast</b></i>: It is the root package for all classes used in the 
+	data structure. The package only contains the classes that develop the type 
+	system, which are used by many of the classes in the various subpackages.</p>
+      </li>
+        <li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>urium.ast.expression</i></b>:<span lang="es"> This package 
+		contains classes dedicated to describing the different arithmetic and 
+		logical expressions included in the URIUM language.</span></p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" ><b><i>urium.ast.statement</i></b>:<span lang="es"> 
+		</span>It is the package that includes the classes that describe the 
+		different statements of the URIUM language: (<em>if</em>, <em>while</em>,
+		<em>endp</em>, etc.).</p>
+	  </li>
+	  <li>
+	     <p style="margin-right: 10px; margin-left: 10px; text-align: justify;"><b><i>urium.ast.struct</i></b>:<span lang="es">
+		 It is the package to which the classes that describe the high-level 
+		 components of the URIUM language (libraries, procedures, etc.) belong.</span></p>
+      </li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber4">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">THE urium.ast PACKAGE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">The
+	<em><strong>urium.ast</strong></em> package contains classes dedicated to 
+	describing the URIUM language's type system. The package consists of one 
+	interface and two classes.</p>
+    <ul>
+      <li>
+        <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <b><i>urium.ast.Access</i></b>: It is an interface that defines the 
+		constants used to describe the two types of access included in the 
+		language: <em>public</em> and <em>private</em>.</p>
+      </li>
+      <li>
+	    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	    <b><i>urium.ast.Type</i></b>: It is a class that describes the data 
+		types included in the URIUM language. The class also defines the 
+		constants used to identify the types, as well as a set of predefined 
+		objects to represent these data types (<em>int</em>, <em>char</em>, <em>
+		boolean</em>, <em>out</em> <em>int</em>, <em>out</em> <em>char</em>, <em>
+		out</em> <em>boolean</em>).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+        <b><i>urium.ast.TypeSystem</i></b>: This is the class that develops the 
+		methods associated with the language's type system. The methods defined 
+		in this class are as follows:</p>
+        <ul>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isInteger(DataType type)</b></i>: Checks that a data 
+			type is an integer.</p>
+	      </li>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isBoolean(DataType type)</b></i>: Checks that a data 
+			type is a boolean.</p>
+	      </li>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isChar(DataType type)</b></i>: Checks that a data type 
+			is a character.</p>
+	      </li>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isNumeric(DataType type)</b></i>:Checks that a data 
+			type is numeric.</p>
+	      </li>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isOrderable(DataType type1, DataType type2)</b></i>: 
+			Checks that two data types can be sorted with '&gt;' or '&lt;'.</p>
+	      </li>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isComparable(DataType type1, DataType type2)</b></i>: 
+			Checks that two data types can be compared with '=' o '!='.</p>
+	      </li>
+			<li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isAssignable(DataType type1, DataType type2)</b></i>: 
+			Tests whether a value of data type '<em>type2</em>' can be assigned 
+			to a variable of data type '<em>type1</em>'.</p>
+	      </li>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>boolean isReference(DataType type)</b></i>: Checks that a data 
+			type is a reference.</p>
+	      </li>
+			<li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <strong><em>DataType getReference(DataType type)</em></strong>: Gets 
+			the reference type corresponding to a basic type.</p>
+	      </li>
+          <li>
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+            <i><b>int getNumberOfBytes(DataType type)</b></i>: Gets the size (in 
+			bytes) of the data type.</p>
+	      </li>
+        </ul>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >&nbsp;</p>
+	  </li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber4">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">THE&nbsp; urium.ast.struct 
+	PACKAGE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">The
+	<strong><em>urium.ast.struct</em></strong> package contains classes 
+	dedicated to describing the high-level components (libraries, procedures) of 
+	the URIUM language. The package consists of four classes.</p>
+    <ul>
+      <li>
+       <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+       <i><b>urium.ast.struct.LibraryDeclaration</b></i>: It is the class that 
+	   contains all the information collected from a source file; that is, it 
+	   constitutes the root of the abstract syntax tree to be built. It consists 
+	   of the following components:</p>
+       <ul>
+        <li>
+          <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+          <i><b>name</b></i>: This is the full name of the library, including 
+		  the path to the library's source file. For example, the library 
+		  described in the file '<em>urium/Console.ur</em>' is described by the 
+		  name &quot;<em>urium.Console</em>&quot;.</p>
+        </li>
+        <li>
+          <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+          <b><i>imported</i></b>: It is a hashtable with the names of the 
+		  different libraries imported in the file and their aliases.</p>
+        </li>
+        <li>
+          <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+          <i><b>procedures</b></i>: It is a vector that stores the list of 
+		  descriptions of the procedures defined in the library.</p>
+        </li>
+		   <li>
+           <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+           <strong><em>isNative</em></strong>: It is a flag to indicate that it 
+		   is a native library, that is, its object code has already been 
+		   generated and should not be recompiled.</p>
+        </li>
+       </ul>
+       <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	   The different methods of the class are limited to accessing and editing 
+	   these fields.</p>
+     </li>
+     <li>
+       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	   <b><i>urium.ast.struct.Procedure</i></b>: Describes a procedure defined 
+	   within a library. It contains the following fields::</p>
+       <ul>
+        <li>
+          <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		  <i><b>libname</b></i>: It is the name of the library to which the 
+		  procedure belongs.</p>
+        </li>
+        <li>
+          <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		  <i><b>name</b></i>: It is the name of the procedure.</p>
+        </li>
+        <li>
+          <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		  <i><b>access</b></i>: It is the type of access to the procedure 
+		  (public or private).</p>
+        </li>        
+        <li>
+          <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <i><b>argument</b></i>: Contains the list of arguments for the 
+		  procedure call. Each argument is an object of the <em>Variable</em> 
+		  class..</p>
+        </li>
+        <li>
+		  <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		  <i><b>localVar</b></i>: Contains the list of local variables defined 
+		  in the procedure body. Each variable is an object of the <em>Variable</em> 
+		  class.</p>
+        </li>
+        <li>
+		  <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		  <b>body</b>: Contains the procedure's statement block. It is an object 
+		  of the <em>urium.ast.statement.BlockStatement</em> class..</p>
+        </li>
+      </ul>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	  Most of the class's methods are dedicated to accessing and editing these 
+	  fields. Listed below are some methods with different functionality.</p>
+      <ul>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		  <i><b>int[] getArgumtentTypes()</b></i>: Gets the list of argument 
+		  types. Used to verify that no two procedures have the same name and 
+		  the same argument types.</p>
+        </li>
+        <li>
+		  <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		  <i><b>boolean match(String, int[])</b></i>: Checks if the procedure 
+		  corresponds to that name and those argument types.</p>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	  <b><i>
+      urium.ast.struct.Variable</i></b>:<span lang="es"> Contains the 
+	  description of a local variable or a procedure argument. The fields of the 
+	  class are as follows:</span></p>
+      <ul>
+        <li>
+          <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <i><b>name</b></i>: Variable name.</p>
+        </li>
+        <li>
+          <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <i><b>type</b></i>: Data type of the variable.</p>
+        </li>
+      </ul>
+    </li>
+	<li>
+	  <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	  <b><i>
+      urium.ast.struct.SymbolTable</i></b>:<span lang="es"> This is the class 
+	  that develops the compiler's symbol table. The symbol table contains the 
+	  set of libraries analyzed by the compiler and is responsible for 
+	  identifying the library and the procedure being analyzed at any given 
+	  time. For this procedure, the symbol table constructs a stack of variable 
+	  declaration scopes. When an instruction in the active procedure opens a 
+	  new declaration scope (for example, a block of instructions in a while 
+	  statement), a new scope is stacked in this class. Scopes are represented 
+	  by hash tables that store variable names and references to the associated
+	  <em>Variable</em> objects. The methods defined in this class are as 
+	  follows:</span></p>
+      <ul>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>void addLibrary(LibraryDeclaration lib)</i></b>: Adds a library 
+		  to the symbol table.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>LibraryDeclaration getLibrary(String libname)</i></b>: Search 
+		  the symbol table for a library with the given name.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>LibraryDeclaration getActiveLibrary()</i></b>: Gets the active 
+		  library, that is, the library that is currently being analyzed.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>void setActiveLibrary(String libname)</i></b>: Sets the active 
+		  library.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>LibraryDeclaration[] getLibraries()</i></b>:  Gets the list of libraries as an array.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>Procedure getActiveProcedure()</i></b>: Gets the active 
+		  procedure, that is, the procedure that is currently being analyzed.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>void setActiveProcedure(String name, int[] type)</i></b>: Sets 
+		  the active procedure.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+          <b><i>void createScope()</i></b>: Creates a new scope (a hash table) 
+		  and stores it at the top of the stack.</p>
+        </li>
+        <li>
+  	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+  	      <i><b>void deleteScope()</b></i>: Removes the scope stored at the top 
+		  of the stack.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	      <i><b>void addLocalVariable(Variable var)</b></i>: Adds a variable 
+		  declaration to the active procedure and stores it in the top-of-stack 
+		  scope.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	      <i><b>void addArgument(Variable var)</b></i>: Adds an argument to the 
+		  active procedure and stores it in the top-of-stack scope.</p>
+        </li>
+        <li>
+ 	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+ 	      <i><b>Variable getVariable(String name)</b></i>: Searches for a 
+		  variable with the given name in all stack scopes.</p>
+        </li>
+        <li>
+	      <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	      <i><b>Variable getVariableInScope(String name)</b></i>: Searches for a 
+		  variable with the given name in the top-of-stack scope.</p>
+        </li>
+      </ul>
+    </li>
+   </ul>
+   </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber5" >
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">THE&nbsp; urium.ast.statement 
+	PACKAGE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">The<em><strong> 
+	urium.ast.statement</strong></em> package contains classes that describe the 
+	various statements in the URIUM language. The package contents are as 
+	follows:</p>
+    <ul>
+      <li>
+       <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	   <i><b>urium.ast.statement.Statement</b></i>: This is an abstract class 
+	   that serves as a superclass for any class that defines an statement. The 
+	   class only contains the abstract method <em>returns()</em>, which must 
+	   verify whether the statement always reaches an <em>endp</em> (<em>end-procedure</em>) 
+	   or not (statements that always reach an endp are the <em>endp</em> 
+	   statement itself, a block of statements that finish in an <em>endp</em>, 
+	   and an <em>if-else</em> statement where both options always reach an <em>
+	   endp</em>).</p>
+      </li>
+      <li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>urium.ast.statement.IfStatement</i></b>: This is the class that 
+		describes an <em>if</em> statement. Its fields are as follows:</p>
+        <ul>
+         <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		   <i><b>condition</b></i>: Describes the condition of the <em>if</em> 
+		   statement. It is a reference to an <em>Expression</em> object. It 
+		   must be of <em>boolean</em> type.</p>
+         </li>
+         <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		   <i><b>thenInst</b></i>: Describes the statement to execute when the 
+		   condition is true. It is a reference to a <em>Statement</em> object.</p>
+         </li>
+         <li>
+		   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		   <i><b>elseInst</b></i>: Describes the statement to execute when the 
+		   condition is false. It is a reference to a <em>Statement</em> object. 
+		   If the statement does not have an <em>else</em> clause, the field 
+		   must have a null reference..</p>
+         </li>
+        </ul>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		The class's methods are limited to assigning and accessing the values 
+		&#8203;&#8203;of these fields. The<em> returns()</em> method returns true if the <em>
+		thenInst</em> and <em>elseInst</em> statements reach an <em>endp</em>..</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>
+        urium.ast.statement.WhileStatement</i></b>: This is the class that 
+		describes a <em>while</em> statement. It consists of the following 
+		fields:</p>
+        <ul>
+         <li>
+           <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" ><i><b>
+           condition</b></i>: Describes the loop's control condition. It is a 
+		   reference to a Expression object of <em>boolean</em> type.</p>
+	     </li>
+         <li>
+           <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		   <strong><em>body</em></strong>: Describes the body of the loop. It is 
+		   a reference to a <em>Statement</em> object..</p>
+	     </li>
+       </ul>
+       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	   The methods are limited to accessing and editing field values. The<em> 
+	   returns()</em> method always returns false.</p>
+ 	 </li>
+	 <li>
+	   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	   <b><i>
+       urium.ast.statement.EndpStatement</i></b>:<span lang="es"> Describes an
+	   <em>endp</em> statement that indicates the end of the procedure. It does 
+	   not contain any fields. The<em> returns() </em>method always returns 
+	   true.</span></p>
+     </li>
+     <li>
+	   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	   <b><i>
+       urium.ast.statement.AssignStatement</i></b>:<span lang="es"> This is the 
+	   class that describes an assignment statement. Its fields are:</span></p>
+       <ul>
+         <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;"><i><b>lefthand</b></i>: 
+		   Contains the reference to the variable that appears on the left side 
+		   of the assignment. It is an object of the <em>Variable</em> class.<span lang="es">  </span></p>
+         </li>
+         <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;"><i><b>expression</b></i>: 
+		   Represents the right-hand side of the assignment, that is, the 
+		   expression that calculates the value to be assigned. It is a 
+		   reference to an object of the <em>Expression</em> class. The type of 
+		   the expression must match the type of the variable.</p>
+         </li>
+       </ul>
+	   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	   The <em>returns()</em> method always returns false. The other methods 
+	   simply retrieve and assign field values.</p>
+     </li>
+	 <li>
+	   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	   <b><i>
+       urium.ast.statement.CallStatement</i></b>:<span lang="es"> Describes a 
+	   procedure call statement. It consists of the following fields.</span></p>
+       <ul>
+         <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;"><span lang="es">&nbsp;<strong><em>procedure</em></strong>: 
+		   Contains the reference to the procedure to call.</span></p>
+         </li>
+		   <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		   <strong><em>library</em></strong>: Contains the reference to the 
+		   library to which the procedure belongs</p>
+         </li>
+		   <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		   <strong><em>call</em></strong>: This is the list of expressions to be 
+		   used as arguments to the call.</p>
+         </li>
+       </ul>
+     </li>
+	 <li>
+	   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	   <b><i>
+       urium.ast.statement.BlockStatement</i></b>:<span lang="es"> It is a class 
+	   that describes a block of statements. It is often used as the body of <em>
+	   if</em> and <em>while</em> statements. Its fields are:</span></p>
+       <ul>
+         <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;"><i><b>list</b></i>: 
+		   Contains the list of statements in the block, that is, the list of
+		   <em>Statement</em> objects.</p>
+         </li>
+         <li>
+	       <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" ><i><b>
+           returns</b></i>: It is a flag that indicates whether the statement 
+		   block always reaches an <em>endp</em>. This flag is updated every 
+		   time a new statement is added to the block..</p>
+         </li>
+       </ul>
+	   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+	   The most important method is <em>addStatement(Statement)</em>, which adds 
+	   a new statement to the block and updates the <em>returns</em> flag. The
+	   <em>returns()</em> method gets the value of the flag.</p>
+     </li>
+   </ul>
+   </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber6">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">THE&nbsp; urium.ast.expression 
+	PACKAGE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">The
+	<em><strong>urium.ast.expression</strong></em> package contains classes that 
+	describe the different types of expressions supported by the URIUM language. 
+	These expressions are used as the right-hand side of assignments, as 
+	arguments in procedure calls, and as conditions in <em>if</em> and <em>while</em> 
+	statements. The package contents are as follows:</p>
+    <ul>
+      <li>
+        <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <i><b>urium.ast.expression.Expression</b></i>: This is an abstract class 
+		that serves as a superclass for all classes that describe expressions. 
+		Its only field is <em>type</em>, which contains the data type of the 
+		expression.
+        </p>
+      </li>
+      <li>
+        <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <i><b>urium.ast.expression.OperatorExpression</b></i>: It is an abstract 
+		class that encapsulates all expressions that represent an operation on 
+		other expressions. This class is developed by the <em>BinaryExpression</em> 
+		and <em>UnaryExpression</em> subclasses..
+        </p>
+      </li>
+      <li>
+        <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <i><b>urium.ast.expression.LiteralExpression</b></i>: It is the abstract 
+		class that encapsulates all expressions that represent a literal value. 
+		This class is developed by the subclasses <em>BooleanLiteralExpression</em>,
+		<em>CharLiteralExpression</em>, and <em>IntegerLiteralExpression</em>.
+        </p>
+      </li>
+      <li>
+        <p  style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <i><b>urium.ast.expression.ReferenceExpression</b></i>: 
+        It is an abstract class that encapsulates all expressions that represent 
+		a reference to a variable.
+        </p>
+      </li>      
+      <li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>urium.ast.expression.BinaryExpression</i></b>: This class 
+		describes binary expressions, that is, expressions consisting of one 
+		operator and two operands. The class defines a series of constants to 
+		identify the different binary operators in the URIUM language: logical 
+		operators (AND and OR), arithmetic operators (PLUS, MINUS, PROD, DIV, 
+		and MOD), and comparison operators (EQ, NEQ, GT, GE, LT, and LE). The 
+		components of the class are as follows:</p>
+	    <ul>
+	      <li>
+			<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+			<i><b>op</b></i>: Binary operator code. Its value must be one of the 
+			constants defined in the class.</p>
+	      </li>
+	      <li>
+			<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+			<i><b>left</b></i>: Left-hand operand of the expression. It is a 
+			reference to an <em>Expression</em> object.</p>
+	      </li>
+	      <li>
+			<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+			<i><b>right</b></i>: The right-hand operand of the expression. It is 
+			a reference to an <em>Expression</em> object.</p>
+	      </li>
+	    </ul>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		The class's methods are the getters for these fields. The data type of 
+		the expression is passed in the constructor.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>
+        urium.ast.expression.UnaryExpression</i></b>:<span lang="es"> This class 
+		describes unary expressions, that is, expressions consisting of an 
+		operator and a single operand. The class defines a series of constants 
+		to identify the different unary operators in the URIUM language: the 
+		logical negation operator (NOT) and the unary arithmetic operators (PLUS 
+		and MINUS). It also includes a constant (NONE) to indicate that no unary 
+		operator is applied to the operand. The components of the class are as 
+		follows:</span></p>
+	    <ul>
+	      <li>
+			<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+			<i><b>op</b></i>: Unary operator code. Its value must be one of the 
+			constants defined in the class.</p>
+	      </li>
+	      <li>
+			<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+			<b><i>exp</i></b>: Operand of the expression. It is a reference to 
+			an <em>Expression</em> object.</p>
+	      </li>
+	    </ul>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		The class's methods are the getters for these fields. The data type of 
+		the expression is passed in the constructor.</p>
+	  </li>
+	  <li>
+	    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+        <b><i>urium.ast.expression.BooleanLiteralExpression</i></b>: This class 
+		describes a boolean literal, that is, it represents the constants <em>
+		true</em> and <em>false</em>. Its only field is <strong><em>value</em></strong>, 
+		which stores the literal's value, and its only method is this field's 
+		getter. The class contains two constructors that allow the literal to be 
+		constructed by parsing the lexeme (the strings &quot;<em>true</em>&quot; and &quot;<em>false</em>&quot;) 
+		or directly from the value. The data type of the expression is <em>
+		boolean</em>.</p>
+      </li>
+	  <li>
+	    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>
+        urium.ast.expression.CharLiteralExpression</i></b>: This is the class 
+		dedicated to representing character literals. Its only field is <strong>
+		<em>value</em></strong>, which stores the value of the literal. The 
+		class contains two constructors: one based directly on the literal's 
+		value and another based on the lexeme. To parse the lexeme, the private 
+		method <strong><em>getCharFromString(String)</em></strong> is used, 
+		which analyzes the different ways of representing a character literal 
+		defined in the URIUM language: editable characters (for example, 'a'), 
+		non-editable characters described with the backslash (for example, 
+		'\n'), characters described in octal format (for example, '\071'), and 
+		characters described in Unicode format (for example, '\u007A'). The data 
+		type of the expression is <em>char</em>.</p>
+      </li>
+	  <li>
+	    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>
+        urium.ast.expression.IntegerLiteralExpression</i></b>: Describes integer 
+		literals. Its only field is <strong><em>value</em></strong>, which 
+		stores the literal's value, and its only method is <strong><em>
+		getValue()</em></strong>, which returns the value of that field. 
+		Constructors allow objects to be created from the lexeme (e.g., &quot;325&quot;) 
+		or directly from the value. The data type of the expression is int.</p>
+      </li>
+	  <li>
+	    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>
+        urium.ast.expression.CallParameters</i></b>: It is the only class in the 
+		package that is not a subclass of <em>Expression</em>. It describes the 
+		arguments to a procedure call, that is, the list of expressions used in 
+		the call definition. Its only field is <strong><em>parameter</em></strong>, 
+		which contains a list of expressions. The class's methods allow you to 
+		add expressions to the list ( <strong><em>addParameter()</em></strong> 
+		), get the list ( <strong><em>getParameters()</em></strong> ), and get 
+		the data types of the expressions ( <strong><em>getTypes()</em></strong> 
+		). The latter method is used to locate the procedure version by 
+		considering the data types of the call. (The URIUM language supports 
+		procedure overloading, that is, defining procedures with the same name 
+		that differ in the data types of their arguments.)</p>
+      </li>
+	  <li>
+	    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>
+        urium.ast.expression.VariableExpression</i></b>:<span lang="es"> 
+        Describes an expression formed by referencing a local variable or a 
+		method argument. Its only field is <strong><em>var</em></strong>, which 
+		stores the reference to the <em>Variable</em> object that describes the 
+		variable. The data type of the expression corresponds to the data type 
+		of the variable.  </span></p>
+      </li>
+		<li>
+	    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;" >
+		<b><i>
+        urium.ast.expression.OutVariableExpression</i></b>:<span lang="es"> 
+        Describes an expression formed by referencing a variable used as an 
+		output argument in a call. That is, the address of the variable is 
+		passed in the call so that the called procedure can modify the value of 
+		the referenced variable. Its only field is <strong><em>var</em></strong>, 
+		which stores the reference to the <em>Variable</em> object that 
+		describes the variable. The data type of the expression is a reference 
+		to the data type of the variable.  </span></p>
+      </li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+</td>
+</tr>
+</table>
+
+
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

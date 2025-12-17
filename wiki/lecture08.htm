@@ -1,0 +1,1296 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+    .style1
+    {
+        text-align: justify;
+    }
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 08</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Backend for MIPS32 emulator</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">GOALS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+		<li>Describe the general characteristics of the MIPS32 processor.</li>
+		<li>Describe the use of stack memory at runtime by the URIUM compiler.<br>
+		</li>
+		<li>Describe the procedure call and return process in URIUM.<br></li>
+		<li>Describe the 
+	  assembly code generation process.<br></li>
+		<li>Describe the assembly code prepared 
+	  for native libraries.</li>
+		<li>Describe the URIUM compilation process on the MIPS32 platform.</li>
+	</ul>
+    <p>&nbsp;</p></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">SOURCE CODE</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture08/Lecture08.rar">Access to code</a></li>
+    </ul>
+     
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+  <p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table7">
+        <tr>
+          <td width="100%" bgcolor="#000080">
+            <p align="center">
+              <font color="#FFFFFF"><span style="font-weight: 700">THE MIPS32 
+			  ARCHITECTURE</span></font>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" style="margin-left: 10; margin-right: 10">
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              MIPS (Microprocessor without Interlocked Pipeline Stages) is the 
+			  name of a family of RISC processors developed by
+			  <a href="https://mips.com/">MIPS Technologies</a> (now part of
+			  <a href="https://gf.com/">GlobalFoundries</a>). For decades, MIPS 
+			  ISA-based processors have been the basic hardware of numerous 
+			  workstations, game consoles, automotive systems, and networking 
+			  equipment. In 2021, the company decided to abandon the MIPS 
+			  architecture and focus on RISCV. However, the MIPS32 architecture 
+			  remains a very good starting point for compiler development due to 
+			  the simplicity and power of its instruction set. Some of the most 
+			  interesting features of the MIPS architecture are the following:</p>
+            <ul>
+              <li>
+                <p style="text-align: justify;">
+                  It describes RISC processors, whose code is easier for a 
+				  compiler to generate.</p>
+              </li>
+				<li>
+                <p style="text-align: justify;">
+                  It is very well documented (<a href="lecture08/MD00082-2B-MIPS32INT-AFP-02.50.pdf">Architecture</a>) 
+				  (<a href="lecture08/MD00086-2B-MIPS32BIS-AFP-02.50.pdf">Instruction 
+				  Set</a>) (<a href="lecture08/MD00090-2B-MIPS32PRA-AFP-02.50.pdf">Privileged 
+				  Resource Architecture</a>).</p>
+              </li>
+				<li>
+                <p style="text-align: justify;">
+                  It is a 32/64-bit architecture.</p>
+              </li>
+				<li>
+                <p style="text-align: justify;">
+                  It contains a floating-point unit that supports both 32-bit 
+				  (float) and 64-bit (double) IEEE Standard 754 formats.</p>
+              </li>
+				<li>
+                <p style="text-align: justify;">
+                  We can simulate the assembly code using the QT-SPIM simulator.</p>
+              </li>
+            </ul>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The architecture has a general purpose unit consisting of 32 
+			  32-bit registers ($0 to $31) and a floating point unit with 32 
+			  32-bit registers ($f0 to $f31) that can be used as 16 64-bit 
+			  registers to store data in double format.</p>
+            <p align="center">
+              <img border="2" src="lecture08/mips-architecture.png" alt="MIPS architecture" >
+            </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              General-purpose registers can be used freely in instructions, 
+			  although it should be noted that register $0 is hard-wired to 0 
+			  and register $31 stores the return address when executing a JAL 
+			  (jump and link) instruction. The remaining registers can be used 
+			  freely, although it is recommended to follow a register usage 
+			  convention that specifies the type of data to be stored in each 
+			  register. This convention includes using a series of aliases to 
+			  refer to registers. The following table describes the MIPS 
+			  register usage convention.</p>
+            <p align="center">
+              <img border="2" src="lecture08/mips-registers.png" alt="MIPS registers" width="700" >
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>          
+          </td>
+        </tr>
+      </table>
+  
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table8">
+        <tr>
+          <td width="100%" bgcolor="#000080">
+            <p align="center" class="auto-style3">
+              THE MIPS SPIM SIMULATOR</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" style="margin-left: 10px; margin-right: 10px">
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">&nbsp;</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              SPIM is a simulator that runs programs written in MIPS32 
+			  assembler. The tool was developed by <a href="https://people.epfl.ch/cgi-bin/people?id=240726&op=bio&lang=en&cvlang=en">James Larus</a>  and is freely 
+			  distributed. The newest version is called QT-SPIM and can be 
+			  downloaded from the 
+			  <a href="https://spimsimulator.sourceforge.net/">official website</a>.</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The simulator develops a minimal set of system calls that allow 
+			  access to a console and files. The system call table can be found
+			  <a href="lecture08/SPIM_syscall.pdf">here</a>.</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The Qt-Spim main window displays three panes: the left pane shows 
+			  the contents of the processor registers, the right pane shows the 
+			  contents of memory, and the bottom pane is used to display 
+			  messages. The registers pane has two tabs that allow you to select 
+			  between general-purpose registers (GPR) and floating-point 
+			  registers (FPR). The memory pane also has two tabs that allow you 
+			  to display the text segment (which contains the program 
+			  instructions to be executed) and the data segment (which contains 
+			  the stack and static and dynamic memory).</p>
+            <p align="center">
+              <a href="lecture08/qtspim1.png">
+              <img border="2" src="lecture08/qtspim1.png" alt="QtSpim" width="500" >
+              </a>
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              To run an assembler program, you must first load it (File-&gt;Load 
+			  File). You can then run it completely (F5) or step by step (F10). 
+			  You can also set breakpoints and run the program in jumps. The 
+			  execution process is configured using the option (Simulator -&gt; 
+			  Settings). In our case, the &quot;<em>Enable Delayed Branches</em>&quot; and 
+			  &quot;<em>Enable Delayed Loads</em>&quot; options must be checked to 
+			  simulate the processor realistically. The &quot;<em>Accept Pseudo 
+			  Instructions</em>&quot; option must also be checked, since the 
+			  assembler generated by the URIUM compiler uses some 
+			  pseudo-instructions. It is important to uncheck the &quot;<em>Load 
+			  Exception Handler</em>&quot; option, since the file generated by the 
+			  compiler already contains the exception code.</p>
+            <p align="center">
+              <a href="lecture08/qtspim2.png">
+              <img border="2" src="lecture08/qtspim2.png" alt="QtSpim" width="500" >
+              </a>
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The simulator contains a console where data can be displayed and 
+			  entered.</p>
+            <p align="center">
+              <a href="lecture08/qtspim3.png">
+              <img border="2" src="lecture08/qtspim3.png" alt="QtSpim" width="500" >
+              </a>
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">&nbsp;</p>
+          </td>
+        </tr>
+      </table>
+      
+  <p>&nbsp;</p>
+  
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">MEMORY MANAGEMENT IN URIUM</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	URIUM language is a very simple programming language, both in terms of data 
+	types and the instructions included in the language. Regarding runtime 
+	memory usage, URIUM programs do not use dynamic memory (heap). Therefore, at 
+	runtime, memory management is limited to stack memory. This stack memory is 
+	dedicated to storing procedure activation records. Managing this type of 
+	memory consists of developing the processes for calling a procedure (which 
+	translates into pushing a new activation record onto the stack) and 
+	returning from a procedure (which translates into popping an activation 
+	record).</p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		The URIUM compiler manages stack memory in a decreasing stack mode, 
+		meaning the base of the stack is at a high memory location, and stack 
+		growth is directed toward lower memory areas. The following figure shows 
+		an example of the stack state at a given instant during program 
+		execution:</p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+        <img src="lecture08/stack.png" alt="STACK" width="200">
+        </p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+            The image above shows the state of the stack at a moment in time 
+			when the <em>main()</em> procedure has called procedure <em>A()</em> 
+			during its execution, and this, in turn, has called procedure <em>
+			B()</em>. The space between the activation records of each procedure 
+			is occupied by the values of the parameters of the procedure call. 
+			That is, the space between the record of procedure <em>A()</em> and 
+			that of procedure <em>B()</em> is occupied by the parameters of the 
+			call to procedure <em>B()</em>.</p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+            Stack management is done through two pointers, the frame pointer and 
+			the stack pointer:</p>
+        <ul>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    <strong><em>The frame pointer</em></strong>: Contains the 
+					base address of the procedure's activation record, that is, 
+					the lowest memory address in the record. To access the 
+					record's contents, positive offsets relative to this base 
+					address are used. The value of this pointer is stored in a 
+					MIPS general-purpose register. By convention, register $30 
+					is used to store this value. In assembler, it is normally 
+					denoted $fp, which is actually the alias for register $30.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    <strong><em>The stack pointer</em></strong>: Contains the 
+					memory address of the top of the stack, which is actually 
+					its lowest value since the stack grows &quot;downward.&quot; Its value 
+					usually coincides with the frame pointer of the procedure 
+					being executed, but before calling a new procedure, its 
+					value is modified to reserve the space dedicated to the call 
+					parameters. Its value is stored in a MIPS general-purpose 
+					register, which by convention is $29. In assembler, it is 
+					normally denoted as $sp, which is defined as an alias for 
+					register $29.</p>
+            </li>
+        </ul>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    A procedure's activation record stores the values of the procedure's 
+	temporary and local variables, as well as information about the processor's 
+	state before the procedure's execution. The latter allows the processor's 
+	state to be restored at the end of the procedure's execution. Below is an 
+	example of the contents of a procedure's activation record, as managed by 
+	the URIUM compiler. The example refers to a procedure with two local 
+	variables (<em>var0</em> and <em>var1</em>), three temporary variables (<em>tmp0</em>,
+	<em>tmp1</em>, and <em>tmp2</em>), and three arguments (<em>arg0</em>, <em>
+	arg1</em>, and <em>arg2</em>).</p>
+    
+    <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+    <img src="lecture08/activation_record.png" alt="FRAME"></p>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The frame pointer contains the address of the lowest position in the record. 
+	The URIUM compiler places local variables first. Since all URIUM data types 
+	occupy 4 bytes on MIPS32, the memory locations of each variable are obtained 
+	by incrementing the pointer in 4-byte blocks. Therefore, in this case, the 
+	local variable <em>var0</em> is located at position ($fp+0), while the local 
+	variable <em>var1</em> is located at position ($fp+4).</p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+            Following the local variables are the procedure's temporary 
+			variables. In this case, these are the variables <em>tmp0</em>, <em>
+			tmp1</em>, and <em>tmp2</em>, which are placed at positions ($fp+8), 
+			($fp+12), and ($fp+16).</p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+            Above the temporary variables is the processor state information. 
+			The URIUM compiler does not store the complete processor state 
+			(which would be the value of all its general-purpose registers and 
+			the floating-point unit) because it is not necessary and would also 
+			consume a lot of time during context switches. Instead, only the 
+			values of the registers $fp (which contains the base position of the 
+			activation record of the calling procedure) and $ra (which contains 
+			the return address of the procedure, that is, the position of the 
+			instruction in the calling procedure that must be executed at the 
+			end of the called procedure) are stored.</p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+            The procedure call arguments are not part of its activation record 
+			but are located above it. Since the URIUM compiler knows the size of 
+			the activation record (28 bytes in the example in the figure), it 
+			can access these arguments by offsetting the frame pointer. For 
+			example, the first argument (<em>arg0</em>) is located at position 
+			($fp+28), the second argument (<em>arg1</em>) is located at position 
+			($fp+32), and the third argument (<em>arg2</em>) is located at 
+			position ($fp+36).</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+            &nbsp;</p>
+
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table4">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">THE CALL AND RETURN PROCESSES</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    A procedure call occurs when the execution of a procedure (known as <em>caller</em>) 
+	contains a call to another procedure (known as <em>callee</em>). This 
+	process causes a new activation record to be placed on the stack (that of 
+	the callee procedure) and a context switch to occur, with the code of the 
+	callee procedure being executed.</p>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		The call process developed by the URIUM compiler consists of the 
+		following steps:</p>
+        <ol>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    First, space is reserved on the stack to store the values of 
+					the call's arguments. This consists of shifting the stack 
+					pointer down, opening a space below the caller procedure's 
+					activation record. This action corresponds to the 
+					translation of the PRECALL intermediate code instruction.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/call_step1.png" alt="STEP1" style="height: 159px; width: 580px">
+                </p>
+
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    The instructions required to calculate the values of the 
+					call arguments are then executed, and these are stored in 
+					increasing positions starting from the stack pointer. This 
+					last storage corresponds to the translation of the PARAM 
+					intermediate code instruction. From the caller procedure's 
+					perspective, the arguments are stored in reverse order; that 
+					is, the first argument is placed in the position furthest 
+					from the caller procedure's activation record.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/call_step2.png" alt="STEP2" style="height: 159px; width: 580px">
+                </p>            
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    Once the argument values have been stored, the function call 
+					is executed, which corresponds to the translation of the 
+					CALL intermediate code instruction. This means that a jump 
+					is executed to the beginning instruction of the callee 
+					procedure, which takes control of execution. To perform this 
+					jump, the JAL (jump and link) assembler instruction is used. 
+					This instruction performs a jump and simultaneously stores 
+					the address of the instruction after the jump in the $ra 
+					register. The $ra (return address) register corresponds to 
+					the general-purpose register $31.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    The first action of the callee procedure is to reserve space 
+					on the stack for its activation record. To do this, it 
+					shifts the stack pointer an amount corresponding to the size 
+					of the activation record.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/call_step4.png" alt="STEP4" style="height: 250px; width: 580px">
+                </p> 
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    It then stores the values of the stack pointer ($fp) and 
+					return address ($ra) registers in the activation record of 
+					the callee procedure.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/call_step5.png" alt="STEP5" style="height: 250px; width: 580px">
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    Finally, the frame pointer is assigned the value of the base 
+					address of the new activation record, which corresponds to 
+					the current value of the stack pointer. From this point on, 
+					the instructions corresponding to the code in the callee 
+					procedure are executed.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/call_step6.png" alt="STEP6" style="height: 250px; width: 580px">
+                </p>
+            </li>
+        </ol>
+        
+            <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+			The return process of a procedure occurs when the end of the 
+			procedure or an <em>endp</em> instruction is reached. This process 
+			involves destroying the callee procedure's activation record, 
+			reactivating the caller procedure's record, and returning execution 
+			control to the caller's code. The return process performed by the 
+			URIUM compiler consists of the following steps:</p>
+        <ol>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    Set the stack pointer to the base of the activation record 
+					(i.e., give it the same value as the frame pointer).</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/return_step1.png" alt="STEP1" style="height: 250px; width: 580px">
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    Restore the values of the $fp and $ra registers stored in 
+					the procedure's activation record. That is, place the frame 
+					pointer at the base of the caller procedure's activation 
+					record and store the position of the caller procedure's 
+					instruction to be executed after the call in the $ra 
+					register.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/return_step2.png" alt="STEP2" style="height: 250px; width: 580px">
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    Pop the procedure's activation record by shifting the stack 
+					pointer by the amount corresponding to the record size.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/return_step3.png" alt="STEP4" style="height: 250px; width: 580px">
+                </p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    Jump to the instruction indicated in the $ra register. At 
+					this point, execution control returns to the caller 
+					procedure.</p>
+            </li>
+            <li>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+                    Move the stack pointer, freeing up the space reserved for 
+					the call's arguments. From this point on, the memory returns 
+					to the same state it was in before the call.</p>
+                <p style="margin-right: 10px; margin-left: 10px; text-align: center;">
+                <img src="lecture08/return_step5.png" alt="STEP7" style="width: 580px">
+                </p>
+            </li>
+        </ol>
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE MIPS32 ASSEMBLY CODE REPRESENTATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The URIUM compiler backend dedicated to generating assembly code for the 
+	MIPS32 processor is located in the <strong>urium.none_mips32</strong> 
+	package. The processor registers are described in the <strong>
+	urium.none_mips32.registers</strong> package. The following classes have 
+	been defined to describe these registers:</p>
+    <ul>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>Register</strong>: Class that describes a MIPS processor 
+		register. The class contains a field with the register code and a <em>
+		getName()</em> method that returns the name associated with each 
+		register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RegisterConstants</strong>: Interface that defines the codes 
+		of the MIPS processor registers.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RegisterSet</strong>: Class containing the definition of all 
+		MIPS registers as references to <em>Register</em> objects. Each time an 
+		instruction needs to reference a MIPS register, the static fields of 
+		this class are used. This avoids creating hundreds of duplicate 
+		references to the same registers.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>OffsetRegister</strong>: Auxiliary class that allows to 
+		describe an indirect addressing, that is, a displacement over a 
+		register.</p>                      
+      </li>      
+    </ul>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The MIPS32 assembler instructions are defined in the <strong>
+	urium.none_mips32.instructions</strong> package. The classes used to 
+	represent this assembly code are described below.</p>
+    <ul>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>InstructionSet</strong>: This is an interface that defines 
+		codes associated with each MIPS32 processor instruction. The interface 
+		includes codes for all MIPS32 instructions, although only some of them 
+		are ultimately used by the URIUM compiler.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>Instruction</strong>: Abstract class that describes a MIPS32 
+		processor instruction. Instruction subclasses differ in the way they 
+		address data. The MIPS processor develops three-address assembly code 
+		where addressing can be immediate (a constant value), direct (a 
+		register), or indirect (an offset from a register).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRRInstruction</strong>: Describes a MIPS instruction with 
+		three addresses with direct addressing (three registers). Typically, it 
+		allows instructions to describe operations between two registers, 
+		storing the result in the third register (e.g., the ADDU sum).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRInstruction</strong>: Describes a MIPS instruction that 
+		requires two addresses with direct addressing (two registers).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RInstruction</strong>: Describes a MIPS instruction with a 
+		single address with direct addressing (a register).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRIInstruction</strong>: Describes a three-address MIPS 
+		instruction with two direct addresses (two registers) and one immediate 
+		address (one value). For example, the addition of a value (ADDIU).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RIInstruction</strong>: Describes a two-address MIPS 
+		instruction with direct (a register) and immediate (a value) addressing. 
+		For example, the direct assignment of a value to a register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>LabelInstruction</strong>: Describes a MIPS instruction with an 
+		address corresponding to a label. Typically, it represents unconditional 
+		jumps.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RLInstruction</strong>: Describes a MIPS instruction with two 
+		addresses corresponding to a register and a label. It typically allows 
+		for representing jumps conditioned on the value of a register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRLInstruction</strong>: Describes a MIPS instruction with 
+		three addresses corresponding to two registers and a label. Typically 
+		allows representing jumps conditioned on the comparison between two 
+		registers.</p>     
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RDRInstruction</strong>: Describes a MIPS instruction with 
+		three addresses corresponding to a register and an offset over another 
+		register. For example, memory access instructions (load and store) are 
+		of this type.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>NInstruction</strong>: Describes a MIPS instruction that does 
+		not require any address.</p>    
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>InstructionFactory</strong>: Class containing a set of static 
+		methods for creating MIPS instructions. Only the functions required by 
+		the URIUM compiler have been included, so there are many MIPS 
+		instructions without a corresponding method in this class.</p>  
+      </li>
+    </ul>
+
+     <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">ASSEMBLY CODE GENERATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    In addition to the classes dedicated to representing the MIPS32 assembly 
+	code (discussed in the previous section), the <strong>urium.none_mips32</strong> 
+	package contains two classes dedicated to generating the assembly code: <em>
+	NoneMips32LibraryAssembler</em> and <em>NoneMips32ProcedureAssembler</em>.</p>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The<strong> urium.none_mips32.NoneMips32LibraryAssembler</strong> class 
+	encapsulates the assembly code generated for a URIUM source file. The class 
+	contains a list of <em>NoneMips32ProcedureAssembler</em> objects that 
+	generate the assembly code for each procedure. The constructor receives a
+	<em>LibraryCodification</em> object with the intermediate code description 
+	and constructs the <em>NoneMips32ProcedureAssembler</em> objects from the 
+	corresponding <em>ProcedureCodification</em> objects (which contain the 
+	intermediate code for each procedure). The most important method of the 
+	class is <em>generateFile()</em>, which is responsible for creating the 
+	assembly file (with a &quot;.s&quot; extension) associated with the library.</p>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <strong>urium.none_mips32.NoneMips32ProcedureAssembler</strong> class is 
+	actually responsible for generating the assembly code from the intermediate 
+	code of each procedure described in URIUM. The class contains the fields <em>
+	label</em> (start label of the method), <em>size</em> (size in bytes of the 
+	function activation record), <em>callstack</em> (stack used to store the 
+	size of the memory reserved for the arguments of each function call), and
+	<em>list</em> (which stores the list of assembler instructions associated 
+	with the procedure). The most important method in the class is <em>
+	createAssembler()</em>, which receives the description of the procedure in 
+	intermediate code (<em>ProcedureCodification</em>) as input and generates 
+	the list of instructions in assembler. First, the input code for the 
+	procedure is generated (as described in a previous section). Next, each 
+	instruction is traversed in intermediate code and translated into assembly 
+	code. Finally, the output code for the procedure is generated (as described 
+	in a previous section). The <em>createAssembler()</em> method is responsible 
+	for translating intermediate code instructions into assembly code 
+	instructions. Each type of intermediate code instruction has a corresponding
+	<em>translate...()</em> method that generates the associated assembly code.</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    The URIUM compiler stores all local and temporary variables, as well as 
+	procedure call arguments, in the stack memory. Typically, an intermediate 
+	code instruction is translated into a set of assembler instructions that: 
+	(1) store the operand values in processor registers; (2) execute the 
+	equivalent assembler instruction by storing the result in another processor 
+	register; and (3) copy the result to the stack memory. To solve steps (1) 
+	and (3), the<em> translateLoadIntValue() </em>and <em>
+	translateStoreIntValue()</em>  methods are used. These methods are 
+	described below.</p>
+    <ul>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>translateLoadIntValue():</strong> Generates 
+		assembler instructions to load a value into a processor register. The 
+		function takes into account the different addressing options for the 
+		value. If it is an immediate address (the value is a literal), <em>
+		translateLoadIntLiteral()</em> is executed. If it is a direct address 
+		(the value is in a register or on the stack), <em>
+		translateLoadIntWithDirectAddressing()</em> is executed. If it is an 
+		indirect address (the value is an out variable), <em>
+		translateLoadIntWithIndirectAddressing()</em> is executed.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateLoadIntLiteral():</strong> Generates 
+		assembler instructions to assign a constant value (a literal) to a 
+		register. If the value is expressed in 16 bits, an <strong>li</strong> 
+		instruction is used. If the value requires more than 16 bits, the
+		<strong>lui</strong> and <strong>ori</strong> instructions are used to 
+		load the high and low parts of the literal separately.</p>
+		</li>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong><span>translateLoadIntWithDirectAddressing</span>():</strong> 
+		Generates instructions to load the value of a basic type variable. If 
+		the variable is stored in stack memory, the <strong>lw</strong> 
+		instruction is used. If it is stored in a register, it is not necessary 
+		to load the value.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong><span>translateLoadIntWithIndirectAddressing</span>():</strong> 
+		Generates the instructions to load the value of an out variable (a 
+		reference). If the reference is stored in a register, an <strong>lw</strong> 
+		instruction is used. If the reference is stored on the stack, two
+		<strong>lw</strong> instructions are required.</p>
+		</li>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>translateStoreIntValue():</strong> Generates 
+		instructions for storing a value contained in a register to a variable. 
+		In this case, we can find two types of addressing: direct and indirect. 
+		In the first case, the <em>translateStoreIntWithDirectAddressing()</em> 
+		method is used. In the second case, <em>
+		translateStoreIntWithIndirectAddressing()</em> is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateStoreIntWithDirectAddressing():</strong> 
+		Stores the value contained in a register in the position assigned to a 
+		basic type variable. To do this, use a <strong>sw</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateStoreIntWithIndirectAddressing():</strong> 
+		Stores the value contained in a register in the position assigned to an 
+		out variable. To do this, it uses an <strong>lw</strong> instruction to 
+		obtain the reference address, followed by a <strong>sw</strong> instruction to 
+		store the value.</p>
+		</li>
+    </ul>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Once the auxiliary functions used in steps (1) and (3) have been discussed, 
+	we will explain how each intermediate code instruction is translated into 
+	assembler, assuming that both the operands and the result are stored in 
+	processor registers. 
+    </p>
+    <ul>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>LABEL</strong>: Translated as a label in assembly with the same identifier.</p>
+        </li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ASSIGN</strong>: Generates a load followed by a store.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ADD</strong>: Uses the <strong>addu</strong> assembly instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>SUB</strong>: Uses the <strong>subu</strong> assembly instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>MUL</strong>: To multiply two integers, the 
+		mult instruction is used. This instruction stores the 64-bit result in 
+		two special MIPS registers called HI and LO. To move the 32 least 
+		significant bits to the result register, the <strong>mflo</strong> 
+		instruction is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>DIV</strong>: Integer division in MIPS is 
+		performed with the <strong>div</strong> instruction. This instruction 
+		stores the quotient in the LO register and the remainder in the HI 
+		register. To translate the division, the <strong>mflo</strong> 
+		instruction is added.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>MOD</strong>: To calculate the modulus, i.e., 
+		the remainder of the integer division, the <strong>div</strong> 
+		instruction followed by <strong>mfhi</strong> is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>INV</strong>: To generate a sign change, the 
+		subtraction between 0 and the original value is calculated. The 0 is 
+		obtained from the register $r0 and the subtraction is calculated with
+		<strong>subu</strong>.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>AND</strong>: Logical conjunction is 
+		calculated with the <strong>and</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>OR</strong>: Logical disjunction is 
+		calculated with the <strong>or</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>NOT</strong>: Logical negation is calculated 
+		with the <strong>slti</strong> instruction and the value 1. This 
+		instruction can be understood as &quot;set less than immediately,&quot; meaning it 
+		returns 1 if the register value is less than the indicated value or 0 
+		otherwise.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPEQ</strong>: To perform a conditional jump 
+		based on equality between two registers, the MIPS <strong>beq</strong> 
+		instruction is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPNE</strong>: The conditional jump based on 
+		inequality between two registers is performed with <strong>bne</strong>.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPGT</strong>: For the conditional jump 
+		&quot;greater than,&quot; the <strong>slt</strong> comparison is used first, which generates 1 if the 
+		first register is less than the second. A <strong>bne</strong> jump is 
+		then added by comparing with the $r0 register, which performs the jump 
+		if the comparison result is not 0.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPGE</strong>: For the conditional jump 
+		&quot;greater than or equal,&quot; the equivalent &quot;not less than&quot; is used. For 
+		this, the <strong>slt</strong> instruction is used, followed by a
+		<strong>beq</strong> jump, comparing with register $r0.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPLT</strong>: For the &quot;less than&quot; 
+		conditional jump, the <strong>slt</strong> instruction is used, followed 
+		by a <strong>bne</strong> jump, comparing with register $r0.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPLE</strong>: The &quot;less than or equal&quot; 
+		conditional jump is generated as &quot;not greater than&quot; using the <strong>
+		slt</strong> instruction and the <strong>beq</strong> conditional jump, 
+		comparing with register $r0.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JUMP</strong>: The unconditional jump is 
+		generated with the <strong>j</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMP1</strong>: For the jump conditional on a 
+		value being true, <strong>bne</strong> is used, comparing with register 
+		$r0.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>PARAM</strong>: To store a value as a 
+		parameter at the index position, it is addressed as $sp + index and 
+		stored with <strong>sw</strong>.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>PRECALL</strong>: This instruction was used 
+		to notify of an upcoming procedure call by indicating the number of 
+		parameters in the call. The instruction stores the number of basic type 
+		parameters and the number of out type parameters. On MIPS32, both data 
+		types occupy 4 bytes, but on other platforms, references occupy 8 bytes. 
+		This is translated by modifying the $sp (stack pointer) register to 
+		reserve space for these parameters. As stack memory grows downward, 
+		updating $sp consists of subtracting the indicated space.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>CALL</strong>: This instruction indicates the 
+		procedure being called. To jump to the callee procedure, the <strong>jal</strong> 
+		instruction is executed. Upon return from the call, the $sp register is 
+		updated, freeing up the space reserved for the call parameters.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ENDP</strong>: The end-of-procedure 
+		instruction is translated as a jump to the procedure's return label. The 
+		code that develops the return of the procedure is written from that 
+		label.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>POINTER</strong>: Stores the position of a 
+		variable (its reference) as the value of another variable.</p>
+		</li>
+    </ul>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">THE NATIVE LIBRARIES OF URIUM</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    A programming language, by 	itself, cannot create useful applications unless accompanied by a set of 
+	functions that create a user interface. To incorporate these functions into 
+	URIUM's development, two native libraries have been defined:<strong> 
+	urium.Console</strong> and <strong>urium.Program</strong>. The source code 
+	for these libraries can be found in the <em>include</em> directory of the
+	<em>examples</em> section.</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">	
+    The <strong>Console</strong> library contains procedures for reading and 
+	writing data on the text console. The source code for this library is as 
+	follows:</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ /**
+  * Library of procedures for accessing the console
+  */
+ native urium.Console {
+  
+   /**
+    * Writes a character to the console
+    */
+   public proc print(char c);
+
+   /**
+    * Writes an integer to the console
+    */
+   public proc print(int i);
+
+   /**
+    * Writes an integer to the console in binary format
+    */
+   public proc printBits(int i);
+
+   /**
+    * Writes an integer to the console in hexadecimal format
+    */
+   public proc printHex(int i);
+
+   /**
+    * Reads an integer from the console
+    */  
+   public proc readInt(out int i);
+
+   /**
+    * Read a character from the console
+    */
+   public proc readChar(out char c); 
+ }
+           </pre>
+          </td>
+        </tr>
+      </table>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+	The <strong>Program</strong> library contains procedures for accessing a program's call 
+	arguments and terminating its execution. Its definition in URIUM is as 
+	follows.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ /**
+  * Library of procedures for accessing application arguments
+  */
+ native urium.Program {
+  
+   /**
+    * Gets the number of arguments
+    */
+   public proc getArgCount(out int argc);
+
+   /**
+    * Gets the length of the i-th argument
+    * (Returns -1 if it does not exist)
+    */
+   public proc getArgLength(int index, out int length);
+
+   /**
+    * Gets the i-th argument as an integer
+    * (Returns -1 if it does not exist or is not a number)
+    */
+   public proc getIntArg(int index, out int arg);
+
+   /**
+    * Gets the j-th character of the i-th argument
+    * (Returns '\0' if it does not exist)
+    */  
+   public proc getCharArg(int index, int pos, out char arg);
+
+   /**
+    * Ends the program execution
+    */
+   public proc exit(int code); 
+ }
+           </pre>
+          </td>
+        </tr>
+      </table>
+     
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+  	The URIUM compiler does not generate assembly code for libraries declared as 
+	native; instead, it simply copies their coding into the assembly code of 
+	applications that include them. The assembly code for these libraries uses 
+	system calls to develop its procedures. The system calls included in Qt-Spim 
+	are described <a href="lecture08/SPIM_syscall.pdf">here</a>.</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+	The coding for the <strong>urium.Console</strong> and<strong> urium.Program</strong> 
+	native libraries is located in the <em>libNoneMips32</em> directory. Along 
+	with the assembler files for these libraries, there is also the <em>Kernel.s</em> 
+	file. The assembly code contained in this file must be incorporated into all 
+	compiled applications, as it contains the application's entry point, as well 
+	as the definition of exceptions and other auxiliary definitions.</p>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">EXAMPLES</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The examples directory included in the code for this lecture contains 
+	several examples of applications written in URIUM. These applications can 
+	now be compiled into MIPS32 assembly code and run using the Qt-SPIM 
+	simulator. The compilation process is simple. Just copy the URIUM compiler 
+	(the <em>uriumc.jar</em> file) and the compilation script (the <em>
+	compile.bat</em> file) to the directory where the application is located and 
+	run the script. These files are located in the <em>Compilation_scripts</em> directory. Executing 
+	the script generates the <em>App.s</em> file with the compilation result 
+	(the description of the application in MIPS32 assembly). To run it, load it 
+	into the Qt-SPIM simulator and launch the execution.</p>
+	
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">For 
+	example, the <em>0.1_Argument_analysis</em> directory contains a URIUM 
+	application that analyzes call arguments and, if they are numbers, computes 
+	the minimum, maximum, and average values of these arguments. The source code 
+	contained in the <em>Main.ur</em> file is as follows.</p>
+	
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ import urium.Console as Console;
+ import urium.Program as Program;
+
+ /**
+ * Application using external arguments
+ */
+ library Main {
+
+  /**
+   * Application start procedure
+   */
+   public proc main() {
+     int argc;
+     Program.getArgCount(out argc);
+
+     int index = 0;
+     int arg;
+     int count = 0;
+     int min = -1;
+     int max = -1;
+     int acc = 0;
+     while(index &lt; argc)
+     {
+       Program.getIntArg(index,out arg);
+       if(arg &gt;= 0)
+       {
+         count = count + 1;
+         if(arg &lt; min || min &lt; 0) min = arg;
+         if(arg &gt; max) max = arg;
+         acc = acc + arg;
+       }
+       index = index +1;
+     }
+
+     printCount(count);
+     printMin(min);
+     printMax(max);
+     printMean(acc/count);
+   }
+
+   /**
+    * Writes the argument count
+    */
+   private proc printCount(int count)
+   {
+     Console.print('c');
+     Console.print('o');
+     Console.print('u');
+     Console.print('n');
+     Console.print('t');
+     Console.print('=');
+     Console.print(count);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument minimum
+    */
+   private proc printMin(int min)
+   {
+     Console.print('m');
+     Console.print('i');
+     Console.print('n');
+     Console.print('=');
+     Console.print(min);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument maximum
+    */
+   private proc printMax(int max)
+   {
+     Console.print('m');
+     Console.print('a');
+     Console.print('x');
+     Console.print('=');
+     Console.print(max);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument mean
+    */
+   private proc printMean(int mean)
+   {
+     Console.print('m');
+     Console.print('e');
+     Console.print('a');
+     Console.print('n');
+     Console.print('=');
+     Console.print(mean);
+     Console.print('\n');
+   }
+ }
+          </pre>
+          </td>
+        </tr>
+      </table>
+      
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">The 
+	compilation process generates the App.s file, which contains the assembler. 
+	A snippet of this code is shown below.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ ...
+
+ #------------------------------------------------------------------
+ # Main.main
+ #------------------------------------------------------------------
+
+	.globl	Main.main
+	.ent	Main.main
+ Main.main:
+	addiu $sp $sp 0xffffff98
+	sw $ra 100($sp)
+	sw $fp 96($sp)
+	or $fp $0 $sp
+	addiu $sp $sp 0xfffffffc
+	addiu $v0 $fp 0x0
+	sw $v0 28($fp)
+	nop
+	lw $a0 28($fp)
+	nop
+	sw $a0 0($sp)
+	jal urium.Program.getArgCount.out_int
+	nop
+	addiu $sp $sp 0x4
+	ori $a0 $0 0x0
+	sw $a0 32($fp)
+	nop
+	lw $a0 32($fp)
+	nop
+	sw $a0 4($fp)
+	ori $a0 $0 0x0
+	sw $a0 36($fp)
+	nop
+	lw $a0 36($fp)
+	nop
+	sw $a0 12($fp)
+	ori $a0 $0 0x1
+	sw $a0 40($fp)
+	nop
+	lw $a0 40($fp)
+	nop
+	subu $v0 $0 $a0
+	sw $v0 44($fp)
+	nop
+	
+ ...
+          </pre>
+          </td>
+        </tr>
+      </table>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">To 
+	run the application, open Qt-Spim with the configuration described at the 
+	beginning of this lecture. Next, load the <em>App.s</em> file and configure 
+	the call arguments. Enter the parameters by selecting &quot;<em>Run parameters</em>&quot; 
+	from the &quot;<em>Simulator</em>&quot; menu. The parameter entry window appears 
+	below, with the values &quot;10 20 30 40 50&quot; entered.</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture08/qtspim_parameters.png" alt="PARAMETERS">
+	</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">When 
+	running the application with these input parameters, the QtSpim console 
+	displays the following output.</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture08/qtspim_result.png" alt="PARAMETERS">
+	</p>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+
+
+</td>
+</tr>
+</table>
+
+
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

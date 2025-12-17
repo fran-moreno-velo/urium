@@ -1,0 +1,900 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style5 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 07</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Intermediate code generation</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style5">GOALS</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+      <li>Describe the URIUM compiler's intermediate code instructions.</li>
+		<li>Describe the intermediate code generation process in the URIUM 
+		compiler.</li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style5">SOURCE CODE</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture07/Lecture07.rar">Access to code</a></li>
+    </ul>
+     <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	 classes related with the intermediate code generation in the URIUM compiler 
+	 are contained in the <strong><em>urium.code</em></strong> package.</p>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">INTERMEDIATE CODE IN THE URIUM COMPILER</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	URIUM compiler uses its own intermediate code consisting of a total of 24 
+	instructions. It's a three-adress code where addresses are stored in the <em>target</em>,
+	<em>source1</em>, and <em>source2</em> fields. The instructions used are as 
+	follows:</p>
+
+    <ul>
+      <li>
+        <p>LABEL</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a label that can be jumped to. The <em>target</em> field stores 
+	the label's identifier.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>ASSIGN</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes an assignment statement. The <em>target</em> field stores a 
+	reference to the target variable, and the <em>source1</em> field stores the 
+	source of the assignment, which can be a reference to a variable or a 
+	constant value (a literal).</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>ADD</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes an addition instruction. The <em>target</em> field stores the 
+	reference to the destination variable, and the <em>source1</em> and <em>
+	source2</em> fields store the operands.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>SUB</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a subtraction instruction. The <em>target</em> field stores the 
+	reference to the destination variable, and the <em>source1</em> and <em>
+	source2</em> fields store the operands.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>MUL</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a multiplication instruction. The <em>target</em> field stores the 
+	reference to the destination variable, and the <em>source1</em> and <em>
+	source2</em> fields store the operands.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>DIV</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a division instruction. The <em>target</em> field stores the 
+	reference to the destination variable, and the <em>source1</em> and <em>
+	source2</em> fields store the operands.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>MOD</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes an instruction that computes the remainder of an integer division. 
+	The <em>target</em> field stores the reference to the destination variable, 
+	and the <em>source1</em> and <em>source2</em> fields store the operands.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>INV</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a sign change instruction. The <em>target</em> field stores the 
+	reference to the target variable, and the <em>source1</em> field stores the 
+	operand.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>AND</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a logical conjunction (and) instruction. The <em>target</em> field 
+	stores the reference to the destination variable, and the <em>source1</em> 
+	and <em>source2</em> fields store the operands.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>OR</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a logical disjunction (or) instruction. The <em>target</em> field 
+	stores the reference to the destination variable, and the <em>source1</em> 
+	and <em>source2</em> fields store the operands.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>NOT</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a logical negation (not) instruction. The <em>target</em> field 
+	stores the reference to the destination variable, and the <em>source1</em> 
+	field stores the operand.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JUMP</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes an unconditional jump instruction. The <em>target</em> field 
+	stores the jump label identifier.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JMPEQ</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a jump instruction conditional on equality between the operands. 
+	The <em>target</em> field stores the jump label. The <em>source1</em> and
+	<em>source2</em> fields contain references to the data to be compared. If
+	<em>source1</em> is equal to <em>source2</em>, the jump occurs.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JMPNE</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a jump instruction conditional on unequality between the operands. 
+	The <em>target</em> field stores the jump label. The <em>source1</em> and
+	<em>source2</em> fields contain references to the data to be compared. If
+	<em>source1</em> is different from <em>source2</em>, the jump occurs.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JMPGT</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a jump instruction conditional on a &quot;greater than&quot; comparison. The
+	<em>target</em> field stores the jump label. The <em>source1</em> and
+	<em>source2</em> fields contain references to the data to be compared. If
+	<em>source1</em> is greater than <em>source2</em>, the jump occurs.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JMPGE</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a jump instruction conditional on a &quot;greater than or equal&quot; 
+	comparison. The <em>target</em> field stores the jump label. The <em>source1</em> 
+	and <em>source2</em> fields contain references to the data to be compared. 
+	If <em>source1</em> is greater than or equal to <em>source2</em>, the jump 
+	occurs.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JMPLT</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a jump instruction conditional on a &quot;less than&quot; comparison. The
+	<em>target</em> field stores the jump label. The <em>source1</em> and <em>
+	source2</em> fields contain references to the data to be compared. If <em>
+	source1</em> is less than <em>source2</em>, the jump occurs.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JMPLE</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a jump instruction conditional on a &quot;less than or equal&quot; 
+	comparison. The <em>target</em> field stores the jump label. The <em>source1</em> 
+	and <em>source2</em> fields contain references to the data to be compared. 
+	If <em>source1</em> is less than or equal to <em>source2</em>, the jump 
+	occurs.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>JMP1</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a jump instruction conditioned on a Boolean value. The <em>target</em> 
+	field stores the jump label. The <em>source1</em> field contains the 
+	reference to the Boolean data. If <em>source1</em> is 1 (encoded as true), 
+	the jump will occur.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>PARAM</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes an instruction for storing a procedure call parameter. Before 
+	calling the procedure, the parameters must be evaluated and their values 
+	stored. The <em>target</em> field contains the value to be stored. The <em>
+	source1</em> and <em>source2</em> fields contains the parameter position in 
+	the procedure call.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>CALL</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a procedure call instruction. The <em>target</em> field contains 
+	the procedure identifier (the procedure's start label). The call parameters 
+	must be stored in advance using PARAM instructions.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>ENDP</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes the termination instruction for a procedure. It does not require 
+	the use of any fields.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p>PRECALL</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a procedure call preparation instruction. The <em>target</em> 
+	field contains the number of basic type parameters the call will have. The
+	<em>source1</em> field contains the number of reference type parameters the 
+	call will have. The procedure call process begins by indicating the number 
+	of parameters for the call (PRECALL), then the parameter values are 
+	calculated and stored in their location (PARAM), and finally the call is 
+	made (CALL).</p>
+    </blockquote>
+        <ul>
+      <li>
+        <p>POINTER</p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes an instruction that obtains a reference (the address) to a 
+	variable. The <em>target</em> field contains the destination variable. The
+	<em>source1</em> field contains the variable to be referenced.</p>
+    </blockquote>
+
+     <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">CLASSES USED TO REPRESENT INTERMEDIATE CODE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    The <strong><em>urium.code</em></strong> package contains the following 
+	classes dedicated to representing instructions in intermediate code:</p>
+
+    <ul>
+      <li>
+        <p><strong>urium.code.CodeConstants</strong></p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    This is an interface that defines the constants that identify the types of 
+	instructions in the intermediate code.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p><strong>urium.code.CodeAddress</strong></p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Abstract class that describes an address in three-address code. Addresses 
+	used in instructions can be labels, literals (constant values), and variable 
+	references. 
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p><strong>urium.code.CodeLabel</strong></p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Subclass of CodeAddress. Defines a label that can be used as a field in 
+	intermediate code instructions.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p><strong>urium.code.CodeLiteral</strong></p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Subclass of CodeAddress. Defines a constant value (a literal) that can be 
+	used as a field in intermediate code instructions. The constant value is 
+	stored in hexadecimal format.
+    </p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p><strong>urium.code.CodeVariable</strong></p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Subclass of CodeAddress. Defines a reference to a variable that can be used 
+	as a field in intermediate code instructions. Intermediate code generation 
+	transforms variable names to avoid duplication. The original name of the 
+	variable (initially described in a <strong><em>urium.ast.struct.Variable</em></strong> 
+	object) is stored in the <em>des</em> field. The new name is stored in the
+	<em>name</em> field. The names of variables in intermediate code are &quot;<em>local_i</em>&quot; 
+	(for local variables), &quot;<em>arg_i</em>&quot; (for arguments), and &quot;<em>tmp_i</em>&quot; 
+	(for temporary variables). The class also contains information needed by the 
+	assembly code generator (the position it will occupy in the activation 
+	register or the processor register in which it will be stored).</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p><strong>urium.code.CodeInstruction</strong></p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Class that represents an instruction in intermediate code. The <em>kind</em> 
+	field indicates the type of instruction (one of the codes defined in 
+	CodeConstants). The <em>target</em>, <em>source1</em>, and <em>source2</em> 
+	fields contain the three addresses of the instruction. The comment field is 
+	used to generate a comment associated with the instruction, intended to 
+	describe it in a more interpretable format.</p>
+    </blockquote>
+
+    <ul>
+      <li>
+        <p><strong>urium.code.CodeInstructionList</strong></p>
+      </li>
+    </ul>
+    <blockquote>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Describes a list of instructions. This class eases the generation of 
+	intermediate code by developing the concatenation of instruction lists or 
+	adding new instructions to the list.</p>
+    </blockquote>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">INTERMEDIATE CODE 
+	GENERATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%">
+    <p>&nbsp;</p>
+   <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The URIUM compiler's semantic analyzer generates a <strong>
+	urium.ast.struct.LibraryDeclaration</strong> class that stores all 
+	recognized information in a source file written in this language. The goal 
+	of the intermediate code generator is to transform this representation into 
+	a new representation based on intermediate code instructions. The result of 
+	the generation will be a new <strong>urium.code.LibraryCodification</strong> 
+	object.</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <strong>urium.code.LibraryCodification</strong> class contains the 
+	fields <em>name</em>, which stores the name of the library, <em>imported</em>, 
+	which contains the list of imported libraries, and <em>procedure</em>, which 
+	stores a representation of the procedures that have already been transformed 
+	into intermediate code. In addition to the <em>get..()</em> methods, the 
+	class contains the <em>print()</em> method, which generates a description of 
+	the intermediate code to a file.</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <strong>urium.code.ProcedureCodification</strong> class describes the 
+	intermediate code associated with a procedure in a library written in URIUM. 
+	The <em>label</em> field stores the label that identifies the procedure and 
+	is placed as the initial label in the code. The <em>labelcount</em> and <em>
+	tmpcount</em> fields are counters used to generate label names and temporary 
+	variables when generating the code. The <em>arg</em> and <em>var</em> fields 
+	contain references to the function's arguments and variables (local and 
+	temporary). The <em>astvar</em> field maintains the description of variables 
+	contained in the abstract syntax tree. This list is maintained to locate the
+	<strong>CodeVariable</strong> object associated with each <strong>Variable</strong> 
+	object in the abstract syntax tree. Finally, the <em>list</em> field 
+	contains the list of instructions that the procedure executes in 
+	intermediate code. In addition to the get..() methods, the class contains 
+	the print() method, which generates a representation of the function on a 
+	file.
+    </p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    Intermediate code generation is performed in the private methods of the
+	<strong>urium.code.ProcedureCodification</strong> class. The class contains 
+	several methods dedicated to generating intermediate code associated with 
+	the different structures of the abstract syntax tree. These methods include 
+	generic methods for generating code associated with a statement, an 
+	expression, and a condition. The <em>generateCodeOfStatement() </em>method 
+	obtains the code associated with a statement in the form of a <strong>
+	CodeInstructionList</strong> object. The <em>generateCodeForExpression()</em> 
+	method stores the code associated with an expression in the codelist 
+	parameter and returns a reference to the variable that stores the result of 
+	the expression. The <em>generateCodeForCondition()</em> method obtains the 
+	code associated with a condition and requires the <em>LabelTrue</em> and <em>
+	LabelFalse</em> labels to be passed as arguments to the call.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    To enable the compiler to generate intermediate code files, the <strong>
+	urium.UriumCompiler</strong> class has been modified. A new <em>
+	createCodeFiles()</em> method has been added to this class, which generates 
+	the intermediate code associated with the various libraries analyzed during 
+	the compilation process.</p>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style5">CODE STRUCTURES</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    Intermediate code generation iterates through the instructions of each 
+	procedure (<strong>Statement</strong> objects defined in the body of the
+	<strong>Procedure</strong> objects), generating a translation of these 
+	instructions into intermediate code (<strong>CodeInstructionList</strong>). 
+	Performing this translation sometimes requires creating new jump labels 
+	(calls to the <em>getNewLabel()</em> method) or new temporary variables 
+	(calls to <em>getNewTemp()</em>). The structure of the intermediate code 
+	generated as a translation of the different instructions, expressions, and 
+	conditions used in URIUM is described below.</p>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops the IF-THEN statement</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-01.png" alt="IF-THEN" width="50%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops the IF-THEN-ELSE statement</strong></p>
+        <p class="auto-style2"><img src="lecture07/lecture07-02.png" alt="IF-THEN-ELSE"  width="50%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops the WHILE statement</strong></p>
+        <p class="auto-style2"><img src="lecture07/lecture07-03.png" alt="WHILE"  width="50%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops the ENDP statement</strong></p>
+        <p class="auto-style2"><img src="lecture07/lecture07-04.png" alt="ENDP"  width="50%"></p>
+      </li>
+    </ul>
+     <ul>
+      <li>
+        <p><strong>Code structure that develops the ASSIGNMENT statement</strong></p>
+        <p class="auto-style2"><img src="lecture07/lecture07-05.png" alt="ASSIGN" width="50%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a procedure call statement</strong></p>
+        <p class="auto-style2"><img src="lecture07/lecture07-06.png" alt="CALL" width="50%"></p>
+         <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        The PRECALL instruction allocates memory for the call's arguments. 
+		Each argument must generate the code associated with computing its value 
+		and a PARAM instruction. The CALL instruction contains the start label 
+		of the called procedure.</p>
+      </li>
+    </ul>
+
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a LITERAL expression (of type
+		<em>int</em>, <em>char</em> or <em>boolean</em>)</strong></p>
+		<p class="auto-style2">
+		<img src="lecture07/lecture07-07.png" alt="LITERAL" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a BOOLEAN expression</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-08.png" alt="BOOLEAN" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a unary arithmetic expression (a 
+		sign change)</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-09.png" alt="INV" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a binarty arithmetic expression</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-10.png" alt="BINARY" width="67%"></p>
+        <p>The <em>op</em> instruction can be ADD, SUB, MUL, DIV or MOD.</p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a reference to a variable</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-11.png" alt="VAR" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a reference to address of a variable</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-19.png" alt="OUT VAR" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a condition formed by the 
+		literal TRUE</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-12.png" alt="TRUE" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a condition formed by the 
+		literal FALSE</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-13.png" alt="FALSE" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a condition formed by the 
+		negation of another condition</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-14.png" alt="NOT" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a condition formed by the AND 
+		operation between two conditions</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-15.png" alt="AND" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a condition formed by the OR 
+		operation between two conditions</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-16.png" alt="OR" width="67%"></p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a condition formed by the 
+		comparison between two expressions</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-17.png" alt="COND" width="67%"></p>
+        <p>La instrucción <em>op</em> puede ser JMPEQ, JMPNE, JMPGT, JMPGE, JMPLT o JMPLE.</p>
+      </li>
+    </ul>
+    <ul>
+      <li>
+        <p><strong>Code structure that develops a condition formed by a Boolean 
+		expression</strong></p>
+        <p class="auto-style2">
+		<img src="lecture07/lecture07-18.png" alt="BOOL" width="67%"></p>
+      </li>
+    </ul>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber5">
+          <tr>
+              <td width="100%" bgcolor="#000080">
+                  <p align="center">
+                      <span style="background-color: #000080">
+                          <font color="#FFFFFF">
+                              <span style="font-weight: 700">
+                                  EXAMPLES
+                              </span>
+                          </font>
+                      </span>
+                  </p>
+              </td>
+          </tr>
+          <tr>
+              <td width="100%" style="margin-left: 10; margin-right: 10">
+                  <p>&nbsp;</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The source code for this lecture 
+					  includes the '<em>examples</em>' directory with several examples 
+					  of applications programmed in URIUM. The '<em>Compilation_scripts</em>' 
+					  subdirectory includes the compiler ('<em>urimc.jar</em>') 
+					  and a script file ('<em>compile.bat</em>') with the 
+					  execution command. To run the compilation, copy these two 
+					  files to the application directory and run the script. </p>
+					  
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      For example, the '3+2' directory contains an application 
+					  written in URIUM. The contents of the '<em>Main.ur</em>' 
+					  file are as follows.</p>
+			      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ import urium.Console as Console;
+
+ /**
+  * Application that shows the result of a sum
+  */
+ library Main {
+
+ /**
+  * Application start procedure
+  */
+ public proc main() {
+   int a=3;
+   int b=2;
+   int c= a+b;
+
+   Console.print(a);
+   Console.print(' ');
+   Console.print('+');
+   Console.print(' ');
+   Console.print(b);
+   Console.print(' ');
+   Console.print('=');
+   Console.print(' ');
+   Console.print(c);
+ }
+}           </pre>
+          </td>
+        </tr>
+      </table>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The compiler generates the intermediate code file '<em>Main.code</em>' 
+					  with the following content:</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+            
+; %%%%%%%%%%%%%%%
+; Main.main
+; %%%%%%%%%%%%%%%
+Main.main:
+assign tmp_0, 0x3                              ; tmp_0 &lt;- 3
+assign local_0, tmp_0                          ; a &lt;- tmp_0
+assign tmp_1, 0x2                              ; tmp_1 &lt;- 2
+assign local_1, tmp_1                          ; b &lt;- tmp_1
+add tmp_2, local_0, local_1                    ; tmp_2 &lt;- a + b
+assign local_2, tmp_2                          ; c &lt;- tmp_2
+precall 0x4, 0x0
+param local_0, 0x0, 0x0                        ; param[0] &lt;- a
+call urium.Console.print.int                   ; urium.Console.print.int()
+precall 0x4, 0x0
+assign tmp_3, 0x20                             ; tmp_3 &lt;- 32
+param tmp_3, 0x0, 0x0                          ; param[0] &lt;- tmp_3
+call urium.Console.print.char                  ; urium.Console.print.char()
+precall 0x4, 0x0
+assign tmp_4, 0x2b                             ; tmp_4 &lt;- 43
+param tmp_4, 0x0, 0x0                          ; param[0] &lt;- tmp_4
+call urium.Console.print.char                  ; urium.Console.print.char()
+precall 0x4, 0x0
+assign tmp_5, 0x20                             ; tmp_5 &lt;- 32
+param tmp_5, 0x0, 0x0                          ; param[0] &lt;- tmp_5
+call urium.Console.print.char                  ; urium.Console.print.char()
+precall 0x4, 0x0
+param local_1, 0x0, 0x0                        ; param[0] &lt;- b
+call urium.Console.print.int                   ; urium.Console.print.int()
+precall 0x4, 0x0
+assign tmp_6, 0x20                             ; tmp_6 &lt;- 32
+param tmp_6, 0x0, 0x0                          ; param[0] &lt;- tmp_6
+call urium.Console.print.char                  ; urium.Console.print.char()
+precall 0x4, 0x0
+assign tmp_7, 0x3d                             ; tmp_7 &lt;- 61
+param tmp_7, 0x0, 0x0                          ; param[0] &lt;- tmp_7
+call urium.Console.print.char                  ; urium.Console.print.char()
+precall 0x4, 0x0
+assign tmp_8, 0x20                             ; tmp_8 &lt;- 32
+param tmp_8, 0x0, 0x0                          ; param[0] &lt;- tmp_8
+call urium.Console.print.char                  ; urium.Console.print.char()
+precall 0x4, 0x0
+param local_2, 0x0, 0x0                        ; param[0] &lt;- c
+call urium.Console.print.int                   ; urium.Console.print.int()
+;
+;
+
+            </pre>
+          </td>
+        </tr>
+      </table>				 
+                      &nbsp;
+    </td>
+  </tr>
+</table>
+
+</td>
+</tr>
+</table>
+
+
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

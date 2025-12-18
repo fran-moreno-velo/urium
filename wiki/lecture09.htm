@@ -1,0 +1,1193 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+    .style1
+    {
+        text-align: justify;
+    }
+.auto-style4 {
+	text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 09</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Backend for MS-Windows on Intel64</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">GOALS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+		<li>Describe the general features of the Intel64 architecture.</li>
+		<li>Describe the 64-bit version of the Microsoft Macro Assembler (MASM).<br>
+		</li>
+		<li>Describe the 
+	  assembly code generation process.<br></li>
+		<li>Describe the assembly code prepared 
+	  for native libraries.</li>
+		<li>Describe the URIUM compilation process on the MS-Windows platform.</li>
+	</ul>
+    <p>&nbsp;</p></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">SOURCE CODE</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture09/Lecture09.rar">Access to code</a></li>
+    </ul>
+     
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+  <p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table7">
+        <tr>
+          <td width="100%" bgcolor="#000080">
+            <p align="center">
+              <font color="#FFFFFF"><span style="font-weight: 700">THE INTEL64 
+			  ARCHITECTURE</span></font>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" style="margin-left: 10; margin-right: 10">
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              <a href="https://intel.com/">Intel</a> is the manufacturer of the 
+			  most widely used processors in personal computers. Founded in 
+			  1968, the company began designing the first commercial 
+			  microprocessor, the Intel 4004, in 1971 and achieved global 
+			  expansion in 1981, when IBM decided to use its 8088 processor as 
+			  the basis for its IBM PC. Since then, Intel has continued to 
+			  evolve its technology, developing the x86 processor family in its 
+			  various versions.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The<a href="lecture09/325462-sdm-vol-1-2abcd-3abcd.pdf"> Intel64 
+			  architecture</a> was released in 2003. Initially developed by AMD 
+			  (the architecture is also known as AMD64 and was first used in the 
+			  AMD Opteron processor) it was adapted by Intel from its Pentium 4 
+			  processor. The architecture is a 64-bit extension of the 32-bit 
+			  x86 architecture and maintains backward compatibility with both 
+			  32-bit and 16-bit instruction sets.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The architecture consists of sixteen 64-bit general-purpose 
+			  registers, eight 80-bit floating-point registers, and sixteen 
+			  128-bit registers for vector operations. Segment registers and 
+			  status registers are also included. The architecture allows 
+			  addressing up to 2^64 bytes of virtual memory and 2^48 bytes of 
+			  physical memory, depending on the implementation. A diagram of 
+			  the registers in this architecture is shown below.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+			<img src="lecture09/Intel64_registers.png" alt="REGISTERS" width="650">
+            </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              Backward compatibility allows registers to be accessed in 32-bit, 
+			  16-bit, and 8-bit modes. General-purpose registers can be accessed 
+			  as 64-bit registers using the names RAX, RBX, RCX, RDX, RBP, RSI, 
+			  RDI, RSP, R8, R9, R10, R11, R12, R13, R14, and R15. The least 
+			  significant 32 bits of these registers can be used as 32-bit 
+			  registers named EAX, EBX, ECX, EDX, EBP, ESI, EDI, ESP, R8D, R9D, 
+			  R10D, R11D, R12D, R13D, R14D, and R15D. Similarly, the 16 least 
+			  significant bits can be used as 16-bit registers named AX, BX, CX, 
+			  DX, BP, SI, DI, SP, R8W, R9W, R10W, R11W, R12W, R13W, R14W, and 
+			  R15W. The 8 least significant bits of the general-purpose 
+			  registers can be used as AL, BL, CL, DL, BPL, SIL, DIL, SPL, R8B, 
+			  R9B, R10B, R11B, R12B, R13B, R14B, and R15B. For compatibility 
+			  with the 16-bit instruction set, the registers AH, BH, CH, and DH, 
+			  which denote bits 8 through 15 of the RAX, RBX, RCX, and RDX 
+			  registers, are also accepted.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The extended functionality registers can be used as 64-bit 
+			  registers (MMX0 to MMX7) or as 80-bit registers (FPR0 to FPR7). 
+			  Floating-point instructions are executed in these registers. These 
+			  registers can support different extended instruction sets, known 
+			  as SSE1, SSE2, SSE3, and SSE4, which have been added over the 
+			  different evolutions of the X86 family of processors. The extended 
+			  instruction set also uses the sixteen 128-bit registers to perform 
+			  SIMD (Single Instruction Multiple Data) instructions on packed 
+			  data, which accelerates vector instructions. Recent versions of 
+			  the architecture have added 256-bit registers called YMM and 
+			  512-bit registers called ZMM.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The URIUM language does not support floating-point data types or 
+			  extended type instructions. Its basic data types (<em>int</em>, 
+			  <em>char</em>, and 
+			  <em>boolean</em>) are stored in 32 bits, and references (values of 
+			  <em>out</em> 
+			  variables) occupy 64 bits on this architecture. Therefore, the 
+			  URIUM compiler uses only general-purpose registers in its 32- and 
+			  64-bit versions.</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>          
+          </td>
+        </tr>
+      </table>
+      
+  <p>&nbsp;</p>
+  
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">THE INTEL64 ASSEMBLER</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	URIUM compiler backend for MS-Windows uses the 64-bit version of MASM 
+	(Microsoft Macro Assembler). This version is called <em>ml64</em> and is 
+	distributed freely, for example with the Visual Studio development 
+	environment. The assembler instructions use the standard Intel syntax (other 
+	assemblers, such as GAS, use the AT&amp;T syntax). In this syntax, register 
+	names are written without any prefix, and the instructions place the target 
+	address first, followed by the source address.
+	<span class="HwtZe" jsaction="mouseup:Sxi9L,BR6jm; mousedown:qjlr0e" jsname="jqKxS" lang="en">
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	For example, the instruction</span></span></span></p>
+	<p style="margin-right: 10px; margin-left: 10px; " class="auto-style4">
+	<strong>mov 
+	ebx eax</strong></p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	<span class="HwtZe" jsaction="mouseup:Sxi9L,BR6jm; mousedown:qjlr0e" jsname="jqKxS" lang="en">
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	copies the value of the EAX register to the EBX register.</span></span>
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	To introduce indirect addressing, the base register plus the offset are 
+	enclosed in brackets.</span></span>
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	It is common to also include the size of the data being referenced.</span></span></span>
+	<span class="HwtZe" jsaction="mouseup:Sxi9L,BR6jm; mousedown:qjlr0e" jsname="jqKxS" lang="en">
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	For example, the instruction</span></span></span></p>
+	<p style="margin-right: 10px; margin-left: 10px; " class="auto-style4">
+	<strong>mov 
+	eax,&nbsp; dword ptr [rsp + 16]</strong></p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	<span class="HwtZe" jsaction="mouseup:Sxi9L,BR6jm; mousedown:qjlr0e" jsname="jqKxS" lang="en">
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	represents an instruction that loads a 32-bit value located at the address 
+	stored in the RSP register plus a 16-byte offset into the EAX register.</span></span>
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	The allowed data types are <strong>byte ptr</strong> (8 bits), <strong>word 
+	ptr</strong> (16 bits), <strong>dword ptr</strong> (32 bits), and <strong>
+	qword ptr</strong> (64 bits).</span></span></span></p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	The data section is indicated by the &quot;.data&quot; directive. This section 
+	describes the contents of the application's static memory, including global 
+	constants and variables. The format for defining these variables consists of 
+	an identifier, followed by the data type and the sequence of values assigned 
+	to the definition. The formats used can be <strong>db</strong> (byte),
+	<strong>dw</strong> (16 bits), <strong>dd</strong> (32 bits), and <strong>dq</strong> 
+	(64 bits). Values can be included in decimal, hexadecimal (starting with the 
+	prefix '0x' or ending with the letter 'h'), octal (starting with the prefix 
+	'0o' or '0q' or ending with the letter 'o' or 'q'), and binary (starting 
+	with the prefix '0b' or ending with the letter 'b'). For example, the 
+	following statement declares a vector of 32-bit integers with the values 1 
+	through 5.</p>
+	<p style="margin-right: 10px; margin-left: 10px; " class="auto-style4">
+	<strong>my_vector dd&nbsp; 1, 2, 3, 4, 5 </strong></p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	The variable identifier allows you to obtain the base address where its 
+	value is stored. This address can be assigned to a register using the
+	<strong>lea</strong> pseudo-instruction. For example, the following 
+	instruction stores the memory address of the variable <em>my_vector</em> in 
+	the RAX register.</p>
+	<p style="margin-right: 10px; margin-left: 10px; " class="auto-style4">
+	<strong>lea rax, [my_vector]</strong></p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	Constants are defined by their identifier, followed by 'equ' and the value. 
+	For example, the following declaration sets the constant <em>vlength</em> to 
+	256.</p>
+	<p style="margin-right: 10px; margin-left: 10px; " class="auto-style4">
+	<strong>vlength equ 0FFh</strong></p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+	The procedure code is described in the &quot;.code&quot; section. The RSP register is 
+	used as the stack pointer, while the RBP register is used as the frame 
+	pointer (i.e., the base address of the procedure's activation record). The 
+	code for each procedure has the following structure.&nbsp;</p>
+	<p style="margin-right: 10px; margin-left: 10px; " class="auto-style4">
+	<img src="lecture09/procedure_assembler.png" alt="Procedure assembler" width="300" >
+	</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">In 
+	operating systems, system calls are used when a running process needs to 
+	access a resource or execute a system service. In the old DOS operating 
+	system, these system calls were translated into software interrupts using 
+	the 21h code for the <strong>int</strong> assembly instruction. Other 
+	operating systems running on the Intel64 architecture use the <strong>
+	syscall</strong> instruction to develop system calls. MS-Windows has 
+	eliminated this form of system calls and replaced them with calls to a set 
+	of functions included in a standard library called <em>kernel32.lib</em>. 
+	Thus, to use system calls (for example, to read or write to the console), it 
+	is necessary to use these functions and link the code with the <em>
+	kernel32.lib</em> library. The URIUM compiler also needs to use functions 
+	from the <em>shell32.lib</em> library to manage application arguments.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The
+	<em>ml64</em> assembler has several command-line options that we need to use 
+	to generate the executable from the '.s' file generated by the URIUM 
+	compiler. Linking options are entered after the<em> /link</em> option. The<em> 
+	/subsystem</em> option indicates how to execute the generated exe file. 
+	URIUM uses the <em>console</em> environment for its executables. The <em>
+	/defaultlib</em> option allows you to add libraries to search for external 
+	references included in the assembler. URIUM needs to link with the <em>
+	kernel32.lib</em> and <em>shell32.lib</em> libraries. The <em>/entry </em>
+	option sets the starting address of the executable. URIUM uses the label <em>
+	Start</em> as the application's entry point. The command line to generate 
+	the executable from the <em>App.s</em> assembler file is as follows.</p>
+	<p style="margin-right: 10px; margin-left: 10px; " class="auto-style4">
+	<strong>ml64.exe App.s /link /subsystem:console /defaultlib:kernel32.lib 
+	/defaultlib:shell32.lib /entry:Start</strong></p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+            &nbsp;</p>
+
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE INTEL64 ASSEMBLY CODE REPRESENTATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The URIUM compiler backend dedicated to generating assembly code for 
+	MS-Windows on Intel64 architecture is located in the <strong>urium.win_x64</strong> 
+	package. The processor registers are described in the <strong>
+	urium.win_x64.registers</strong> package. The following classes have 
+	been defined to describe these registers:</p>
+    <ul>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>Register</strong>: Class that describes a register for the 
+		Intel64 architecture. The class contains a field with the register code, 
+		as well as the <em>getName()</em> method, which returns the name of the 
+		register used in the assembly code, and the <em>getSize() </em>method, 
+		which returns the register size.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RegisterConstants</strong>: Interface that defines the codes 
+		used to identify Intel64 architecture registers and the codes to denote 
+		register sizes.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RegisterSet</strong>: Class that displays the Intel64 
+		architecture's register set. The class contains a static field for each 
+		register and the To32Bits() and To64Bits() methods to obtain a register 
+		representation with a different size.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>OffsetRegister</strong>: Auxiliary class that  
+		describes an indirect addressing, that is, a displacement over the 
+		content of a 
+		register.</p>                      
+      </li>      
+    </ul>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The Intel64 instructions are defined in the <strong>
+	urium.win_x64.instructions</strong> package. The classes used to 
+	represent this assembly code are described below.</p>
+    <ul>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>InstructionSet</strong>: This is an interface that defines the 
+		codes associated with the Intel64 assembler instructions used in the 
+		URIUM compiler.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>Instruction</strong>: Abstract class that describes an 
+		instruction for the Intel64 architecture. Instruction subclasses differ 
+		in how they address data.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>LabelInstruction</strong>: Describes an Intel64 instruction with 
+		an address corresponding to a label. Typically, it represents jumps.</p>
+      </li>
+		<li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRInstruction</strong>: Describes an Intel64 instruction that 
+		requires a source and a target register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RInstruction</strong>: Describes an Intel64 instruction that 
+		requires a single register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RIInstruction</strong>: Describes a two-address Intel64 
+		instruction with direct (a register) and immediate (a value) addressing. 
+		For example, the addition of a value to a register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RDRInstruction</strong>: Describes an Intel64 instruction where 
+		the source uses indirect addressing (an offset over a register value) 
+		and the target uses direct addressing (a register). For example, a MOV 
+		instruction to load a value from memory.</p>
+      </li>
+		<li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>DRRInstruction</strong>: Describes an Intel64 instruction where 
+		the source uses direct addressing (a register) and the target uses 
+		indirect addressing (an offset over a register value). For example, a 
+		MOV instruction for storing a value in memory.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>NInstruction</strong>: Describes an Intel64 instruction that does 
+		not require any address.</p>    
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>InstructionFactory</strong>: Class containing a set of static 
+		methods for creating Intel64 instructions. Only the instructions 
+		required by the URIUM compiler have been included.</p>  
+      </li>
+    </ul>
+
+     <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">ASSEMBLY CODE GENERATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    In addition to the classes dedicated to representing the Intel64 assembly 
+	code, the <strong>urium.win_x64</strong> 
+	package contains two classes dedicated to generating the assembly code: <em>
+	WinX64LibraryAssembler</em> and <em>WinX64ProcedureAssembler</em>.</p>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <strong>urium.win_x64.WinX64LibraryAssembler</strong> class encapsulates 
+	the assembly code generated for the URIUM library. The class contains a list 
+	of <em>WinX64ProcedureAssembler</em> objects containing the generated 
+	assembly code for each procedure. The constructor receives a <em>
+	LibraryCodification</em> object with the description of the intermediate 
+	code and constructs <em>WinX64ProcedureAssembler</em> objects from the 
+	corresponding <em>ProcedureCodification</em> objects (which contain the 
+	intermediate code for each procedure). The class contains the <em>
+	generateFile()</em> method that generates the assembly file (with a &quot;.s&quot; 
+	extension) associated with the library.</p>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <strong>urium.win_x64.WinX64ProcedureAssembler</strong> class translates 
+	intermediate code into assembly code for a procedure. The class contains the 
+	fields <em>label</em> (the initial label of the method), <em>size</em> (the 
+	size in bytes of the procedure's activation record), <em>callstack</em> (the 
+	stack that stores the size of the memory reserved for the arguments of each 
+	procedure call), and <em>list</em> (which stores the list of assembly 
+	instructions associated with the procedure). The <em>createFrameIntel64()</em> 
+	method calculates the position of each variable in the procedure's 
+	activation record. On the Intel64 architecture, URIUM's basic types are 
+	stored in 32 bits, and references are stored in 64 bits. The class's 
+	essential method is <em>createAssembler()</em>, which receives the 
+	description of the procedure in intermediate code (<em>ProcedureCodification</em>) 
+	as input and generates the list of instructions in assembly. First, the 
+	procedure's input code is generated. Next, each instruction is traversed in 
+	intermediate code and translated into assembly code. Finally, the 
+	procedure's output code is generated. The <em>createAssembler()</em> method 
+	is responsible for translating intermediate code instructions into assembly 
+	code instructions. Each type of intermediate code instruction has a 
+	corresponding<em> translate...()</em> method that generates the associated 
+	assembly code.</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    The various URIUM compiler backends store all local and temporary variables, 
+	as well as procedure call arguments, in stack memory. Typically, an 
+	intermediate code instruction is translated into a set of Intel64 assembler 
+	instructions that: (1) load the operand values into the processor registers 
+	(usually in the <em>eax</em> and <em>ebx</em> registers); (2) execute the 
+	equivalent assembler instruction (usually storing the result in the <em>eax</em> 
+	register); and (3) copy the result to stack memory. To solve steps (1) and 
+	(3), the <em>translateLoadIntValue() </em>and<em> translateStoreIntValue()</em> 
+	methods are used. These methods are described below.</p>
+    <ul>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>translateLoadIntValue():</strong> Generates 
+		assembler instructions to load a value into a processor register. The 
+		function takes into account the different addressing options for the 
+		value. If it is an immediate address (the value is a literal), <em>
+		translateLoadIntLiteral()</em> is executed. If it is a direct address 
+		(the value is in a register or on the stack), <em>
+		translateLoadIntWithDirectAddressing()</em> is executed. If it is an 
+		indirect address (the value is an out variable), <em>
+		translateLoadIntWithIndirectAddressing()</em> is executed.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateLoadIntLiteral():</strong> Generates assembler 
+		instructions to assign a constant value (a literal) to a register. To do 
+		this, it uses a <strong>mov</strong> instruction with immediate 
+		addressing.</p>
+		</li>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong><span>translateLoadIntWithDirectAddressing</span>():</strong> 
+		Generates instructions to load the value of a basic type variable. If 
+		the variable is stored on the stack, the <strong>mov</strong> 
+		instruction with direct addressing is used. If it is already stored in a 
+		register, the value does not need to be loaded.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong><span>translateLoadIntWithIndirectAddressing</span>():</strong> 
+		Generates the instructions to load the value of an out variable (a 
+		reference). If the reference is stored in a register, a <strong>mov</strong> 
+		instruction with direct addressing is used. If the reference is stored 
+		on the stack, the value must first be loaded into a register (using a
+		<strong>mov</strong> instruction to a 64-bit register) and then a
+		<strong>mov</strong> instruction with direct addressing is performed 
+		from that register.</p>
+		</li>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>translateStoreIntValue():</strong> Generates 
+		instructions for storing a value contained in a register to a variable. 
+		In this case, we can find two types of addressing: direct and indirect. 
+		In the first case, the <em>translateStoreIntWithDirectAddressing()</em> 
+		method is used. In the second case, <em>
+		translateStoreIntWithIndirectAddressing()</em> is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateStoreIntWithDirectAddressing():</strong> 
+		Stores the value of a register in the position assigned to a basic 
+		variable. This is achieved by using a <strong>mov</strong> instruction 
+		with direct addressing.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateStoreIntWithIndirectAddressing():</strong> 
+		Stores the value of a register in the position assigned to an out 
+		variable. To do this, you must first obtain the reference from memory 
+		using a <strong>mov</strong> instruction and then execute another
+		<strong>mov</strong> instruction to store the value.</p>
+		</li>
+    </ul>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Once the auxiliary functions used in steps (1) and (3) have been discussed, 
+	we will explain how each intermediate code instruction is translated into 
+	assembler, assuming that both the operands and the result are stored in 
+	processor registers. 
+    </p>
+    <ul>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>LABEL</strong>: Translated as a label in assembly with the same identifier.</p>
+        </li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ASSIGN</strong>: Generates a load followed by a store.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ADD</strong>: Uses the <strong>add</strong> assembly instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>SUB</strong>: Uses the <strong>sub</strong> assembly instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>MUL</strong>: Uses the <strong>imul</strong> assembly 
+		instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>DIV</strong>: Uses the <strong>idiv</strong> assembly 
+		instruction. The quotient of the integer division is stored in the <em>
+		eax</em> register. The <strong>idiv</strong> instruction performs a 
+		64-bit integer division (registers <em>edx</em>:<em>eax</em>), but in 
+		URIUM the int data type is 32 bits in size. This causes a problem when 
+		dividing negative numbers. If the dividend is negative (bit 31 of <em>
+		eax</em> = 1), the number must be extended to 64 bits (bits 0 to 31 of
+		<em>edx</em> = 1) to obtain the correct result.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>MOD</strong>: Uses the <strong>idiv</strong> assembly 
+		instruction. The remainder of the integer division is stored in the <em>
+		edx</em> register.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>INV</strong>: To generate a sign change, the <strong>neg</strong> 
+		assembly instruction is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>AND</strong>: Logical conjunction is 
+		calculated with the <strong>and</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>OR</strong>: Logical disjunction is 
+		calculated with the <strong>or</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>NOT</strong>: Logical negation is generated by an <strong>xor</strong> 
+		instruction with a constant value of 1.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPEQ</strong>: The equality-based conditional jump is generated 
+		with the <strong>cmp</strong> instruction followed by a <strong>je</strong> 
+		instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPNE</strong>: The inequality-based conditional jump is 
+		generated with the <strong>cmp</strong> instruction followed by a
+		<strong>jne</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPGT</strong>: For the &quot;greater than&quot; conditional jump, the
+		<strong>cmp</strong> instruction is used, followed by a <strong>jg</strong> 
+		instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPGE</strong>: For the &quot;greater than or equal to&quot; conditional 
+		jump, the <strong>cmp</strong> instruction is used, followed by a
+		<strong>jge</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPLT</strong>: The &quot;less than or equal to&quot; conditional jump is 
+		generated by the <strong>cmp</strong> instruction followed by a <strong>
+		jl</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPLE</strong>: The &quot;less than or equal to&quot; conditional jump is 
+		generated by the <strong>cmp</strong> instruction followed by a <strong>
+		jle</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JUMP</strong>: The unconditional jump is 
+		generated with the <strong>jmp</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMP1</strong>: For the jump conditional on a value being true is 
+		generated with a <strong>cmp</strong> instruction using the constant 
+		value 1 followed by a <strong>je</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>PARAM</strong>: To store a call parameter, the parameter value 
+		is loaded and stored in the specified stack position with a <strong>mov</strong> 
+		instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>PRECALL</strong>: The PRECALL instruction contains two values to 
+		calculate the space needed to store the parameters for the next call. 
+		These values refer to the number of base-type parameters (which require 
+		4 bytes) and the number of out-type parameters (which require 8 bytes). 
+		The instruction translates into subtracting the calculated size from the
+		<em>rsp</em> register (stack pointer).</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>CALL</strong>: To jump to the callee procedure, the <strong>call</strong> 
+		instruction is executed with the label of the procedure. Upon return 
+		from the call, the <em>rsp</em> register is updated, freeing up the 
+		space reserved for the call parameters.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ENDP</strong>: The end-of-procedure 
+		instruction is translated as a jump to the procedure's return label. </p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>POINTER</strong>: Stores the position of a 
+		variable (its reference) as the value of another variable.</p>
+		</li>
+    </ul>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">ASSEMBLER CODE OF THE NATIVE LIBRARIES</span></font></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The URIUM compiler is distributed with two native libraries that allow you 
+	to use the text console (reading and writing data to it) and access the 
+	application's input arguments (entered on the command line). The assembly 
+	code for these libraries is not generated by the compiler because it 
+	contains system calls that do not correspond to any language structure. To 
+	complete the MS-Windows backend on Intel64 architecture, it is necessary to 
+	develop the assembler for these libraries, as well as the code common to all 
+	applications defined in the <em>Kernel.s</em> file.</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">	
+    The <strong>urium.Console</strong> library contains procedures for reading and 
+	writing data on the text console. The assembly code of this library requires 
+	the use of the operating system's <em>GetStdHandle</em>, <em>WriteFile</em>, 
+	and <em>ReadFile</em> functions, which are located in the <em>kernel32.lib</em> 
+	system library. The MS-Windows function calling convention establishes that 
+	the first four arguments to a function call are passed in the registers RCX, 
+	RDX, R8, and R9 (if they are floating-point values, registers XMM0 to XMM3 
+	are used). The procedures in the <strong>urium.Console</strong> library 
+	first use the <em>GetStdHandle</em> function to obtain the text console 
+	handle (code -10 obtains the read stream, and code -11 obtains the write 
+	stream), and then the <em>WriteFile</em> or <em>ReadFile</em> functions. The 
+	global variables <em>urium_Console_print_char_msg</em> and <em>Written</em> 
+	are required to use their positions as pointers in calls to these functions. 
+	The beginning of the <em>Console.s</em> file is shown below.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ ;------------------------------------------------------------------
+ ; Copyright (c) 2024, Francisco J. Moreno Velo 
+ ; All rights reserved. 
+ ;------------------------------------------------------------------
+
+ extrn GetStdHandle: PROC
+ extrn WriteFile: PROC
+ extrn ReadFile: PROC
+
+ .data
+	urium_Console_print_char_msg db 'AB', 0
+	Written db 0
+
+ .code
+
+ ;------------------------------------------------------------------
+ ; urium_Console_print_char
+ ;------------------------------------------------------------------
+
+ urium_Console_print_char PROC
+	LEA rax, [urium_Console_print_char_msg]
+	MOV bl, byte ptr [rsp+8]
+	MOV [rax],bl
+	SUB rsp, 32
+	MOV rcx, -11
+	CALL GetStdHandle
+	ADD rsp, 32
+	SUB rsp, 48
+	MOV rcx, rax
+	LEA rdx, [urium_Console_print_char_msg]
+	MOV r8, 1
+	LEA r9, [Written]
+	MOV qword ptr [rsp + 4 * 8], 0
+	CALL WriteFile
+	ADD rsp, 48
+	RET 0
+ urium_Console_print_char ENDP 
+ 
+ ...
+ 
+           </pre>
+          </td>
+        </tr>
+      </table>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+	The <strong>urium.Program</strong> library contains procedures for accessing 
+	a program's call arguments and terminating its execution. The assembler for 
+	this library relies on accessing the global variables <em>urium_Program_argc</em> 
+	and <em>urium_Program_argv</em>. These variables store the number of 
+	arguments entered on the command line and a list of references to the 
+	strings (list of ASCII characters) for those arguments. The beginning of the
+	<em>Program.s</em> file is as follows.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ ;------------------------------------------------------------------
+ ; urium_Program_getArgCount_out_int
+ ;------------------------------------------------------------------
+
+ urium_Program_getArgCount_out_int PROC
+	PUSH rbp
+	SUB rsp, 32
+	MOV rbp, rsp
+
+	MOV eax, dword ptr[urium_Program_argc]
+	MOV rbx, qword ptr[rbp+48]
+	MOV dword ptr[rbx+0], eax
+
+	MOV rsp, rbp
+	ADD rsp, 32
+	POP rbp
+	RET 
+ urium_Program_getArgCount_out_int ENDP 
+
+ ...
+ 
+           </pre>
+          </td>
+        </tr>
+      </table>
+     
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+  	All applications generated by the URIUM compiler begin with a common 
+	assembly code specified in the <em>Kernel.s</em> file. This file uses the 
+	external functions <em>ExitProcess</em> and <em>GetCommandLineW</em> 
+	(included in the <em>kernel32.lib</em> system library), and the <em>
+	CommandLineToArgvW</em> function (included in the <em>shell32.lib</em> 
+	system library). This file defines the global variables <em>
+	urium_Program_argc</em> and <em>urium_Program_argv</em> and the application 
+	entry point, indicated by the <em>Start</em> label. The <em>Start</em> 
+	procedure begins by reading the command line to update the values of <em>
+	urium_Program_argc</em> and <em>urium_Program_argv</em>. It then calls the 
+	URIUM application entry procedure (the<em> main() </em>procedure in the <em>
+	Main</em> library) and, finally, calls the <em>ExitProcess</em> function 
+	with a value of 0, indicating that the application has finished 
+	successfully. The code in the <em>Kernel.s</em> file is as follows.</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ extrn ExitProcess: PROC   ; external functions in system libraries
+ extrn GetCommandLineW: PROC 
+ extrn CommandLineToArgvW: PROC
+
+ ;------------------------------------------------------------------
+ ; Program arguments
+ ;------------------------------------------------------------------
+
+ .data
+
+	urium_Program_argc dd 0
+	urium_Program_argv dq 0
+
+ ;------------------------------------------------------------------
+ ; Standard startup code
+ ; Save the program arguments: 'argc' and 'argv'
+ ; Invoke the procedure "Main.main"
+ ;------------------------------------------------------------------
+
+ .code
+
+ Start PROC
+	PUSH rbp
+	SUB rsp, 32
+	MOV rbp, rsp
+
+	CALL GetCommandLineW
+	SUB rsp, 32
+	MOV rcx, rax
+	LEA rdx, dword ptr[rsp+0]
+	CALL CommandLineToArgvW
+	MOV ebx, dword ptr[rsp+0]
+	ADD rsp, 32
+	MOV dword ptr[urium_Program_argc], ebx
+	MOV qword ptr[urium_Program_argv], rax
+
+	CALL Main_main
+	MOV rcx, 0
+	CALL ExitProcess
+
+	MOV rsp, rbp
+	ADD rsp, 32
+	POP rbp
+	RET
+ Start ENDP
+           </pre>
+          </td>
+        </tr>
+      </table>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">THE URIUM 
+	   COMPILATION PROCESS</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The URIUM compiler is distributed with two native libraries called <strong>
+	urium.Console</strong> and <strong>urium.Program</strong>. The URIUM 
+	language definitions for these libraries are located in the<em> /include</em> 
+	directory within the examples section, and the assembly code version for 
+	MS-Windows on Intel64 architecture is located in the<em> /libWinX64</em> 
+	directory.</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    To include the MS-Windows backend on Intel64, the<strong> 
+	urium.UriumCompiler</strong> and <strong>urium.UriumCompilerOptions</strong> 
+	classes had to be modified. The changes are as follows.</p>
+	<ul>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>UriumCompilerOptions</strong>: The <em>back_end</em> field has 
+		been included to select the compiled platform, and the NONE_MIPS32 and 
+		WIN_X64 constants have been defined as possible values. The <em>
+		includeDir</em> vector has also been included to store the search 
+		directories for imported libraries, and the <em>libDir</em> vector to 
+		store the search directories for the native library assembly files. The
+		<em>output</em> field stores the desired name for the compiler's output 
+		file.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>UriumCompiler</strong>: Methods that execute the MS-Windows 
+		backend have been added. After the analysis phase and intermediate code 
+		generation are completed, the selected backend is executed. The <em>
+		backendWinX64()</em> method creates the '.s' file with the chosen name 
+		(the default is '<em>Application.s</em>'), copies the contents of the
+		<em>Kernel.s</em> file, and concatenates the assembler files of the 
+		libraries that make up the application. In the case of native libraries, 
+		the contents of the existing files are simply copied. Regular libraries 
+		are translated into assembler and added to the output file.</p>
+		</li>
+	</ul>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The compilation process consists of running the <em>uriumc.jar</em> file in 
+	the application's root directory. This directory should have a '<em>Main.ur</em>' 
+	file containing the application's main library, which should have a <em>
+	main()</em> procedure indicating the entry point. The command line is as 
+	follows.</p>
+	<p style="margin-left: 10px; margin-right: 10px; " class="auto-style4">
+    <strong>java -jar uriumc.jar options</strong></p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The supported options are as follows:</p>
+	<ul>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>-I dir_name</strong>: Add a source file search directory.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>-L dir_name</strong>: Add a search directory for '.s' files.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>-o name</strong>: Sets the name of the executable to generate.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>-v</strong>: Verbose mode. Generates files with intermediate 
+		code.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>-</strong><span><strong>none_mips32</strong>: </span>Select the 
+		backend to generate MIPS32 assembler on the QtSpim simulator.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>-win_x64</strong>: Select the backend to generate an MS-Windows 
+		executable on Intel64 architecture.</p>
+		</li>
+	</ul>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The<em> /examples</em> directory contains a folder named <em>
+	/Compilation_scripts/WinX64_compilation</em> that contains the files needed 
+	to compile. The '<em>Compile.bat</em>' file contains the compilation script, 
+	selecting the include directories. The '<em>Link.bat</em>' file contains the 
+	script with the <em>ml64</em> execution command. For this script to work 
+	correctly, the <em>ml64</em> path must be selected in each case. The 
+	directory also contains the <em>kernel32.lib</em> and <em>shell32.lib</em> 
+	files. To compile an application, the easiest way is to copy all the files 
+	from the <em>/WinX64_compilation</em> directory to the application root 
+	directory and execute the scripts.</p>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">EXAMPLES</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The code for this lecture includes the <em>/examples</em> directory with 
+	several example applications written in URIUM. This directory also contains 
+	the<em> /include</em> folder with the source files for the native libraries, 
+	the <em>/libNoneMips32</em> folder with the MIPS32 assembler files for the 
+	native libraries, the <em>/libWinX64</em> folder with the Intel64 assembler 
+	files for the native libraries, and the <em>/Compilation_scripts</em> folder 
+	with script files to compile the examples with the MIPS32 backend simulated 
+	with QtSpim and with the MS-Windows backend on the Intel64 architecture.</p>
+	
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">For 
+	example, the <em>0.1_Argument_analysis</em> directory contains a URIUM 
+	application that analyzes call arguments and, if they are numbers, computes 
+	the minimum, maximum, and average values of these arguments. The source code 
+	contained in the <em>Main.ur</em> file is as follows.</p>
+	
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ import urium.Console as Console;
+ import urium.Program as Program;
+
+ /**
+ * Application using external arguments
+ */
+ library Main {
+
+  /**
+   * Application start procedure
+   */
+   public proc main() {
+     int argc;
+     Program.getArgCount(out argc);
+
+     int index = 0;
+     int arg;
+     int count = 0;
+     int min = -1;
+     int max = -1;
+     int acc = 0;
+     while(index &lt; argc)
+     {
+       Program.getIntArg(index,out arg);
+       if(arg &gt;= 0)
+       {
+         count = count + 1;
+         if(arg &lt; min || min &lt; 0) min = arg;
+         if(arg &gt; max) max = arg;
+         acc = acc + arg;
+       }
+       index = index +1;
+     }
+
+     printCount(count);
+     printMin(min);
+     printMax(max);
+     printMean(acc/count);
+   }
+
+   /**
+    * Writes the argument count
+    */
+   private proc printCount(int count)
+   {
+     Console.print('c');
+     Console.print('o');
+     Console.print('u');
+     Console.print('n');
+     Console.print('t');
+     Console.print('=');
+     Console.print(count);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument minimum
+    */
+   private proc printMin(int min)
+   {
+     Console.print('m');
+     Console.print('i');
+     Console.print('n');
+     Console.print('=');
+     Console.print(min);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument maximum
+    */
+   private proc printMax(int max)
+   {
+     Console.print('m');
+     Console.print('a');
+     Console.print('x');
+     Console.print('=');
+     Console.print(max);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument mean
+    */
+   private proc printMean(int mean)
+   {
+     Console.print('m');
+     Console.print('e');
+     Console.print('a');
+     Console.print('n');
+     Console.print('=');
+     Console.print(mean);
+     Console.print('\n');
+   }
+ }
+          </pre>
+          </td>
+        </tr>
+      </table>
+      
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">After 
+	copying the files from the <em>/WinX64_compilation</em> folder to the <em>
+	0.1_Argument_analysi</em>s example directory, the compilation, linking and 
+	execution processes can be performed.</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">The 
+	compilation script launches the URIUM compiler with the options<em> -win_x64</em> 
+	(MS-Windows backend on Intel64), <em>-I ../include</em> (native library 
+	source files folder), <em>-L ../libWinX64</em> (native library assembler 
+	files folder) and <em>-o App </em>(name of the executable file to generate).</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture09/compile_script.png" alt="COMPILE" width="500">
+	</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">The 
+	linking script runs the <em>ml64</em> assembler on the <em>App.s</em> file 
+	with the link options <em>/subsystem:console</em> (console execution 
+	environment), <em>/defaultlib:kernel32.lib</em> (add the kernel32.lib 
+	library as a source for external functions), <em>/defaultlib:shell32.lib</em> 
+	(add the shell32.lib library as a source for external functions) and <em>
+	/entry:Start</em> (define the <em>Start</em> label as the entry point for 
+	the application code).</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture09/link_script.png" alt="LINK" width="500">
+	</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">Once 
+	the <em>App.exe </em>executable has been generated, a test can be performed 
+	using the values &quot;10 20 30 40 50&quot; as command line arguments and obtaining 
+	the number of arguments, the minimum, maximum and average values as shown in 
+	the image.</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture09/execute_script.png" alt="EXECUTE" width="500">
+	</p>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+
+
+</td>
+</tr>
+</table>
+
+
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

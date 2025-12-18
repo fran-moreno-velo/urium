@@ -1,0 +1,972 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+    .style1
+    {
+        text-align: justify;
+    }
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 11</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Backend for RISC-V simulator</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">GOALS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+		<li>Describe the general characteristics of the RISC-V processor.</li>
+		<li>Describe the RARS simulator.<br>
+		</li>
+		<li>Describe the 
+	  assembly code generation process.<br></li>
+		<li>Describe the assembly code prepared 
+	  for native libraries.</li>
+		<li>Describe the URIUM compilation process on RARS platform.</li>
+	</ul>
+    <p>&nbsp;</p></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">SOURCE CODE</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture11/Lecture11.rar">Access to code</a></li>
+    </ul>
+     
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+  <p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table7">
+        <tr>
+          <td width="100%" bgcolor="#000080">
+            <p align="center">
+              <font color="#FFFFFF"><span style="font-weight: 700">THE RISC-V 
+			  ARCHITECTURE</span></font>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" style="margin-left: 10; margin-right: 10">
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+               <img src="lecture11/RISC-V_Horizontal_Color.png" alt="RISC-V logo" width="500">
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              RISC-V is an open-source hardware architecture that defines a 
+			  RISC-like instruction set for microprocessor operation. The 
+			  project began in 2010 at the <a href="https://www.berkeley.edu/">
+			  University of California, Berkeley</a>. Its open design allows any 
+			  manufacturer to build processors based on this architecture 
+			  without licensing costs. RISC-V development is currently the 
+			  responsibility of the <a href="https://riscv.org/">RISC-V 
+			  International</a> consortium. </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+             RISC-V has achieved growing importance in the processor market 
+			 thanks to its open, modular, and license-free nature, which has 
+			 enabled rapid adoption by companies, research centers, and hardware 
+			 manufacturers worldwide. Unlike proprietary architectures, RISC-V 
+			 offers a flexible platform that fosters innovation, reduces 
+			 development costs, and avoids vendor lock-in. This openness has 
+			 driven its use in a wide range of sectors, from embedded devices 
+			 and IoT systems to supercomputing and industrial applications, 
+			 establishing it as a strategic alternative to traditional 
+			 architectures such as ARM or x86.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The architecture is based on standardized variants for 32-bit, 
+			  64-bit, and 128-bit processors. Based on this basic definition, 
+			  manufacturers can add additional functionality, which has also 
+			  been standardized as extensions. Thus, a manufacturer can create a 
+			  RISCV processor defined as RV32IMAFD, indicating that it is a 
+			  processor based on the 32-bit RISCV architecture with integer 
+			  multiplication and division instructions, atomic instructions, and 
+			  a floating-point unit for single- and double-precision data.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+               <img src="lecture11/riscv_extensions.png" alt="RISC-V extensions">
+            </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The RSICV architecture uses a general-purpose unit consisting of 
+			  32 registers (32-bit, 64-bit, or 128-bit depending on the 
+			  variant). The registers are denoted as <em>x0</em> to <em>x31</em>, 
+			  but are given a mnemonic according to the Application Binary 
+			  Interface specification. Register <em>x0</em> contains the 
+			  constant value 0. The remaining registers are free to use, but the 
+			  convention establishes the standard usage of these registers. The 
+			  temporary registers may be freely overwritten, but the remaining 
+			  registers must be preserved across calls. It is the programmer's 
+			  responsibility to guarantee the contents of these registers.</p>
+            <p align="center">
+              <img border="2" src="lecture11/riscv_registers.png" alt="RISCV registers" width="700" >
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>          
+          </td>
+        </tr>
+      </table>
+  
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table8">
+        <tr>
+          <td width="100%" bgcolor="#000080">
+            <p align="center" class="auto-style3">
+              THE RARS SIMULATOR</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" style="margin-left: 10px; margin-right: 10px">
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">&nbsp;</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              <a href="https://github.com/TheThirdOne/rars">RARS (RISC-V 
+			  Assembler and Runtime Simulator</a>) is an assembler and simulator 
+			  for the RISC-V architecture. It allows you to write RISC-V 
+			  assembly programs, and execute and step through the programs that 
+			  you have written in assembly. RARS is an evolution of the previous 
+			  MARS simulator, dedicated to simulating the MIPS architecture. It 
+			  was developed by Pete Sanderson and Ken Vollmar in 2017 and is 
+			  freely downloadable from its official repository. RARS develops a 
+			  simulation of the RV32IMFN processor (base 32-bit instruction set 
+			  + multiplication, floating point, and user-level interrupts). 
+			  Version 1.6 also adds the ability to simulate the 64-bit base 
+			  variant.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The RARS main window is divided into four areas. The upper area 
+			  contains the application menus and an icon bar with the most 
+			  common options. The middle area has two tabs. The &quot;Edit&quot; tab 
+			  displays the assembly code to be simulated. The &quot;Execute&quot; tab 
+			  shows the memory contents (the text segment and the data segment). 
+			  The right-hand area displays the contents of the processor 
+			  registers at any given time. It has three tabs that allow you to 
+			  select general-purpose registers, floating-point registers, or 
+			  status registers. The lower area displays the text console, 
+			  allowing you to develop a simple user interface.</p>
+            <p align="center">
+              <img border="2" src="lecture11/rars.png" alt="RARS simulator" width="700" >
+            </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The settings menu displays a set of simulator configuration 
+			  options. To simulate the code generated by the URIUM compiler, we 
+			  must enable the &quot;Program arguments provided to program&quot; and 
+			  &quot;64-bit&quot; options, in addition to the default options.</p>
+            <p align="center">
+              <img border="2" src="lecture11/rars_settings.png" alt="RARS settings">
+            </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The simulator develops a minimal set of system calls that allow, 
+			  for example, access to the text console or the file system. System 
+			  calls are initiated with the <em>ecall</em> instruction, entering 
+			  the code for the service to be performed in register <em>a7</em> 
+			  and the necessary arguments in registers <em>a0</em>, <em>a1,</em>
+			  <em>a2</em>, or <em>fa0</em>. The return values are stored in 
+			  registers <em>a0</em> or <em>fa0</em>. The system call table can be found
+			  <a href="https://github.com/TheThirdOne/rars/wiki/Environment-Calls">here</a>.</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">&nbsp;</p>
+          </td>
+        </tr>
+      </table>
+      
+<p>&nbsp;</p>
+
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE ASSEMBLY CODE REPRESENTATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The URIUM compiler backend dedicated to generating assembly code for the 
+	RISC-V processor is located in the <strong>urium.none_riscv</strong> 
+	package. The processor registers are described in the <strong>
+	urium.none_riscv.registers</strong> package. The following classes have 
+	been defined to describe these registers:</p>
+    <ul>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>Register</strong>: Class that describes a RISC-V processor 
+		register. The class contains a field with the register code and a <em>
+		getName()</em> method that returns the name associated with each 
+		register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RegisterConstants</strong>: Interface that defines the codes 
+		of the RISC-V processor registers.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RegisterSet</strong>: Class containing the definition of all 
+		RISC-V registers as references to <em>Register</em> objects. Each time an 
+		instruction needs to reference a RISC-V register, the static fields of 
+		this class are used. This avoids creating hundreds of duplicate 
+		references to the same registers.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>OffsetRegister</strong>: Auxiliary class that allows to 
+		describe an indirect addressing, that is, a displacement over a 
+		register.</p>                      
+      </li>      
+    </ul>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The RISC-V assembler instructions are defined in the <strong>
+	urium.none_riscv.instructions</strong> package. The classes used to 
+	represent this assembly code are described below.</p>
+    <ul>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>InstructionSet</strong>: This is an interface that defines 
+		codes associated with each RISC-V processor instruction. The interface 
+		includes codes for all RISC-V instructions included in RARS, although only some of them 
+		are ultimately used by the URIUM compiler.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>Instruction</strong>: Abstract class that describes a RISC-V 
+		processor instruction. Instruction subclasses differ in the way they 
+		address data. The RISC-V processor develops three-address assembly code.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRRInstruction</strong>: Describes a RISC-V instruction with 
+		three addresses with direct addressing (three registers). Typically, it 
+		allows instructions to describe operations between two registers, 
+		storing the result in the third register (e.g., the <strong>add</strong> 
+		instruction).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRInstruction</strong>: Describes a RISC-V instruction that 
+		requires two addresses with direct addressing (two registers). For 
+		example, the <strong>mv</strong> pseudo-instruction.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RInstruction</strong>: Describes a RISC-V instruction with a 
+		single address with direct addressing (a register).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRIInstruction</strong>: Describes a three-address RISC-V 
+		instruction with two direct addresses (two registers) and one immediate 
+		address (one value). For example, the addition of a value (<strong>addi
+		</strong>instruction).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RIInstruction</strong>: Describes a two-address RISC-V 
+		instruction with direct (a register) and immediate (a value) addressing. 
+		For example, the direct assignment of a value to a register (<strong>li</strong> 
+		pseudo-instruction).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>LabelInstruction</strong>: Describes a RISC-V instruction with an 
+		address corresponding to a label. Typically, it represents unconditional 
+		jumps (<strong>b</strong> instruction, <strong>jal</strong> instruction).</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RLInstruction</strong>: Describes a RISC-V instruction with two 
+		addresses corresponding to a register and a label. It typically allows 
+		for representing jumps conditioned on the value of a register.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RRLInstruction</strong>: Describes a RISC-V instruction with 
+		three addresses corresponding to two registers and a label. Typically 
+		allows representing jumps conditioned on the comparison between two 
+		registers.</p>     
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>RDRInstruction</strong>: Describes a RISC-V instruction with 
+		three addresses corresponding to a register and an offset over another 
+		register. For example, memory access instructions (<strong>lw</strong> and 
+		<strong>sw</strong>) are 
+		of this type.</p>
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>NInstruction</strong>: Describes a RISC-V instruction that does 
+		not require any address.</p>    
+      </li>
+      <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>InstructionFactory</strong>: Class containing a set of static 
+		methods for creating RISC-V instructions. Only the functions required by 
+		the URIUM compiler have been included, so there are many RISC-V 
+		instructions without a corresponding method in this class.</p>  
+      </li>
+    </ul>
+
+     <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">ASSEMBLY CODE GENERATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The generation of the RISC-V assembly code is developed in the classes 
+	defined in the <strong>urium.none_riscv</strong> package: <em>
+	NoneRiscvLibraryAssembler</em> and <em>NoneRiscvProcedureAssembler</em>.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <strong>urium.none_riscv.NoneRiscvLibraryAssembler</strong> class stores 
+	the assembly code of a library written in URIUM. The class constructor 
+	receives as an argument the object <em>LibraryCodification</em> with the 
+	description of the library in intermediate code and builds the list of <em>
+	NoneRiscvProcedureAssembler</em> objects from the <em>ProcedureCodification</em> 
+	objects of the library. The <em>generateFile()</em> method is responsible 
+	for writing the entire assembly code in a file with extension &quot;.s&quot;.</p>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <strong>urium.none_riscv.NoneRiscvProcedureAssembler</strong> class is 
+	responsible for translating the intermediate 
+	code of a procedure to assembly code. The class contains the fields <em>
+	label</em> (start label of the procedure), <em>size</em> (size in bytes of the 
+	activation record), <em>callstack</em> (stack with the 
+	size of the memory reserved for the arguments in call processes), and
+	<em>list</em> (list of assembler instructions associated 
+	with the procedure). The <em>createFrameRiscv()</em> method calculates the 
+	size of the procedure activation record and assigns the positions to each 
+	variable in this activation record. To calculate these positions, it is 
+	taken into account that in 64 -bit processors the pointers occupy two words 
+	(8 bytes). The <em>createAssembler() </em>method receives the description of 
+	the intermediate code procedure as entry and generates the list of 
+	instructions in the assembly. First, it generates the common instructions of 
+	entry to a procedure. Next, each intermediate code instruction is translated 
+	into assembly code. Finally, the common instructions of the procedure output 
+	process are generated. Each type of intermediate code instruction has a corresponding
+	<em>translate...()</em> method that generates the associated assembly code.</p>
+    <p style="margin-right: 10px; margin-left: 10px" class="style1">
+    The URIUM compiler stores all local and temporary variables, as well as 
+	procedure call arguments, in the stack memory. Typically, an intermediate 
+	code instruction is translated into a set of assembler instructions that: 
+	(1) store the operand values in processor registers; (2) execute the 
+	equivalent assembler instruction by storing the result in another processor 
+	register; and (3) copy the result to the stack memory. To solve steps (1) 
+	and (3), the<em> translateLoadIntValue() </em>and <em>
+	translateStoreIntValue()</em>  methods are used. These methods are 
+	described below.</p>
+    <ul>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>translateLoadIntValue():</strong> Generates 
+		assembler instructions to load a value into a processor register. The 
+		function takes into account the different addressing options for the 
+		value. If it is an immediate address (the value is a literal), <em>
+		translateLoadIntLiteral()</em> is executed. If it is a direct address 
+		(the value is in a register or on the stack), <em>
+		translateLoadIntWithDirectAddressing()</em> is executed. If it is an 
+		indirect address (the value is an out variable), <em>
+		translateLoadIntWithIndirectAddressing()</em> is executed.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateLoadIntLiteral():</strong> Generates 
+		assembler instructions to assign a constant value (a literal) to a 
+		register.If the value can be expressed in 12 bits, a <strong>li</strong> 
+		instruction is generated. If more than 12 bits are needed, two 
+		instructions are used: <strong>lui</strong> to load the 20 most 
+		significant and <strong>addi</strong> to add the less significant 12 
+		bits.</p>
+		</li>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong><span>translateLoadIntWithDirectAddressing</span>():</strong> 
+		Generates instructions to load the value of a basic type variable. If 
+		the variable is stored in stack memory, the <strong>lw</strong> 
+		instruction is used. If it is stored in a register, it is not necessary 
+		to load the value.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong><span>translateLoadIntWithIndirectAddressing</span>():</strong> 
+		Generates the instructions to load the value of an out variable (a 
+		reference). If the reference is stored in a register, an <strong>lw</strong> 
+		instruction is used. If the reference is stored on the stack, a <strong>
+		ld</strong> instruction followed of a <strong>lw</strong> instruction are required.</p>
+		</li>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>translateStoreIntValue():</strong> Generates 
+		instructions for storing a value contained in a register to a variable. 
+		In this case, we can find two types of addressing: direct and indirect. 
+		In the first case, the <em>translateStoreIntWithDirectAddressing()</em> 
+		method is used. In the second case, <em>
+		translateStoreIntWithIndirectAddressing()</em> is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateStoreIntWithDirectAddressing():</strong> 
+		Stores the value contained in a register in the position assigned to a 
+		basic type variable. To do this, use a <strong>sw</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>translateStoreIntWithIndirectAddressing():</strong> 
+		Stores the value contained in a register in the position assigned to an 
+		out variable. To do this, it uses an <strong>ld</strong> instruction to 
+		obtain the reference address, followed by a <strong>sw</strong> instruction to 
+		store the value.</p>
+		</li>
+    </ul>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    Once the auxiliary functions used in steps (1) and (3) have been discussed, 
+	we will explain how each intermediate code instruction is translated into 
+	assembler, assuming that both the operands and the result are stored in 
+	processor registers. 
+    </p>
+    <ul>
+        <li>
+        <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+        <strong>LABEL</strong>: Translated as a label in assembly with the same identifier.</p>
+        </li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ASSIGN</strong>: Generates a load followed by a store.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ADD</strong>: Uses the <strong>add</strong> assembly instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>SUB</strong>: Uses the <strong>sub</strong> assembly instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>MUL</strong>: Uses the <strong>mul</strong> assembly instruction. </p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>DIV</strong>: Uses the <strong>div</strong> assembly instruction..</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>MOD</strong>: To calculate the modulus, i.e., 
+		the remainder of the integer division, the <strong>rem</strong> 
+		instruction is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>INV</strong>: Uses the <strong>neg</strong> assembly instruction..</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>AND</strong>: Logical conjunction is 
+		calculated with the <strong>and</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>OR</strong>: Logical disjunction is 
+		calculated with the <strong>or</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>NOT</strong>: Logical negation is calculated 
+		with the <strong>not</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPEQ</strong>: To perform a conditional jump based on equality 
+		between two registers, the <strong>beq</strong> 
+		instruction is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPNE</strong>: The conditional jump based on 
+		inequality between two registers is performed with <strong>bne</strong>.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPGT</strong>: Tthe conditional jump 
+		&quot;greater than,&quot; the <strong>bgt</strong> 
+		instruction is used..</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPGE</strong>: For the conditional jump &quot;greater than or 
+		equal,&quot; the <strong>bge</strong> instruction is used..</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPLT</strong>: For the &quot;less than&quot; 
+		conditional jump, the <strong>blt</strong> instruction is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMPLE</strong>: The &quot;less than or equal&quot; conditional jump is 
+		generated with the <strong>ble</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JUMP</strong>: The unconditional jump is 
+		generated with the <strong>b</strong> instruction.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>JMP1</strong>: For the jump conditional on a 
+		value being true, the <strong>bnez</strong> instruction is used.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>PARAM</strong>: To store a value as a 
+		parameter at the index position, it is addressed as sp + index and 
+		stored with <strong>sw </strong>&nbsp;or <strong>sd</strong> 
+		instructions.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>PRECALL</strong>: This instruction was used 
+		to notify of an upcoming procedure call by indicating the number of 
+		parameters in the call. The instruction stores the number of basic type 
+		parameters and the number of out type parameters. 
+		This is translated by modifying the <em>sp</em> (stack pointer) register to 
+		reserve space for these parameters. As stack memory grows downward, 
+		updating <em>sp</em> consists of subtracting the indicated space.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>CALL</strong>: This instruction indicates the 
+		procedure being called. To jump to the callee procedure, the <strong>jal</strong> 
+		instruction is executed. Upon return from the call, the <em>sp</em> register is 
+		updated, freeing up the space reserved for the call parameters.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>ENDP</strong>: The end-of-procedure 
+		instruction is translated as a jump to the procedure's return label. The 
+		code that develops the return of the procedure is written from that 
+		label.</p>
+		</li>
+		<li>
+		<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+		<strong>POINTER</strong>: Stores the position of a 
+		variable (its reference) as the value of another variable.</p>
+		</li>
+    </ul>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">ASSEMBLER CODE OF THE NATIVE LIBRARIES</span></font></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The RISC-V assembly code for the<strong> urium.Console</strong> library is 
+	located in the<em> /libNoneRiscv</em> directory. This library contains the 
+	procedures for reading and writing the text console. To develop these 
+	procedures, the assembler uses the system calls included in the RARS 
+	simulator. These calls include reading and writing integer values, so it is 
+	not necessary to develop the code for translating integer values into text.</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The system calls used are PrintInt (code 1), PrintChar (code 11), ReadInt 
+	(code 5), and ReadChar (code 12). The call code is entered into register a7. 
+	The value to be displayed is entered into register a0. The read value is 
+	received in register a0. The binary and hexadecimal writing procedures do 
+	contain assembly code that generates these formats from the integer value. 
+	The beginning of the <em>Console.s</em> file is shown below.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ #------------------------------------------------------------------
+ # urium.Console.print.char
+ #------------------------------------------------------------------
+
+	.globl	urium.Console.print.char
+ urium.Console.print.char:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+	lw a0, 16(sp) 
+	li a7, 11
+	ecall
+ urium.Console.print.char.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+	
+ ...
+ 
+           </pre>
+          </td>
+        </tr>
+      </table>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+	The <strong>urium.Program </strong>library contains the procedures for 
+	accessing the arguments used on the command line and the procedure for 
+	terminating the application. To access the arguments, the global variables 
+	URIUM.PROGRAM.ARGC (number of arguments) and URIUM.PROGRAM.ARGV (argument 
+	vector) have been defined. The library methods allow you to obtain the 
+	number of arguments and access their values, either by converting their 
+	contents to an integer or by accessing each character of the arguments 
+	independently. The <em>exit()</em> procedure makes the Exit2 system call 
+	(code 93), terminating the application with the code indicated as an 
+	argument. The beginning of the <em>Program.s</em> file is shown below.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ #------------------------------------------------------------------
+ # urium.Program.getArgCount.out_int
+ #------------------------------------------------------------------
+
+	.globl	urium.Program.getArgCount.out_int
+ urium.Program.getArgCount.out_int:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+	lw t0, URIUM.PROGRAM.ARGC
+	lw a0, 16(s0)
+	sw t0, 0(a0)
+ urium.Program.getArgCount.out_int.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+
+ ...
+ 
+           </pre>
+          </td>
+        </tr>
+      </table>
+     
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+  	All applications generated by the URIUM compiler begin with a common code 
+	defined in the <em>Kernel.s</em> file. For the RISC-V version simulated with 
+	RARS, the <em>Kernel.s</em> file begins with the definition of the global 
+	variables URIUM.PROGRAM.ARGC and URIUM.PROGRAM.ARGV in the data segment. The 
+	application entry point is the <em>__start</em> label. The RARS simulator 
+	stores the values of <em>argc</em> (the command line argument number) and
+	<em>argv</em> (the string array of command line arguments) in the <em>a0</em> 
+	and <em>a1</em> registers before launching the application. The <em>__start</em> 
+	procedure copies these values into the global variables and calls the <em>
+	main()</em> procedure in the <em>Main</em> library, which marks the start of 
+	the URIUM application. The code in the <em>Kernel.s</em> file is as follows.</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ #------------------------------------------------------------------
+ # Program arguments
+ #------------------------------------------------------------------
+
+	.data
+
+	.globl	URIUM.PROGRAM.ARGC
+	.align	2
+ URIUM.PROGRAM.ARGC:
+	.word		0
+
+	.globl	URIUM.PROGRAM.ARGV
+	.align	2
+ URIUM.PROGRAM.ARGV:
+	.dword		0
+
+ #------------------------------------------------------------------
+ # Standard startup code
+ # Save the program arguments 'argc' (a0) and 'argv' (a1)  
+ # Invoke the procedure "Main.main"
+ #------------------------------------------------------------------
+
+	.text
+	.globl __start
+ __start:
+	la t0, URIUM.PROGRAM.ARGC
+	sw a0, 0(t0)
+	la t0, URIUM.PROGRAM.ARGV
+	sd a1, 0(t0)
+	jal Main.main
+	li a7, 10
+	ecall			# ecall 10 (exit)
+
+           </pre>
+          </td>
+        </tr>
+      </table>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">EXAMPLES</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The code in the <em>UriumCompiler</em> and <em>UriumCompilerOptions</em> 
+	classes has been extended to add the<em> -none_riscv</em> option and methods 
+	for launching the RISC-V backend on the RARS simulator. The examples 
+	directory has added a <em>/libNoneRiscv</em> folder containing the assembly 
+	code for the native libraries and a <em>/NoneRISCV_compilation </em>folder 
+	containing the compilation script for this backend. The easiest way to 
+	compile an application written in URIUM is to copy the script file and the 
+	compiler (uriumc.jar) into the application's base directory and run the 
+	script. This generates the <em>App.s </em>file with the assembly description 
+	of the compiled application.</p>
+	
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">For 
+	example, the <em>0.1_Argument_analysis</em> directory contains a URIUM 
+	application that analyzes call arguments and, if they are numbers, computes 
+	the minimum, maximum, and average values of these arguments. The source code 
+	contained in the <em>Main.ur</em> file is as follows.</p>
+	
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ import urium.Console as Console;
+ import urium.Program as Program;
+
+ /**
+ * Application using external arguments
+ */
+ library Main {
+
+  /**
+   * Application start procedure
+   */
+   public proc main() {
+     int argc;
+     Program.getArgCount(out argc);
+
+     int index = 0;
+     int arg;
+     int count = 0;
+     int min = -1;
+     int max = -1;
+     int acc = 0;
+     while(index &lt; argc)
+     {
+       Program.getIntArg(index,out arg);
+       if(arg &gt;= 0)
+       {
+         count = count + 1;
+         if(arg &lt; min || min &lt; 0) min = arg;
+         if(arg &gt; max) max = arg;
+         acc = acc + arg;
+       }
+       index = index +1;
+     }
+
+     printCount(count);
+     printMin(min);
+     printMax(max);
+     printMean(acc/count);
+   }
+
+   /**
+    * Writes the argument count
+    */
+   private proc printCount(int count)
+   {
+     Console.print('c');
+     Console.print('o');
+     Console.print('u');
+     Console.print('n');
+     Console.print('t');
+     Console.print('=');
+     Console.print(count);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument minimum
+    */
+   private proc printMin(int min)
+   {
+     Console.print('m');
+     Console.print('i');
+     Console.print('n');
+     Console.print('=');
+     Console.print(min);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument maximum
+    */
+   private proc printMax(int max)
+   {
+     Console.print('m');
+     Console.print('a');
+     Console.print('x');
+     Console.print('=');
+     Console.print(max);
+     Console.print('\n');
+   }
+
+   /**
+    * Writes the argument mean
+    */
+   private proc printMean(int mean)
+   {
+     Console.print('m');
+     Console.print('e');
+     Console.print('a');
+     Console.print('n');
+     Console.print('=');
+     Console.print(mean);
+     Console.print('\n');
+   }
+ }
+          </pre>
+          </td>
+        </tr>
+      </table>
+      
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">Once 
+	the<em> App.s </em>file has been generated, you can run RARS and load it. 
+	The code for the loaded file will appear in the Edit tab in the central area 
+	of RARS.</p>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture11/rars_load.png" alt="LOAD" width="700">
+	</p>
+
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">To 
+	run the application, you must first convert the assembly code to binary 
+	using the Assemble option (F3) in the Run menu. This way, the Execute tab in 
+	the central area will display the contents of the text segment (code) and 
+	the data segment (static and stack memory), as well as a box for entering 
+	command line arguments.</p>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture11/rars_assemble.png" alt="ASSEMBLE" width="700">
+	</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">The 
+	application is launched by pressing Go (F5) from the Run menu (or the 
+	corresponding icon). The lower part of the main window displays the contents 
+	of the text console.</p>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture11/rars_execute.png" alt="GO" width="700">
+	</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">In 
+	the example case, entering the values &quot;10 20 30 40 50&quot; as command line 
+	arguments produces the following result in the console.</p>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture11/rars_console.png" alt="GO" width="400">
+	</p>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+
+
+</td>
+</tr>
+</table>
+
+
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

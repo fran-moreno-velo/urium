@@ -1,0 +1,1077 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+    .style1
+    {
+        text-align: justify;
+    }
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 12</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Backend for Linux on RISC-V</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">GOALS</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+		<li>Describe the VisionFive2 board based on the RISC-V processor.</li>
+		<li>Describe Linux system calls on RISC-V and command line argument 
+		handling.</li>
+		<li>Describe the assembly code generation process for the RISC-V 
+		processor.</li>
+		<li>Describe the assembly code prepared 
+	  for native libraries.</li>
+		<li>Describe the URIUM compilation process for Linux on RISC-V.</li>
+	</ul>
+    <p>&nbsp;</p></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">SOURCE CODE</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture12/Lecture12.rar">Access to code</a></li>
+    </ul>
+     
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+  <p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table7">
+        <tr>
+          <td width="100%" bgcolor="#000080">
+            <p align="center">
+              <font color="#FFFFFF"><span style="font-weight: 700">THE 
+			  VISIONFIVE2 BOARD</span></font>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" style="margin-left: 10; margin-right: 10">
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              The definition of the RISC-V architecture as open hardware allows 
+			  manufacturers to develop their products without licensing costs. 
+			  One of the companies dedicated to the design and manufacture of 
+			  devices based on the RISC-V architecture is
+			  <a href="https://www.starfivetech.com/en/">StarFive</a>. The 
+			  company was founded in China in 2018 and its products include 
+			  CPUs, SoCs, development boards, and supporting software. These 
+			  products can be integrated into multiple devices such as tablets, 
+			  personal computers, and industrial systems. One of the company's 
+			  products is the
+			  <a href="%22https:/www.starfivetech.com/en/site/boards">
+			  VisionFive2 development board</a>, which we will use as a 
+			  demonstrator of the URIUM compiler on a real RISC-V platform.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+               <img src="lecture12/VisionFive2_board.jpg" alt="VisionFive2" width="500">
+            </p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+             VisionFive2 is a high-performance RISC-V single-board computer 
+			 (SBC). The board features an integrated GPU, making it an 
+			 attractive solution for multimedia applications. It also features a 
+			 wide range of input/output ports (4 USB ports, 2 Ethernet ports, 
+			 HDMI port, stereo audio) and memory (MicroSD port, eMMC storage 
+			 slot, M2 NVME slot). At the heart of the board is StarFive's JH7110 
+			 processor, which contains four 64-bit RISC-V cores. This processor 
+			 uses the RV64GC ISA architecture, that is, the 64-bit basic 
+			 instruction set with integer multiplication and division, atomic 
+			 instructions, a floating-point unit for single and double data 
+			 types, and compressed instructions.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+               <img src="lecture12/VisionFive2_description.png" alt="VisionFive2">
+            </p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              &nbsp;
+            </p>          
+          </td>
+        </tr>
+      </table>
+  
+  <p>&nbsp;</p>  
+            
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table8">
+        <tr>
+          <td width="100%" bgcolor="#000080">
+            <p align="center" class="auto-style3">
+              THE LINUX OPERATING SYSTEM ON RISC-V PLATFORM</p>
+          </td>
+        </tr>
+        <tr>
+          <td width="100%" style="margin-left: 10px; margin-right: 10px">
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">&nbsp;</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              Since 2023, the Debian community has officially supported its
+			  <a href="https://wiki.debian.org/InstallingDebianOn/StarFive/VisionFiveV2">
+			  Linux distribution on the VisionFive2 board.</a> The minimum 
+			  version is Debian 13 (trixie). Currently, some Linux packages are 
+			  not yet supported, but the adaptation process is moving quickly. 
+			  From the
+			  <a href="https://rvspace.org/en/project/VisionFive2_Debian_Wiki_202409_Release">
+			  RVSpace</a> site (created by StarFive to share information and 
+			  distribute software for its RISC-V products), you can download the 
+			  latest version of Debian prepared for the SBC and obtain 
+			  information on new applications developed for this product. All 
+			  URIUM compiler requirements (basically, the Java runtime 
+			  environment and GNU assembler) are supported, so the board can be 
+			  used without problems as a runtime platform for the URIUM 
+			  language.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              Linux system calls have their own convention for the RISC-V 
+			  processor. The assembler instruction that triggers the call is 
+			  called <strong>ecall</strong>. The call code must be entered in 
+			  register <em>a7</em>, and the arguments used in the call are 
+			  entered in registers <em>a0</em> to <em>a5</em>. The return value 
+			  is stored in register <em>a0</em>. The system call table can be 
+			  obtained from the
+			  <a href="https://jborza.com/post/2021-05-11-riscv-linux-syscalls/">
+			  following link</a> or from this
+			  <a href="lecture12/riscv_syscall.pdf">local copy</a>.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              Regarding the URIUM compiler, the system calls used are <em>
+			  sys_read</em> (code 63), <em>sys_write</em> (code 64), and <em>
+			  sys_exit</em> (code 93). The file descriptor used to read from the 
+			  text console (<em>stdin</em>) has the value 0, and the file 
+			  descriptor used to write to the text console (<em>stdout</em>) has 
+			  the value 1.</p>
+			<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+              Another aspect to consider when adapting the URIUM compiler to the 
+			  Linux operating system on RISC-V is the handling of arguments used 
+			  on the command line when running an application. The operating 
+			  system stores these arguments on the stack before passing control 
+			  to the application code. Thus, the value of the argument counter (<em>argc</em>) 
+			  is stored at position <em>sp</em>+0, and references to the 
+			  argument strings (<em>argv</em>) are stored above it. Therefore, 
+			  the value of <em>argv[0]</em> is located at <em>sp</em>+8, the 
+			  value of <em>argv[1]</em> is located at <em>sp</em>+16, and so on.</p>
+            <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">&nbsp;</p>
+          </td>
+        </tr>
+      </table>
+      
+<p>&nbsp;</p>
+
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">THE ASSEMBLY CODE 
+	GENERATION</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The assembly code prepared for the RISC-V simulator, presented in the 
+	previous lecture, can be used directly on the processor included in the 
+	VisionFive2 SBC. The differences in the final code concern the system calls 
+	and the handling of command line arguments. These differences affect the 
+	code associated with the native libraries (<em>Console.s</em> and <em>
+	Program.s</em>), as well as the common assembly code (<em>Kernel.s</em>), 
+	but not the assembly description of the URIUM standard libraries. Therefore, 
+	there is no need to develop new packages to generate RISC-V assembly code 
+	for the Linux operating system.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    The <em>UriumCompilerOptions</em> class has been modified to add the <strong>
+	-linux_riscv </strong>option, and the <em>UriumCompiler</em> class has also 
+	been modified to accommodate this new option. In this case, whether using 
+	the<strong> -none_riscv </strong>or <strong>-linux_riscv</strong> option, 
+	the backend launched is the one developed in the<strong> urium.none_riscv</strong> 
+	package.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">
+    To summarize, the<strong> urium.none_riscv.registers</strong> package 
+	contains the classes needed to describe the register set of the 64-bit 
+	RISC-V processor; the <strong>urium.none_riscv.instructions</strong> package 
+	contains the classes needed to define the instruction set used by the URIUM 
+	compiler (a subset of the RV64MASD version); and the<strong> 
+	urium.none_riscv</strong> package contains the classes <em>
+	NoneRiscvProcedureAssembler</em> (which generates the assembly code for each 
+	procedure by translating the intermediate code instructions) and <em>
+	NoneRiscvLibraryAssembler</em> (which groups the assembler code for all 
+	procedures to form the assembler file associated with each library).
+	<span class="HwtZe" jsaction="mouseup:Sxi9L,BR6jm; mousedown:qjlr0e" jsname="jqKxS" lang="en">
+	<span class="jCAhz ChMk0b" jsaction="agoMJf:PFBcW;MZfLnc:P7O7bd;nt4Alf:pvnm0e,pfE8Hb,PFBcW;B01qod:dJXsye;H1e5u:iXtTIf;lYIUJf:hij5Wb;tSpjdb:qAKMYb" jscontroller="BiTO4b" jsname="txFAF">
+	<span class="ryNqvb" jsaction="click:PDNqTc,GFf3ac,qlVvte;contextmenu:Nqw7Te,QP7LD; mouseout:Nqw7Te; mouseover:PDNqTc,c2aHje" jsname="W297wb">
+	A brief description of these classes can be found in the previous lecture.</span></span></span></p>
+
+     <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+ 
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">ASSEMBLER CODE OF THE NATIVE LIBRARIES</span></font></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The interface between the assembly code generated by the URIUM compiler and 
+	the operating system is developed in native libraries. The assembly code 
+	that develops these libraries for the Linux operating system on the RISC-V 
+	processor is located in the<em> /libLinuxRiscv</em> folder. This folder also 
+	contains the Kernel.s file with the common assembly code that develops the 
+	boot process for all applications.</p>
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    The RISC-V assembly code for the<strong> urium.Console</strong> library is 
+	located in the<em> /libLinuxRiscv/urium/Console.s</em> file. This library contains the 
+	procedures for reading and writing the text console. The procedures and 
+	functions included in this file are as follows:</p>
+	<ul>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.print.char</strong>: Writes a character to the 
+		text console. Use the sys_write system call (code 64) to do this.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.print.digit</strong>: Writes a digit to the text 
+		console. It receives a number in the range 0-9 and writes the 
+		corresponding ASCII character (range 48-57) using the sys_write system 
+		call.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.digits.int</strong>: Computes the number of digits 
+		(0-9) required to write a value in int (32-bit) format. Returns the 
+		result to register a0.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.power10.int</strong>: Calculates a power of 10 in 
+		integer format, that is, the values 1, 10, 100, etc. Returns the result 
+		in register a0.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.print.int</strong>: Writes a value in integer 
+		format (32-bit) to the text console. First, if the value is negative, 
+		writes the '-' symbol and changes its sign. Then computes the number of 
+		digits to write. To obtain the digits, generates powers of 10 and 
+		divides the value to be represented by these powers, writing the 
+		resulting digits to the console.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.printBits.int</strong>: Writes the binary 
+		description of a value in integer format (32 bits) to the text console. 
+		To do this, it performs a 32-step loop, shifting the bits to obtain the 
+		binary digit to be represented, writing the characters '0' or '1' to the 
+		console as appropriate.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.printHex.int</strong>: Writes the hexadecimal 
+		description of a value in integer format (32 bits) to the text console. 
+		To do this, it performs an 8-step loop, shifting the bits to obtain the 
+		4 bits of the digit to be represented and converts these bits into 
+		values in the range 48-57 (characters '0' to '9') or 65-70 (characters 
+		'A' to 'F') to represent them on the console.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.readChar.out.char</strong>: Reads a character from 
+		the text console using the sys_read system call (code 63). The value is 
+		stored at the position indicated by reference on the stack (sp+16).</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Console.readInt.out_int</strong>: Reads an integer from 
+		the text console. To do this, it reads characters using the sys_read 
+		system call (code 63). First, it skips characters 48 and 57 (space and 
+		tab) until it finds decimal digits. From there, it updates the result 
+		with each decimal digit read. It terminates when it finds any character 
+		that isn't a decimal digit ('0'-'9') and stores the result in the memory 
+		location indicated by the reference pushed onto the stack (sp+16).</p>
+		</li>
+	</ul>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ #------------------------------------------------------------------
+ # Copyright (c) 2024, Francisco J. Moreno Velo                   
+ # All rights reserved.                                             
+ #------------------------------------------------------------------
+
+ #------------------------------------------------------------------
+ # urium.Console.print.char
+ #------------------------------------------------------------------
+
+	.globl	urium.Console.print.char
+ urium.Console.print.char:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+
+ # [code 64] sys_write(fd, char* buf, int count)
+ # stdout = 1
+	li a7, 64
+	li a0, 1
+	addi a1, sp, 16
+	li a2, 1
+	ecall   
+
+ urium.Console.print.char.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+
+ #------------------------------------------------------------------
+ # urium.Console.print.digit
+ #------------------------------------------------------------------
+
+	.globl urium.Console.print.digit 
+ urium.Console.print.digit:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+
+	lw a0, 16(s0)
+	addi a0, a0, 48
+	sw a0, 16(s0)
+
+ # [code 64] sys_write(fd, char* buf, int count)
+ # stdout = 1
+	li a7, 64
+	li a0, 1
+	addi a1, sp, 16
+	li a2, 1
+	ecall   
+
+ urium.Console.print.digit.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+ 	
+ #------------------------------------------------------------------
+ # urium.Console.digits.int
+ #------------------------------------------------------------------
+
+	.globl urium.Console.digits.int
+
+ urium.Console.digits.int:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+
+	lw t0, 16(s0)
+	li a0, 10
+	lui t2, 0x3B9AD
+	addi t2, t2, -1536
+	bgt t0, t2, urium.Console.digits.int.endp
+	li a0, 1
+	li t2, 10
+	blt t0, t2, urium.Console.digits.int.endp
+ urium.Console.digits.int.1:
+	addi a0, a0, 1
+	li t1, 10
+	mul t2, t2, t1
+	ble t2, t0, urium.Console.digits.int.1
+
+ urium.Console.digits.int.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+	
+ #------------------------------------------------------------------
+ # urium.Console.power10.int
+ #------------------------------------------------------------------
+
+	.globl urium.Console.power10.int
+	
+ urium.Console.power10.int:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+
+	lw t0, 16(s0)
+	li a0, 0
+	li t1, 9
+	bgt t0, t1, urium.Console.power10.int.endp
+	li a0, 1
+	li a1, 10
+	li t1, 0
+ urium.Console.power10.int.1:
+	beq t0, t1, urium.Console.power10.int.endp
+	mul a0, a0, a1
+	addi t1, t1, 1
+	j urium.Console.power10.int.1
+
+ urium.Console.power10.int.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+	
+ #------------------------------------------------------------------
+ # urium.Console.print.int
+ #------------------------------------------------------------------
+
+	.globl urium.Console.print.int
+	
+ urium.Console.print.int:
+	addi sp, sp, -24
+	sd ra, 16(sp)
+	sd s0, 8(sp)
+	or s0, zero, sp
+
+	lw a0, 24(s0)
+	bge a0, zero, urium.Console.print.int.1
+	addi sp, sp, -8
+	li t0, 45
+	sw t0, 0(sp)
+	jal urium.Console.print.char
+	addi sp, sp, 8
+	neg a0, a0
+	sw a0, 24(s0)
+ urium.Console.print.int.1:	
+	addi sp, sp, -8
+	sw a0, 0(sp)
+	jal urium.Console.digits.int
+	addi sp, sp, 8
+	sw a0, 0(s0)
+ urium.Console.print.int.2:	
+	li t2, 1
+	lw t3, 0(s0)
+	ble t3, t2, urium.Console.print.int.3
+	addi t3, t3, -1
+	sw t3, 0(s0)
+	addi sp, sp, -8
+	sw t3, 0(sp)
+	jal urium.Console.power10.int 
+	addi sp, sp, -8
+	lw t4, 24(s0)
+	div t5, t4, a0	
+	rem t4, t4, a0
+	sw t4, 24(s0)
+	addi sp, sp, -8
+	addi t5, t5, 48
+	sw t5, 0(sp)
+	jal urium.Console.print.char
+	addi sp, sp, 8
+	j urium.Console.print.int.2
+ urium.Console.print.int.3:
+	addi sp, sp, -8
+	lw t4, 24(s0)
+	addi t4, t4, 48
+	sw t4, 0(sp)
+	jal urium.Console.print.char
+	addi sp, sp, 8
+
+ urium.Console.print.int.endp:
+	or sp, zero, s0
+	ld ra, 16(sp)
+	ld s0, 8(sp)
+	addi sp, sp, 24
+	ret	
+
+ #------------------------------------------------------------------
+ # urium.Console.printBits.int
+ #------------------------------------------------------------------
+
+	.globl urium.Console.printBits.int
+	
+ urium.Console.printBits.int:
+	addi sp, sp, -24
+	sd ra, 16(sp)
+	sd s0, 8(sp)
+	or s0, zero, sp
+
+	li a1, 31
+	sw a1, 0(s0)
+ urium.Console.printBits.int.1:
+	lw a0, 24(s0)
+	srl t0, a0, a1
+	andi t0, t0, 1
+	bne t0, zero, urium.Console.printBits.int.2
+	addi sp, sp, -8
+	li t0, 48
+	sw t0, 0(sp)
+	jal urium.Console.print.char
+	addi sp, sp, 8
+	j urium.Console.printBits.int.3
+ urium.Console.printBits.int.2:
+	addi sp, sp, -8
+	li t0, 49
+	sw t0, 0(sp)
+	jal urium.Console.print.char
+	addi sp, sp, 8
+ urium.Console.printBits.int.3:
+	lw a1, 0(s0)
+	addi a1, a1, -1
+	sw a1, 0(s0)
+	bge a1, zero, urium.Console.printBits.int.1	
+
+ urium.Console.printBits.int.endp:
+	or sp, zero, s0
+	ld ra, 16(sp)
+	ld s0, 8(sp)
+	addi sp, sp, 24
+	ret
+
+ #------------------------------------------------------------------
+ # urium.Console.printHex.int
+ #------------------------------------------------------------------
+
+	.globl urium.Console.printHex.int
+	
+ urium.Console.printHex.int:
+	addi sp, sp, -24
+	sd ra, 16(sp)
+	sd s0, 8(sp)
+	or s0, zero, sp
+
+	li a1, 28
+	sw a1, 0(s0)
+ urium.Console.printHex.int.1:
+	lw a0, 24(s0)
+	srl t0, a0, a1
+	andi t0, t0, 0x0f
+	li t1, 10
+	bge t0, t1, urium.Console.printHex.int.2
+	addi t0, t0, 48
+	addi sp, sp, -8
+	sw t0, 0(sp)
+	jal urium.Console.print.char
+	addi sp, sp, 8
+	j urium.Console.printHex.int.3
+ urium.Console.printHex.int.2:
+	addi t0, t0, 55
+	addi sp, sp, -8
+	sw t0, 0(sp)
+	jal urium.Console.print.char
+	addi sp, sp, 8	
+ urium.Console.printHex.int.3:
+	lw a1, 0(s0)
+	addi a1, a1, -4
+	sw a1, 0(s0)
+	bge a1, zero, urium.Console.printHex.int.1
+
+ urium.Console.printHex.int.endp:
+	or sp, zero, s0
+	ld ra, 16(sp)
+	ld s0, 8(sp)
+	addi sp, sp, 24
+	ret	
+
+ #------------------------------------------------------------------
+ # urium.Console.readChar.out.char
+ #------------------------------------------------------------------
+
+	.globl urium.Console.readChar.out_char
+
+ urium.Console.readChar.out_char:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+	
+ # [code 63] sys_read(fd, char* buf, int count)
+ # stdin = 0
+	li a7, 63
+	li a0, 0
+	ld a1, 16(s0)
+	li a2, 1
+	ecall   
+
+ urium.Console.readChar.out_char.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+	
+ #------------------------------------------------------------------
+ # urium.Console.readInt.out_int
+ #------------------------------------------------------------------
+
+	.globl urium.Console.readInt.out_int
+
+ urium.Console.readInt.out_int:
+	addi sp, sp, -24
+	sd ra, 16(sp)
+	sd s0, 8(sp)
+	or s0, zero, sp
+ 
+ urium.Console.readInt.out_int.1:
+	li a7, 63
+	li a0, 0
+	addi a1, sp, 0
+	li a2, 1
+	ecall  
+	lw a0, 0(s0)
+	li t0, 32
+	beq a0, t0, urium.Console.readInt.out_int.1
+	li t0, 9
+	beq a0, t0, urium.Console.readInt.out_int.1   
+	sw zero, 4(s0)
+ urium.Console.readInt.out_int.2:	
+	li t0, 48
+	blt a0, t0, urium.Console.readInt.out_int.3
+	li t0, 57
+	bgt a0, t0, urium.Console.readInt.out_int.3  	
+	lw t0, 4(s0)
+	li t1, 10
+	mul t0, t0, t1
+	addi a0, a0, -48
+	add t0, t0, a0
+	sw t0, 4(s0)
+	li a7, 63
+	li a0, 0
+	addi a1, sp, 0
+	li a2, 1
+	ecall  
+	lw a0, 0(s0)
+	j urium.Console.readInt.out_int.2
+ urium.Console.readInt.out_int.3:
+	lw t0, 4(s0)
+	ld t1, 24(s0)
+	sw t0, 0(t1)
+
+ urium.Console.readInt.out_int.endp:
+	or sp, zero, s0
+	ld ra, 16(sp)
+	ld s0, 8(sp)
+	addi sp, sp, 24
+	ret	
+ 
+           </pre>
+          </td>
+        </tr>
+      </table>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+	The assembly code for the <strong>urium.Program</strong> library is located 
+	in the file<em> /libLinuxRiscv/urium/Program.s</em>. The library contains 
+	procedures for accessing command line arguments, which must be stored in the 
+	global variables URIUM.PROGRAM.ARGC and URIUM.PROGRAM.ARGV. The procedures 
+	included in the file are as follows:</p>
+	<ul>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Program.getArgCount.out_int</strong>: Copies the value 
+		stored in the global variable URIUM.PROGRAM.ARGC.</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Program.getArgLength.int.out_int</strong>: Computes the 
+		length (number of characters) of the i-th command line argument. To do 
+		this, it obtains the argument's memory position from the base position 
+		stored in URIUM.PROGRAM.ARGV. From this position, it begins reading 
+		bytes until it finds a null value. Finally, it stores the character 
+		counter value in the indicated position on the stack (sp+20).</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Program.getIntArg.int.out_int</strong>: Converts the 
+		character string of an argument to an integer value. To do this, it 
+		obtains the starting position of the argument and enters a loop, reading 
+		the bytes, interpreting them as decimal digits, and accumulating the 
+		value read. The loop ends when it reaches a null byte or an erroneous 
+		byte (in which case a value of -1 is returned). The calculated value is 
+		stored in the position indicated by reference on the stack (sp+20).</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Program.getCharArg.int.int.out_char</strong>: Gets the 
+		j-th character from the i-th argument. The procedure checks that the 
+		indices are within range before returning the contents of the indicated 
+		position. The character is stored at the position indicated by reference 
+		on the stack (sp+24).</p>
+		</li>
+		<li>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+		<strong>urium.Program.exit.int</strong>: It launches the sys_exit system 
+		call (code 93), causing the application to terminate.</p>
+		</li>
+	</ul>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ #------------------------------------------------------------------
+ # Copyright (c) 2024, Francisco J. Moreno Velo                   
+ # All rights reserved.                                             
+ #------------------------------------------------------------------
+
+ #------------------------------------------------------------------
+ # urium.Program.getArgCount.out_int
+ #------------------------------------------------------------------
+
+	.globl	urium.Program.getArgCount.out_int
+ urium.Program.getArgCount.out_int:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+	la t0, URIUM.PROGRAM.ARGC	
+	lw t1, 0(t0)
+	ld a0, 16(s0)
+	sw t1, 0(a0)
+ urium.Program.getArgCount.out_int.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+
+ #------------------------------------------------------------------
+ # urium.Program.getArgLength.int.out_int
+ #------------------------------------------------------------------
+
+	.globl	urium.Program.getArgLength.int.out_int
+ urium.Program.getArgLength.int.out_int:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+	lw a0, 16(s0)
+	
+	la t1, URIUM.PROGRAM.ARGC	
+	lw t0, 0(t1)
+	blt a0, zero, urium.Program.getArgLength.int.out_int.3
+	blt t0, a0, urium.Program.getArgLength.int.out_int.3
+	
+	la t1, URIUM.PROGRAM.ARGV
+	ld t0, 0(t1)
+	slli a0, a0, 3
+	add t1, t0, a0
+	ld t0, 0(t1)
+	li a0, 0
+ urium.Program.getArgLength.int.out_int.1:
+	add t1, t0, a0
+	lb a1, 0(t1)
+	beq a1, zero, urium.Program.getArgLength.int.out_int.2
+	addi a0, a0, 1
+	j urium.Program.getArgLength.int.out_int.1
+ urium.Program.getArgLength.int.out_int.2:
+	ld a1, 20(s0)
+	sw a0, 0(a1)
+	j urium.Program.getArgLength.int.out_int.endp
+ urium.Program.getArgLength.int.out_int.3:
+	ld a1, 20(s0)
+	li t1, -1
+	sw t1, 0(a1)
+ urium.Program.getArgLength.int.out_int.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+
+ #------------------------------------------------------------------
+ # urium.Program.getIntArg.int.out_int
+ #------------------------------------------------------------------
+
+	.globl	urium.Program.getIntArg.int.out_int
+ urium.Program.getIntArg.int.out_int:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+	
+	lw a0, 16(s0)
+	la t1, URIUM.PROGRAM.ARGC
+	ld t0, 0(t1)
+	blt a0, zero, urium.Program.getIntArg.int.out_int.3
+	blt t0, a0, urium.Program.getIntArg.int.out_int.3
+	la t1, URIUM.PROGRAM.ARGV
+	ld t0, 0(t1)
+	slli a0, a0, 3
+	add t1, t0, a0
+	ld t0, 0(t1)
+	li a0, 0
+	li a2, 0
+ urium.Program.getIntArg.int.out_int.1:
+	add t1, t0, a0
+	lb a1, 0(t1)
+	beq a1, zero, urium.Program.getIntArg.int.out_int.2
+	li t1, 48
+	blt a1, t1, urium.Program.getIntArg.int.out_int.3
+	li t1, 57
+	bgt a1, t1, urium.Program.getIntArg.int.out_int.3
+	li t1, 10
+	mul a2, a2, t1
+	addi a1, a1, -48
+	add a2, a2, a1
+	addi a0, a0, 1
+	j urium.Program.getIntArg.int.out_int.1
+ urium.Program.getIntArg.int.out_int.2:
+	ld a1, 20(s0)
+	sw a2, 0(a1)
+	j urium.Program.getIntArg.int.out_int.endp
+ urium.Program.getIntArg.int.out_int.3:
+	ld a1, 20(s0)
+	li a2, -1
+	sw a2, 0(a1)
+ urium.Program.getIntArg.int.out_int.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+
+ #------------------------------------------------------------------
+ # urium.Program.getCharArg.int.int.out_char
+ #------------------------------------------------------------------
+
+	.globl	urium.Program.getCharArg.int.int.out_char
+ urium.Program.getCharArg.int.int.out_char:
+	addi sp, sp, -16
+	sd ra, 8(sp)
+	sd s0, 0(sp)
+	or s0, zero, sp
+	lw a0, 16(s0)
+	la t1, URIUM.PROGRAM.ARGC
+	ld t0, 0(t1)
+	blt a0, zero, urium.Program.getCharArg.int.int.out_char.3
+	blt t0, a0, urium.Program.getCharArg.int.int.out_char.3
+	la t1, URIUM.PROGRAM.ARGV
+	ld t0, 0(t1)
+	slli a0, a0, 3
+	add t1, t0, a0
+	ld t0, 0(t1)
+	li a0, 0
+	lw a1, 20(s0)
+	blt a1, zero, urium.Program.getCharArg.int.int.out_char.3
+ urium.Program.getCharArg.int.int.out_char.1:
+	add t1, t0, a0
+	lb a2, 0(t1)
+	beq a0, a1, urium.Program.getCharArg.int.int.out_char.2
+	beq a2, zero, urium.Program.getCharArg.int.int.out_char.3
+	addi a0, a0, 1
+	j urium.Program.getCharArg.int.int.out_char.1
+ urium.Program.getCharArg.int.int.out_char.2:
+	ld a1, 24(s0)
+	sw a2, 0(a1)
+	j urium.Program.getCharArg.int.int.out_char.endp
+ urium.Program.getCharArg.int.int.out_char.3:
+	ld a1, 24(s0)
+	sw zero, 0(a1)
+ urium.Program.getCharArg.int.int.out_char.endp:
+	or sp, zero, s0
+	ld ra, 8(sp)
+	ld s0, 0(sp)
+	addi sp, sp, 16
+	ret
+
+ #------------------------------------------------------------------
+ # urium.Program.exit.int
+ #------------------------------------------------------------------
+
+	.globl	urium.Program.exit.int
+ urium.Program.exit.int:
+	lw a0, 0(sp)
+	li a7, 93
+	ecall			# syscall 93 ( sys_exit(result) )
+	nop
+	ret
+ 
+           </pre>
+          </td>
+        </tr>
+      </table>
+     
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+  	Finally, the <em>Kernel.s</em> file contains the assembly code common to all 
+	applications programmed in URIUM. The file begins by defining the global 
+	constants URIUM.PROGRAM.ARGC and URIUM.PROGRAM.ARGV in the data segment. It 
+	then defines the code segment and the<em> _start</em> procedure, which is 
+	the application's entry point. This procedure copies the command line 
+	arguments into the global variables. The operating system stores these 
+	values on the stack before jumping to the <em>_start</em> label. The 
+	argument counter (<em>argc</em>) is located at the base of the stack (<em>sp</em>+0). 
+	References to command line arguments are stored above. Thus, the base 
+	position of all these references is at <em>sp</em>+8. This is the value 
+	stored in the global variable URIUM.PROGRAM.ARGV. The<em> main()</em> 
+	procedure of the application's <em>Main</em> library is then called, and 
+	finally, system call 93 is executed, which corresponds to the application's 
+	exit.</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ #------------------------------------------------------------------
+ # Program arguments
+ #------------------------------------------------------------------
+
+	.data
+	.globl	URIUM.PROGRAM.ARGC
+	.align	8
+ URIUM.PROGRAM.ARGC:
+	.word		0
+
+	.globl	URIUM.PROGRAM.ARGV
+	.align	16
+ URIUM.PROGRAM.ARGV:
+	.word		0, 0, 0, 0
+
+	
+ #------------------------------------------------------------------
+ # Standard startup code.
+ # Save the program arguments: 'argc' (sp+0) and 'argv' (sp+8)
+ # Invoke the procedure "Main.main".
+ #------------------------------------------------------------------
+
+	.text
+	.globl _start
+ _start:
+	la t0, URIUM.PROGRAM.ARGC
+	lw a0, 0(sp)
+	sw a0, 0(t0)
+	la t0, URIUM.PROGRAM.ARGV
+	addi a1, sp, 8
+	sd a1, 0(t0)
+	jal Main.main
+
+	li a7, 93
+	li a0, 0
+	ecall			# ecall 93 (sys_exit)
+
+           </pre>
+          </td>
+        </tr>
+      </table>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+  
+  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+      <p align="center">
+       <font color="#FFFFFF"><span style="font-weight: 700">EXAMPLES</span></font>
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10px; margin-right: 10px">
+    <p>&nbsp;</p>
+    <p style="margin-left: 10px; margin-right: 10px; text-align: justify;">
+    To run the URIUM compiler on the VisionFive2 board, the Java Runtime 
+	Environment packages must be included in the Debian operating system. This 
+	way, you can run the &quot;java -jar&quot; command on the &quot;uriumc.jar&quot; compiler with 
+	the appropriate options to generate the assembler. Once the '.s' file is 
+	generated, the executable file can be generated using the &quot;as&quot; and &quot;ld&quot; 
+	commands (assemble and link).</p>
+	
+	<p style="margin-left: 10px; margin-right: 10px; text-align: justify;">For 
+	example, the <em>0.1_Argument_analysis</em> directory contains a URIUM 
+	application that analyzes call arguments and, if they are numbers, computes 
+	the minimum, maximum, and average values of these arguments. The following 
+	window shows the compilation and execution process of the example. First, 
+	the compiler is launched with the -linux_riscv option and the appropriate 
+	directories. The<em> App.s</em> file generated by the compiler is then 
+	assembled using the 'as' command. Finally, the <em>App.o</em> file is linked 
+	with the 'ld' command, generating the executable file. The last line shows 
+	an example of the application running with the arguments '10 20 30 40 50' on 
+	the command line. You can verify that the result displayed in the text 
+	console is correct.</p>
+		<p style="margin-left: 10px; margin-right: 10px; text-align: center;">
+	<img src="lecture12/VisionFive2_compile.png" alt="COMPILE" width="700">
+	</p>
+
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+
+  <p>&nbsp;</p>
+
+
+</td>
+</tr>
+</table>
+
+
+
+<p>&nbsp;</p>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,2237 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>RISC-V System call table</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<h1 class="auto-style1">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RISC-V System call table</h1>
+<table id="syscalls-table" class="syscalls-table" width="800" border="2px">
+	<thead>
+		<tr>
+			<td style="width: 32px">#</td>
+			<td style="width: 120px">Call</td>
+			<td>Prototype</td>
+		</tr>
+	</thead>
+	<tbody id="syscalls-table-body">
+		<tr>
+			<td>0</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/io_setup.2.html">
+			io_setup</a></td>
+			<td><small><kbd>asmlinkage long sys_io_setup(unsigned nr_reqs, 
+			aio_context_t __user *ctx);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>1</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_destroy.2.html">
+			io_destroy</a></td>
+			<td><small><kbd>asmlinkage long sys_io_destroy(aio_context_t ctx);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>2</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_submit.2.html">
+			io_submit</a></td>
+			<td><small><kbd>asmlinkage long sys_io_submit(aio_context_t, long, 
+			struct iocb __user * __user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>3</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_cancel.2.html">
+			io_cancel</a></td>
+			<td><small><kbd>asmlinkage long sys_io_cancel(aio_context_t ctx_id, 
+			struct iocb __user *iocb, struct io_event __user *result);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>4</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_getevents.2.html">
+			io_getevents</a></td>
+			<td><small><kbd>asmlinkage long sys_io_getevents(aio_context_t 
+			ctx_id, long min_nr, long nr, struct io_event __user *events, struct 
+			__kernel_timespec __user *timeout);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>5</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setxattr.2.html">
+			setxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_setxattr(const char __user 
+			*path, const char __user *name, const void __user *value, size_t 
+			size, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>6</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/lsetxattr.2.html">
+			lsetxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_lsetxattr(const char __user 
+			*path, const char __user *name, const void __user *value, size_t 
+			size, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>7</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fsetxattr.2.html">
+			fsetxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_fsetxattr(int fd, const char 
+			__user *name, const void __user *value, size_t size, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>8</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getxattr.2.html">
+			getxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_getxattr(const char __user 
+			*path, const char __user *name, void __user *value, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>9</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/lgetxattr.2.html">
+			lgetxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_lgetxattr(const char __user 
+			*path, const char __user *name, void __user *value, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>10</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fgetxattr.2.html">
+			fgetxattr</a></td>
+			<td><small><kbd style="border-color: #000000">asmlinkage long sys_fgetxattr(int fd, const char 
+			__user *name, void __user *value, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>11</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/listxattr.2.html">
+			listxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_listxattr(const char __user 
+			*path, char __user *list, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>12</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/llistxattr.2.html">
+			llistxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_llistxattr(const char __user 
+			*path, char __user *list, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>13</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/flistxattr.2.html">
+			flistxattr</a></td>
+			<td><small><kbd>asmlinkage long sys_flistxattr(int fd, char __user 
+			*list, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>14</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/removexattr.2.html">
+			removexattr</a></td>
+			<td><small><kbd>asmlinkage long sys_removexattr(const char __user 
+			*path, const char __user *name);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>15</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/lremovexattr.2.html">
+			lremovexattr</a></td>
+			<td><small><kbd>asmlinkage long sys_lremovexattr(const char __user 
+			*path, const char __user *name);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>16</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fremovexattr.2.html">
+			fremovexattr</a></td>
+			<td><small><kbd>asmlinkage long sys_fremovexattr(int fd, const char 
+			__user *name);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>17</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getcwd.2.html">
+			getcwd</a></td>
+			<td><small><kbd>asmlinkage long sys_getcwd(char __user *buf, 
+			unsigned long size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>18</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/lookup_dcookie.2.html">
+			lookup_dcookie</a></td>
+			<td><small><kbd>asmlinkage long sys_lookup_dcookie(u64 cookie64, 
+			char __user *buf, size_t len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>19</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/eventfd2.2.html">
+			eventfd2</a></td>
+			<td><small><kbd>asmlinkage long sys_eventfd2(unsigned int count, int 
+			flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>20</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/epoll_create1.2.html">
+			epoll_create1</a></td>
+			<td><small><kbd>asmlinkage long sys_epoll_create1(int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>21</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/epoll_ctl.2.html">
+			epoll_ctl</a></td>
+			<td><small><kbd>asmlinkage long sys_epoll_ctl(int epfd, int op, int 
+			fd, struct epoll_event __user *event);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>22</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/epoll_pwait.2.html">
+			epoll_pwait</a></td>
+			<td><small><kbd>asmlinkage long sys_epoll_pwait(int epfd, struct 
+			epoll_event __user *events, int maxevents, int timeout, const 
+			sigset_t __user *sigmask, size_t sigsetsize);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>23</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/dup.2.html">dup</a></td>
+			<td><small><kbd>asmlinkage long sys_dup(unsigned int fildes);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>24</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/dup3.2.html">dup3</a></td>
+			<td><small><kbd>asmlinkage long sys_dup3(unsigned int oldfd, 
+			unsigned int newfd, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>25</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fcntl64.2.html">
+			fcntl64</a></td>
+			<td><small><kbd>asmlinkage long sys_fcntl64(unsigned int fd, 
+			unsigned int cmd, unsigned long arg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>26</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/inotify_init1.2.html">
+			inotify_init1</a></td>
+			<td><small><kbd>asmlinkage long sys_inotify_init1(int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>27</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/inotify_add_watch.2.html">
+			inotify_add_watch</a></td>
+			<td><small><kbd>asmlinkage long sys_inotify_add_watch(int fd, const 
+			char __user *path, u32 mask);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>28</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/inotify_rm_watch.2.html">
+			inotify_rm_watch</a></td>
+			<td><small><kbd>asmlinkage long sys_inotify_rm_watch(int fd, __s32 
+			wd);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>29</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/ioctl.2.html">
+			ioctl</a></td>
+			<td><small><kbd>asmlinkage long sys_ioctl(unsigned int fd, unsigned 
+			int cmd, unsigned long arg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>30</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/ioprio_set.2.html">
+			ioprio_set</a></td>
+			<td><small><kbd>asmlinkage long sys_ioprio_set(int which, int who, 
+			int ioprio);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>31</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/ioprio_get.2.html">
+			ioprio_get</a></td>
+			<td><small><kbd>asmlinkage long sys_ioprio_get(int which, int who);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>32</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/flock.2.html">
+			flock</a></td>
+			<td><small><kbd>asmlinkage long sys_flock(unsigned int fd, unsigned 
+			int cmd);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>33</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mknodat.2.html">
+			mknodat</a></td>
+			<td><small><kbd>asmlinkage long sys_mknodat(int dfd, const char 
+			__user * filename, umode_t mode, unsigned dev);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>34</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mkdirat.2.html">
+			mkdirat</a></td>
+			<td><small><kbd>asmlinkage long sys_mkdirat(int dfd, const char 
+			__user * pathname, umode_t mode);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>35</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/unlinkat.2.html">
+			unlinkat</a></td>
+			<td><small><kbd>asmlinkage long sys_unlinkat(int dfd, const char 
+			__user * pathname, int flag);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>36</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/symlinkat.2.html">
+			symlinkat</a></td>
+			<td><small><kbd>asmlinkage long sys_symlinkat(const char __user * 
+			oldname, int newdfd, const char __user * newname);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>37</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/linkat.2.html">
+			linkat</a></td>
+			<td><small><kbd>asmlinkage long sys_unlinkat(int dfd, const char 
+			__user * pathname, int flag);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>38</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/renameat.2.html">
+			renameat</a></td>
+			<td><small><kbd>asmlinkage long sys_renameat(int olddfd, const char 
+			__user * oldname, int newdfd, const char __user * newname);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>39</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/umount.2.html">
+			umount</a></td>
+			<td><small><kbd>asmlinkage long sys_umount(char __user *name, int 
+			flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>40</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mount.2.html">
+			mount</a></td>
+			<td><small><kbd>asmlinkage long sys_umount(char __user *name, int 
+			flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>41</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pivot_root.2.html">
+			pivot_root</a></td>
+			<td><small><kbd>asmlinkage long sys_pivot_root(const char __user 
+			*new_root, const char __user *put_old);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>42</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/ni_syscall.2.html">
+			ni_syscall</a></td>
+			<td><small><kbd>asmlinkage long sys_ni_syscall(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>43</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/statfs64.2.html">
+			statfs64</a></td>
+			<td><small><kbd>asmlinkage long sys_statfs64(const char __user 
+			*path, size_t sz, struct statfs64 __user *buf);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>44</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fstatfs64.2.html">
+			fstatfs64</a></td>
+			<td><small><kbd>asmlinkage long sys_fstatfs64(unsigned int fd, 
+			size_t sz, struct statfs64 __user *buf);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>45</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/truncate64.2.html">
+			truncate64</a></td>
+			<td><small><kbd>asmlinkage long sys_truncate64(const char __user 
+			*path, loff_t length);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>46</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/ftruncate64.2.html">
+			ftruncate64</a></td>
+			<td><small><kbd>asmlinkage long sys_ftruncate64(unsigned int fd, 
+			loff_t length);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>47</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fallocate.2.html">
+			fallocate</a></td>
+			<td><small><kbd>asmlinkage long sys_fallocate(int fd, int mode, 
+			loff_t offset, loff_t len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>48</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/faccessat.2.html">
+			faccessat</a></td>
+			<td><small><kbd>asmlinkage long sys_faccessat(int dfd, const char 
+			__user *filename, int mode);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>49</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/chdir.2.html">
+			chdir</a></td>
+			<td><small><kbd>asmlinkage long sys_chdir(const char __user 
+			*filename);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>50</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fchdir.2.html">
+			fchdir</a></td>
+			<td><small><kbd>asmlinkage long sys_fchdir(unsigned int fd);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>51</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/chroot.2.html">
+			chroot</a></td>
+			<td><small><kbd>asmlinkage long sys_chroot(const char __user 
+			*filename);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>52</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fchmod.2.html">
+			fchmod</a></td>
+			<td><small><kbd>asmlinkage long sys_fchmod(unsigned int fd, umode_t 
+			mode);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>53</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fchmodat.2.html">
+			fchmodat</a></td>
+			<td><small><kbd>asmlinkage long sys_fchmodat(int dfd, const char 
+			__user * filename, umode_t mode);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>54</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fchownat.2.html">
+			fchownat</a></td>
+			<td><small><kbd>asmlinkage long sys_fchownat(int dfd, const char 
+			__user *filename, uid_t user, gid_t group, int flag);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>55</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fchown.2.html">
+			fchown</a></td>
+			<td><small><kbd>asmlinkage long sys_fchown(unsigned int fd, uid_t 
+			user, gid_t group);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>56</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/openat.2.html">
+			openat</a></td>
+			<td><small><kbd>asmlinkage long sys_openat(int dfd, const char 
+			__user *filename, int flags, umode_t mode);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>57</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/close.2.html">
+			close</a></td>
+			<td><small><kbd>asmlinkage long sys_close(unsigned int fd);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>58</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/vhangup.2.html">
+			vhangup</a></td>
+			<td><small><kbd>asmlinkage long sys_vhangup(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>59</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/pipe2.2.html">
+			pipe2</a></td>
+			<td><small><kbd>asmlinkage long sys_pipe2(int __user *fildes, int 
+			flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>60</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/quotactl.2.html">
+			quotactl</a></td>
+			<td><small><kbd>asmlinkage long sys_quotactl(unsigned int cmd, const 
+			char __user *special, qid_t id, void __user *addr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>61</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getdents64.2.html">
+			getdents64</a></td>
+			<td><small><kbd>asmlinkage long sys_getdents64(unsigned int fd, 
+			struct linux_dirent64 __user *dirent, unsigned int count);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>62</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/lseek.2.html">
+			lseek</a></td>
+			<td><small><kbd>asmlinkage long sys_llseek(unsigned int fd, unsigned 
+			long offset_high, unsigned long offset_low, loff_t __user *result, 
+			unsigned int whence);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>63</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/read.2.html">read</a></td>
+			<td><small><kbd>asmlinkage long sys_read(unsigned int fd, char 
+			__user *buf, size_t count);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>64</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/write.2.html">
+			write</a></td>
+			<td><small><kbd>asmlinkage long sys_write(unsigned int fd, const 
+			char __user *buf, size_t count);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>65</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/readv.2.html">
+			readv</a></td>
+			<td><small><kbd>asmlinkage long sys_readv(unsigned long fd, const 
+			struct iovec __user *vec, unsigned long vlen);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>66</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/writev.2.html">
+			writev</a></td>
+			<td><small><kbd>asmlinkage long sys_writev(unsigned long fd, const 
+			struct iovec __user *vec, unsigned long vlen);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>67</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/pread64.2.html">
+			pread64</a></td>
+			<td><small><kbd>asmlinkage long sys_pread64(unsigned int fd, char 
+			__user *buf, size_t count, loff_t pos);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>68</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/pwrite64.2.html">
+			pwrite64</a></td>
+			<td><small><kbd>asmlinkage long sys_pwrite64(unsigned int fd, const 
+			char __user *buf, size_t count, loff_t pos);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>69</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/preadv.2.html">
+			preadv</a></td>
+			<td><small><kbd>asmlinkage long sys_preadv(unsigned long fd, const 
+			struct iovec __user *vec, unsigned long vlen, unsigned long pos_l, 
+			unsigned long pos_h);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>70</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/pwritev.2.html">
+			pwritev</a></td>
+			<td><small><kbd>asmlinkage long sys_pwritev(unsigned long fd, const 
+			struct iovec __user *vec, unsigned long vlen, unsigned long pos_l, 
+			unsigned long pos_h);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>71</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sendfile64.2.html">
+			sendfile64</a></td>
+			<td><small><kbd>asmlinkage long sys_sendfile64(int out_fd, int 
+			in_fd, loff_t __user *offset, size_t count);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>72</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pselect6_time32.2.html">
+			pselect6_time32</a></td>
+			<td><small><kbd>asmlinkage long sys_pselect6_time32(int, fd_set 
+			__user *, fd_set __user *, fd_set __user *, struct old_timespec32 
+			__user *, void __user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>73</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/ppoll_time32.2.html">
+			ppoll_time32</a></td>
+			<td><small><kbd>asmlinkage long sys_ppoll_time32(struct pollfd 
+			__user *, unsigned int, struct old_timespec32 __user *, const 
+			sigset_t __user *, size_t);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>74</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/signalfd4.2.html">
+			signalfd4</a></td>
+			<td><small><kbd>asmlinkage long sys_signalfd4(int ufd, sigset_t 
+			__user *user_mask, size_t sizemask, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>75</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/vmsplice.2.html">
+			vmsplice</a></td>
+			<td><small><kbd>asmlinkage long sys_vmsplice(int fd, const struct 
+			iovec __user *iov, unsigned long nr_segs, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>76</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/splice.2.html">
+			splice</a></td>
+			<td><small><kbd>asmlinkage long sys_vmsplice(int fd, const struct 
+			iovec __user *iov, unsigned long nr_segs, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>77</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/tee.2.html">tee</a></td>
+			<td><small><kbd>asmlinkage long sys_tee(int fdin, int fdout, size_t 
+			len, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>78</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/readlinkat.2.html">
+			readlinkat</a></td>
+			<td><small><kbd>asmlinkage long sys_readlinkat(int dfd, const char 
+			__user *path, char __user *buf, int bufsiz);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>79</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/newfstatat.2.html">
+			newfstatat</a></td>
+			<td><small><kbd>asmlinkage long sys_newfstatat(int dfd, const char 
+			__user *filename, struct stat __user *statbuf, int flag);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>80</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/newfstat.2.html">
+			newfstat</a></td>
+			<td><small><kbd>asmlinkage long sys_newfstat(unsigned int fd, struct 
+			stat __user *statbuf);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>81</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/sync.2.html">sync</a></td>
+			<td><small><kbd>asmlinkage long sys_sync(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>82</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fsync.2.html">
+			fsync</a></td>
+			<td><small><kbd>asmlinkage long sys_fsync(unsigned int fd);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>83</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fdatasync.2.html">
+			fdatasync</a></td>
+			<td><small><kbd>asmlinkage long sys_fdatasync(unsigned int fd);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>84</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sync_file_range2.2.html">
+			sync_file_range2</a></td>
+			<td><small><kbd>asmlinkage long sys_sync_file_range2(int fd, 
+			unsigned int flags, loff_t offset, loff_t nbytes);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>84</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sync_file_range.2.html">
+			sync_file_range</a></td>
+			<td><small><kbd>asmlinkage long sys_sync_file_range(int fd, loff_t 
+			offset, loff_t nbytes, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>85</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timerfd_create.2.html">
+			timerfd_create</a></td>
+			<td><small><kbd>asmlinkage long sys_timerfd_create(int clockid, int 
+			flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>411</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timerfd_settime.2.html">
+			timerfd_settime</a></td>
+			<td><small><kbd>asmlinkage long sys_timerfd_settime(int ufd, int 
+			flags, const struct __kernel_itimerspec __user *utmr, struct 
+			__kernel_itimerspec __user *otmr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>410</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timerfd_gettime.2.html">
+			timerfd_gettime</a></td>
+			<td><small><kbd>asmlinkage long sys_timerfd_gettime(int ufd, struct 
+			__kernel_itimerspec __user *otmr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>412</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/utimensat.2.html">
+			utimensat</a></td>
+			<td><small><kbd>asmlinkage long sys_utimensat(int dfd, const char 
+			__user *filename, struct __kernel_timespec __user *utimes, int 
+			flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>89</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/acct.2.html">acct</a></td>
+			<td><small><kbd>asmlinkage long sys_acct(const char __user *name);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>90</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/capget.2.html">
+			capget</a></td>
+			<td><small><kbd>asmlinkage long sys_capget(cap_user_header_t header, 
+			cap_user_data_t dataptr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>91</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/capset.2.html">
+			capset</a></td>
+			<td><small><kbd>asmlinkage long sys_capset(cap_user_header_t header, 
+			const cap_user_data_t data);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>92</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/personality.2.html">
+			personality</a></td>
+			<td><small><kbd>asmlinkage long sys_personality(unsigned int 
+			personality);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>93</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/exit.2.html">exit</a></td>
+			<td><small><kbd>asmlinkage long sys_exit(int error_code);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>94</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/exit_group.2.html">
+			exit_group</a></td>
+			<td><small><kbd>asmlinkage long sys_exit_group(int error_code);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>95</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/waitid.2.html">
+			waitid</a></td>
+			<td><small><kbd>asmlinkage long sys_waitid(int which, pid_t pid, 
+			struct siginfo __user *infop, int options, struct rusage __user 
+			*ru);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>96</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/set_tid_address.2.html">
+			set_tid_address</a></td>
+			<td><small><kbd>asmlinkage long sys_set_tid_address(int __user 
+			*tidptr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>97</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/unshare.2.html">
+			unshare</a></td>
+			<td><small><kbd>asmlinkage long sys_unshare(unsigned long 
+			unshare_flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>422</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/futex.2.html">
+			futex</a></td>
+			<td><small><kbd>asmlinkage long sys_futex(u32 __user *uaddr, int op, 
+			u32 val, struct __kernel_timespec __user *utime, u32 __user *uaddr2, 
+			u32 val3);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>99</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/set_robust_list.2.html">
+			set_robust_list</a></td>
+			<td><small><kbd>asmlinkage long sys_set_robust_list(struct 
+			robust_list_head __user *head, size_t len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>100</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/get_robust_list.2.html">
+			get_robust_list</a></td>
+			<td><small><kbd>asmlinkage long sys_get_robust_list(int pid, struct 
+			robust_list_head __user * __user *head_ptr, size_t __user *len_ptr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>101</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/nanosleep.2.html">
+			nanosleep</a></td>
+			<td><small><kbd>asmlinkage long sys_nanosleep(struct 
+			__kernel_timespec __user *rqtp, struct __kernel_timespec __user 
+			*rmtp);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>102</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getitimer.2.html">
+			getitimer</a></td>
+			<td><small><kbd>asmlinkage long sys_getitimer(int which, struct 
+			__kernel_old_itimerval __user *value);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>103</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setitimer.2.html">
+			setitimer</a></td>
+			<td><small><kbd>asmlinkage long sys_setitimer(int which, struct 
+			__kernel_old_itimerval __user *value, struct __kernel_old_itimerval 
+			__user *ovalue);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>104</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/kexec_load.2.html">
+			kexec_load</a></td>
+			<td><small><kbd>asmlinkage long sys_kexec_load(unsigned long entry, 
+			unsigned long nr_segments, struct kexec_segment __user *segments, 
+			unsigned long flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>105</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/init_module.2.html">
+			init_module</a></td>
+			<td><small><kbd>asmlinkage long sys_init_module(void __user *umod, 
+			unsigned long len, const char __user *uargs);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>106</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/delete_module.2.html">
+			delete_module</a></td>
+			<td><small><kbd>asmlinkage long sys_delete_module(const char __user 
+			*name_user, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>107</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timer_create.2.html">
+			timer_create</a></td>
+			<td><small><kbd>asmlinkage long sys_timer_create(clockid_t 
+			which_clock, struct sigevent __user *timer_event_spec, timer_t 
+			__user * created_timer_id);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>408</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timer_gettime.2.html">
+			timer_gettime</a></td>
+			<td><small><kbd>asmlinkage long sys_timer_gettime(timer_t timer_id, 
+			struct __kernel_itimerspec __user *setting);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>109</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timer_getoverrun.2.html">
+			timer_getoverrun</a></td>
+			<td><small><kbd>asmlinkage long sys_timer_getoverrun(timer_t 
+			timer_id);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>409</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timer_settime.2.html">
+			timer_settime</a></td>
+			<td><small><kbd>asmlinkage long sys_timer_settime(timer_t timer_id, 
+			int flags, const struct __kernel_itimerspec __user *new_setting, 
+			struct __kernel_itimerspec __user *old_setting);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>111</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/timer_delete.2.html">
+			timer_delete</a></td>
+			<td><small><kbd>asmlinkage long sys_timer_delete(timer_t timer_id);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>404</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/clock_settime.2.html">
+			clock_settime</a></td>
+			<td><small><kbd>asmlinkage long sys_clock_settime(clockid_t 
+			which_clock, const struct __kernel_timespec __user *tp);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>403</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/clock_gettime.2.html">
+			clock_gettime</a></td>
+			<td><small><kbd>asmlinkage long sys_clock_gettime(clockid_t 
+			which_clock, struct __kernel_timespec __user *tp);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>406</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/clock_getres.2.html">
+			clock_getres</a></td>
+			<td><small><kbd>asmlinkage long sys_clock_getres(clockid_t 
+			which_clock, struct __kernel_timespec __user *tp);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>407</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/clock_nanosleep.2.html">
+			clock_nanosleep</a></td>
+			<td><small><kbd>asmlinkage long sys_clock_nanosleep(clockid_t 
+			which_clock, int flags, const struct __kernel_timespec __user *rqtp, 
+			struct __kernel_timespec __user *rmtp);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>116</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/syslog.2.html">
+			syslog</a></td>
+			<td><small><kbd>asmlinkage long sys_syslog(int type, char __user 
+			*buf, int len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>117</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/ptrace.2.html">
+			ptrace</a></td>
+			<td><small><kbd>asmlinkage long sys_ptrace(long request, long pid, 
+			unsigned long addr, unsigned long data);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>118</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_setparam.2.html">
+			sched_setparam</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_setparam(pid_t pid, struct 
+			sched_param __user *param);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>119</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_setscheduler.2.html">
+			sched_setscheduler</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_setscheduler(pid_t pid, 
+			int policy, struct sched_param __user *param);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>120</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_getscheduler.2.html">
+			sched_getscheduler</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_getscheduler(pid_t pid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>121</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_getparam.2.html">
+			sched_getparam</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_getparam(pid_t pid, struct 
+			sched_param __user *param);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>122</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_setaffinity.2.html">
+			sched_setaffinity</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_setaffinity(pid_t pid, 
+			unsigned int len, unsigned long __user *user_mask_ptr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>123</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_getaffinity.2.html">
+			sched_getaffinity</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_getaffinity(pid_t pid, 
+			unsigned int len, unsigned long __user *user_mask_ptr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>124</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_yield.2.html">
+			sched_yield</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_yield(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>125</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_get_priority_max.2.html">
+			sched_get_priority_max</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_get_priority_max(int 
+			policy);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>126</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_get_priority_min.2.html">
+			sched_get_priority_min</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_get_priority_min(int 
+			policy);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>423</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_rr_get_interval.2.html">
+			sched_rr_get_interval</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_rr_get_interval(pid_t pid, 
+			struct __kernel_timespec __user *interval);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>128</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/restart_syscall.2.html">
+			restart_syscall</a></td>
+			<td><small><kbd>asmlinkage long sys_restart_syscall(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>129</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/kill.2.html">kill</a></td>
+			<td><small><kbd>asmlinkage long sys_kill(pid_t pid, int sig);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>130</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/tkill.2.html">
+			tkill</a></td>
+			<td><small><kbd>asmlinkage long sys_tkill(pid_t pid, int sig);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>131</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/tgkill.2.html">
+			tgkill</a></td>
+			<td><small><kbd>asmlinkage long sys_tgkill(pid_t tgid, pid_t pid, 
+			int sig);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>132</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sigaltstack.2.html">
+			sigaltstack</a></td>
+			<td><small><kbd>asmlinkage long sys_sigaltstack(const struct 
+			sigaltstack __user *uss, struct sigaltstack __user *uoss);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>133</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/rt_sigsuspend.2.html">
+			rt_sigsuspend</a></td>
+			<td><small><kbd>asmlinkage long sys_rt_sigsuspend(sigset_t __user 
+			*unewset, size_t sigsetsize);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>134</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/rt_sigaction.2.html">
+			rt_sigaction</a></td>
+			<td><small><kbd>asmlinkage long sys_rt_sigaction(int, const struct 
+			sigaction __user *, struct sigaction __user *, size_t);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>135</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/rt_sigprocmask.2.html">
+			rt_sigprocmask</a></td>
+			<td><small><kbd>asmlinkage long sys_rt_sigprocmask(int how, sigset_t 
+			__user *set, sigset_t __user *oset, size_t sigsetsize);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>136</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/rt_sigpending.2.html">
+			rt_sigpending</a></td>
+			<td><small><kbd>asmlinkage long sys_rt_sigpending(sigset_t __user 
+			*set, size_t sigsetsize);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>137</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/rt_sigtimedwait_time32.2.html">
+			rt_sigtimedwait_time32</a></td>
+			<td><small><kbd>asmlinkage long sys_rt_sigtimedwait_time32(const 
+			sigset_t __user *uthese, siginfo_t __user *uinfo, const struct 
+			old_timespec32 __user *uts, size_t sigsetsize);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>138</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/rt_sigqueueinfo.2.html">
+			rt_sigqueueinfo</a></td>
+			<td><small><kbd>asmlinkage long sys_rt_sigqueueinfo(pid_t pid, int 
+			sig, siginfo_t __user *uinfo);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>140</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setpriority.2.html">
+			setpriority</a></td>
+			<td><small><kbd>asmlinkage long sys_setpriority(int which, int who, 
+			int niceval);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>141</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getpriority.2.html">
+			getpriority</a></td>
+			<td><small><kbd>asmlinkage long sys_getpriority(int which, int who);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>142</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/reboot.2.html">
+			reboot</a></td>
+			<td><small><kbd>asmlinkage long sys_reboot(int magic1, int magic2, 
+			unsigned int cmd, void __user *arg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>143</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setregid.2.html">
+			setregid</a></td>
+			<td><small><kbd>asmlinkage long sys_setregid(gid_t rgid, gid_t 
+			egid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>144</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setgid.2.html">
+			setgid</a></td>
+			<td><small><kbd>asmlinkage long sys_setgid(gid_t gid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>145</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setreuid.2.html">
+			setreuid</a></td>
+			<td><small><kbd>asmlinkage long sys_setreuid(uid_t ruid, uid_t 
+			euid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>146</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setuid.2.html">
+			setuid</a></td>
+			<td><small><kbd>asmlinkage long sys_setuid(uid_t uid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>147</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setresuid.2.html">
+			setresuid</a></td>
+			<td><small><kbd>asmlinkage long sys_setresuid(uid_t ruid, uid_t 
+			euid, uid_t suid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>148</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getresuid.2.html">
+			getresuid</a></td>
+			<td><small><kbd>asmlinkage long sys_getresuid(uid_t __user *ruid, 
+			uid_t __user *euid, uid_t __user *suid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>149</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setresgid.2.html">
+			setresgid</a></td>
+			<td><small><kbd>asmlinkage long sys_setresgid(gid_t rgid, gid_t 
+			egid, gid_t sgid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>150</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getresgid.2.html">
+			getresgid</a></td>
+			<td><small><kbd>asmlinkage long sys_getresgid(gid_t __user *rgid, 
+			gid_t __user *egid, gid_t __user *sgid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>151</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setfsuid.2.html">
+			setfsuid</a></td>
+			<td><small><kbd>asmlinkage long sys_setfsuid(uid_t uid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>152</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setfsgid.2.html">
+			setfsgid</a></td>
+			<td><small><kbd>asmlinkage long sys_setfsgid(gid_t gid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>153</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/times.2.html">
+			times</a></td>
+			<td><small><kbd>asmlinkage long sys_times(struct tms __user *tbuf);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>154</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setpgid.2.html">
+			setpgid</a></td>
+			<td><small><kbd>asmlinkage long sys_setpgid(pid_t pid, pid_t pgid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>155</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getpgid.2.html">
+			getpgid</a></td>
+			<td><small><kbd>asmlinkage long sys_getpgid(pid_t pid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>156</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getsid.2.html">
+			getsid</a></td>
+			<td><small><kbd>asmlinkage long sys_getsid(pid_t pid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>157</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setsid.2.html">
+			setsid</a></td>
+			<td><small><kbd>asmlinkage long sys_setsid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>158</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getgroups.2.html">
+			getgroups</a></td>
+			<td><small><kbd>asmlinkage long sys_getgroups(int gidsetsize, gid_t 
+			__user *grouplist);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>159</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setgroups.2.html">
+			setgroups</a></td>
+			<td><small><kbd>asmlinkage long sys_setgroups(int gidsetsize, gid_t 
+			__user *grouplist);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>160</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/newuname.2.html">
+			newuname</a></td>
+			<td><small><kbd>asmlinkage long sys_newuname(struct new_utsname 
+			__user *name);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>161</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sethostname.2.html">
+			sethostname</a></td>
+			<td><small><kbd>asmlinkage long sys_sethostname(char __user *name, 
+			int len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>162</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setdomainname.2.html">
+			setdomainname</a></td>
+			<td><small><kbd>asmlinkage long sys_setdomainname(char __user *name, 
+			int len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>163</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getrlimit.2.html">
+			getrlimit</a></td>
+			<td><small><kbd>asmlinkage long sys_getrlimit(unsigned int resource, 
+			struct rlimit __user *rlim);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>164</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setrlimit.2.html">
+			setrlimit</a></td>
+			<td><small><kbd>asmlinkage long sys_setrlimit(unsigned int resource, 
+			struct rlimit __user *rlim);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>165</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getrusage.2.html">
+			getrusage</a></td>
+			<td><small><kbd>asmlinkage long sys_getrusage(int who, struct rusage 
+			__user *ru);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>166</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/umask.2.html">
+			umask</a></td>
+			<td><small><kbd>asmlinkage long sys_umask(int mask);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>167</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/prctl.2.html">
+			prctl</a></td>
+			<td><small><kbd>asmlinkage long sys_prctl(int option, unsigned long 
+			arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>168</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getcpu.2.html">
+			getcpu</a></td>
+			<td><small><kbd>asmlinkage long sys_getcpu(unsigned __user *cpu, 
+			unsigned __user *node, struct getcpu_cache __user *cache);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>169</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/gettimeofday.2.html">
+			gettimeofday</a></td>
+			<td><small><kbd>asmlinkage long sys_gettimeofday(struct 
+			__kernel_old_timeval __user *tv, struct timezone __user *tz);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>170</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/settimeofday.2.html">
+			settimeofday</a></td>
+			<td><small><kbd>asmlinkage long sys_settimeofday(struct 
+			__kernel_old_timeval __user *tv, struct timezone __user *tz);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>171</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/adjtimex.2.html">
+			adjtimex</a></td>
+			<td><small><kbd>asmlinkage long sys_adjtimex(struct __kernel_timex 
+			__user *txc_p);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>172</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getpid.2.html">
+			getpid</a></td>
+			<td><small><kbd>asmlinkage long sys_getpid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>173</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getppid.2.html">
+			getppid</a></td>
+			<td><small><kbd>asmlinkage long sys_getppid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>174</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getuid.2.html">
+			getuid</a></td>
+			<td><small><kbd>asmlinkage long sys_getuid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>175</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/geteuid.2.html">
+			geteuid</a></td>
+			<td><small><kbd>asmlinkage long sys_geteuid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>176</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getgid.2.html">
+			getgid</a></td>
+			<td><small><kbd>asmlinkage long sys_getgid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>177</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/getegid.2.html">
+			getegid</a></td>
+			<td><small><kbd>asmlinkage long sys_getegid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>178</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/gettid.2.html">
+			gettid</a></td>
+			<td><small><kbd>asmlinkage long sys_gettid(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>179</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/sysinfo.2.html">
+			sysinfo</a></td>
+			<td><small><kbd>asmlinkage long sys_sysinfo(struct sysinfo __user 
+			*info);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>180</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mq_open.2.html">
+			mq_open</a></td>
+			<td><small><kbd>asmlinkage long sys_mq_open(const char __user *name, 
+			int oflag, umode_t mode, struct mq_attr __user *attr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>181</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/mq_unlink.2.html">
+			mq_unlink</a></td>
+			<td><small><kbd>asmlinkage long sys_mq_unlink(const char __user 
+			*name);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>418</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/mq_timedsend.2.html">
+			mq_timedsend</a></td>
+			<td><small><kbd>asmlinkage long sys_mq_timedsend(mqd_t mqdes, const 
+			char __user *msg_ptr, size_t msg_len, unsigned int msg_prio, const 
+			struct __kernel_timespec __user *abs_timeout);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>419</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/mq_timedreceive.2.html">
+			mq_timedreceive</a></td>
+			<td><small><kbd>asmlinkage long sys_mq_timedreceive(mqd_t mqdes, 
+			char __user *msg_ptr, size_t msg_len, unsigned int __user *msg_prio, 
+			const struct __kernel_timespec __user *abs_timeout);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>184</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/mq_notify.2.html">
+			mq_notify</a></td>
+			<td><small><kbd>asmlinkage long sys_mq_notify(mqd_t mqdes, const 
+			struct sigevent __user *notification);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>185</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/mq_getsetattr.2.html">
+			mq_getsetattr</a></td>
+			<td><small><kbd>asmlinkage long sys_mq_getsetattr(mqd_t mqdes, const 
+			struct mq_attr __user *mqstat, struct mq_attr __user *omqstat);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>186</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/msgget.2.html">
+			msgget</a></td>
+			<td><small><kbd>asmlinkage long sys_msgget(key_t key, int msgflg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>187</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/msgctl.2.html">
+			msgctl</a></td>
+			<td><small><kbd>asmlinkage long sys_old_msgctl(int msqid, int cmd, 
+			struct msqid_ds __user *buf);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>188</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/msgrcv.2.html">
+			msgrcv</a></td>
+			<td><small><kbd>asmlinkage long sys_msgrcv(int msqid, struct msgbuf 
+			__user *msgp, size_t msgsz, long msgtyp, int msgflg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>189</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/msgsnd.2.html">
+			msgsnd</a></td>
+			<td><small><kbd>asmlinkage long sys_msgsnd(int msqid, struct msgbuf 
+			__user *msgp, size_t msgsz, int msgflg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>190</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/semget.2.html">
+			semget</a></td>
+			<td><small><kbd>asmlinkage long sys_semget(key_t key, int nsems, int 
+			semflg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>191</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/semctl.2.html">
+			semctl</a></td>
+			<td><small><kbd>asmlinkage long sys_semctl(int semid, int semnum, 
+			int cmd, unsigned long arg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>420</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/semtimedop.2.html">
+			semtimedop</a></td>
+			<td><small><kbd>asmlinkage long sys_semtimedop(int semid, struct 
+			sembuf __user *sops, unsigned nsops, const struct __kernel_timespec 
+			__user *timeout);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>193</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/semop.2.html">
+			semop</a></td>
+			<td><small><kbd>asmlinkage long sys_semop(int semid, struct sembuf 
+			__user *sops, unsigned nsops);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>194</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/shmget.2.html">
+			shmget</a></td>
+			<td><small><kbd>asmlinkage long sys_shmget(key_t key, size_t size, 
+			int flag);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>195</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/shmctl.2.html">
+			shmctl</a></td>
+			<td><small><kbd>asmlinkage long sys_old_shmctl(int shmid, int cmd, 
+			struct shmid_ds __user *buf);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>196</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/shmat.2.html">
+			shmat</a></td>
+			<td><small><kbd>asmlinkage long sys_shmat(int shmid, char __user 
+			*shmaddr, int shmflg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>197</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/shmdt.2.html">
+			shmdt</a></td>
+			<td><small><kbd>asmlinkage long sys_shmdt(char __user *shmaddr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>198</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/socket.2.html">
+			socket</a></td>
+			<td><small><kbd>asmlinkage long sys_socket(int, int, int);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>199</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/socketpair.2.html">
+			socketpair</a></td>
+			<td><small><kbd>asmlinkage long sys_socketpair(int, int, int, int 
+			__user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>200</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/bind.2.html">bind</a></td>
+			<td><small><kbd>asmlinkage long sys_bind(int, struct sockaddr __user 
+			*, int);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>201</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/listen.2.html">
+			listen</a></td>
+			<td><small><kbd>asmlinkage long sys_listen(int, int);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>202</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/accept.2.html">
+			accept</a></td>
+			<td><small><kbd>asmlinkage long sys_accept(int, struct sockaddr 
+			__user *, int __user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>203</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/connect.2.html">
+			connect</a></td>
+			<td><small><kbd>asmlinkage long sys_connect(int, struct sockaddr 
+			__user *, int);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>204</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getsockname.2.html">
+			getsockname</a></td>
+			<td><small><kbd>asmlinkage long sys_getsockname(int, struct sockaddr 
+			__user *, int __user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>205</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getpeername.2.html">
+			getpeername</a></td>
+			<td><small><kbd>asmlinkage long sys_getpeername(int, struct sockaddr 
+			__user *, int __user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>206</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/sendto.2.html">
+			sendto</a></td>
+			<td><small><kbd>asmlinkage long sys_sendto(int, void __user *, 
+			size_t, unsigned, struct sockaddr __user *, int);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>207</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/recvfrom.2.html">
+			recvfrom</a></td>
+			<td><small><kbd>asmlinkage long sys_recvfrom(int, void __user *, 
+			size_t, unsigned, struct sockaddr __user *, int __user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>208</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/setsockopt.2.html">
+			setsockopt</a></td>
+			<td><small><kbd>asmlinkage long sys_setsockopt(int fd, int level, 
+			int optname, char __user *optval, int optlen);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>209</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">
+			getsockopt</a></td>
+			<td><small><kbd>asmlinkage long sys_getsockopt(int fd, int level, 
+			int optname, char __user *optval, int __user *optlen);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>210</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/shutdown.2.html">
+			shutdown</a></td>
+			<td><small><kbd>asmlinkage long sys_shutdown(int, int);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>211</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/sendmsg.2.html">
+			sendmsg</a></td>
+			<td><small><kbd>asmlinkage long sys_sendmsg(int fd, struct 
+			user_msghdr __user *msg, unsigned flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>212</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/recvmsg.2.html">
+			recvmsg</a></td>
+			<td><small><kbd>asmlinkage long sys_recvmsg(int fd, struct 
+			user_msghdr __user *msg, unsigned flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>213</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/readahead.2.html">
+			readahead</a></td>
+			<td><small><kbd>asmlinkage long sys_readahead(int fd, loff_t offset, 
+			size_t count);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>214</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/brk.2.html">brk</a></td>
+			<td><small><kbd>asmlinkage long sys_brk(unsigned long brk);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>215</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/munmap.2.html">
+			munmap</a></td>
+			<td><small><kbd>asmlinkage long sys_munmap(unsigned long addr, 
+			size_t len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>216</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mremap.2.html">
+			mremap</a></td>
+			<td><small><kbd>asmlinkage long sys_mremap(unsigned long addr, 
+			unsigned long old_len, unsigned long new_len, unsigned long flags, 
+			unsigned long new_addr);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>217</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/add_key.2.html">
+			add_key</a></td>
+			<td><small><kbd>asmlinkage long sys_add_key(const char __user 
+			*_type, const char __user *_description, const void __user 
+			*_payload, size_t plen, key_serial_t destringid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>218</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/request_key.2.html">
+			request_key</a></td>
+			<td><small><kbd>asmlinkage long sys_request_key(const char __user 
+			*_type, const char __user *_description, const char __user 
+			*_callout_info, key_serial_t destringid);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>219</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/keyctl.2.html">
+			keyctl</a></td>
+			<td><small><kbd>asmlinkage long sys_keyctl(int cmd, unsigned long 
+			arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>220</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/clone.2.html">
+			clone</a></td>
+			<td><small><kbd>asmlinkage long sys_clone(unsigned long, unsigned 
+			long, int __user *, unsigned long, int __user *);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>221</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/execve.2.html">
+			execve</a></td>
+			<td><small><kbd>asmlinkage long sys_execve(const char __user 
+			*filename, const char __user *const __user *argv, const char __user 
+			*const __user *envp);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>222</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mmap.2.html">mmap</a></td>
+			<td><small><kbd>asmlinkage long sys_old_mmap(struct mmap_arg_struct 
+			__user *arg);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>223</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fadvise64_64.2.html">
+			fadvise64_64</a></td>
+			<td><small><kbd>asmlinkage long sys_fadvise64_64(int fd, loff_t 
+			offset, loff_t len, int advice);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>224</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/swapon.2.html">
+			swapon</a></td>
+			<td><small><kbd>asmlinkage long sys_swapon(const char __user 
+			*specialfile, int swap_flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>225</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/swapoff.2.html">
+			swapoff</a></td>
+			<td><small><kbd>asmlinkage long sys_swapoff(const char __user 
+			*specialfile);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>226</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mprotect.2.html">
+			mprotect</a></td>
+			<td><small><kbd>asmlinkage long sys_mprotect(unsigned long start, 
+			size_t len, unsigned long prot);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>227</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/msync.2.html">
+			msync</a></td>
+			<td><small><kbd>asmlinkage long sys_msync(unsigned long start, 
+			size_t len, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>228</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mlock.2.html">
+			mlock</a></td>
+			<td><small><kbd>asmlinkage long sys_mlock(unsigned long start, 
+			size_t len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>229</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/munlock.2.html">
+			munlock</a></td>
+			<td><small><kbd>asmlinkage long sys_munlock(unsigned long start, 
+			size_t len);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>230</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mlockall.2.html">
+			mlockall</a></td>
+			<td><small><kbd>asmlinkage long sys_mlockall(int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>231</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/munlockall.2.html">
+			munlockall</a></td>
+			<td><small><kbd>asmlinkage long sys_munlockall(void);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>232</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mincore.2.html">
+			mincore</a></td>
+			<td><small><kbd>asmlinkage long sys_mincore(unsigned long start, 
+			size_t len, unsigned char __user * vec);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>233</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/madvise.2.html">
+			madvise</a></td>
+			<td><small><kbd>asmlinkage long sys_madvise(unsigned long start, 
+			size_t len, int behavior);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>234</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/remap_file_pages.2.html">
+			remap_file_pages</a></td>
+			<td><small><kbd>asmlinkage long sys_remap_file_pages(unsigned long 
+			start, unsigned long size, unsigned long prot, unsigned long pgoff, 
+			unsigned long flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>235</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mbind.2.html">
+			mbind</a></td>
+			<td><small><kbd>asmlinkage long sys_mbind(unsigned long start, 
+			unsigned long len, unsigned long mode, const unsigned long __user 
+			*nmask, unsigned long maxnode, unsigned flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>236</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/get_mempolicy.2.html">
+			get_mempolicy</a></td>
+			<td><small><kbd>asmlinkage long sys_get_mempolicy(int __user 
+			*policy, unsigned long __user *nmask, unsigned long maxnode, 
+			unsigned long addr, unsigned long flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>237</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/set_mempolicy.2.html">
+			set_mempolicy</a></td>
+			<td><small><kbd>asmlinkage long sys_set_mempolicy(int mode, const 
+			unsigned long __user *nmask, unsigned long maxnode);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>238</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/migrate_pages.2.html">
+			migrate_pages</a></td>
+			<td><small><kbd>asmlinkage long sys_migrate_pages(pid_t pid, 
+			unsigned long maxnode, const unsigned long __user *from, const 
+			unsigned long __user *to);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>239</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/move_pages.2.html">
+			move_pages</a></td>
+			<td><small><kbd>asmlinkage long sys_move_pages(pid_t pid, unsigned 
+			long nr_pages, const void __user * __user *pages, const int __user 
+			*nodes, int __user *status, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>240</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/rt_tgsigqueueinfo.2.html">
+			rt_tgsigqueueinfo</a></td>
+			<td><small><kbd>asmlinkage long sys_rt_tgsigqueueinfo(pid_t tgid, 
+			pid_t pid, int sig, siginfo_t __user *uinfo);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>241</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/perf_event_open.2.html">
+			perf_event_open</a></td>
+			<td><small><kbd>asmlinkage long sys_perf_event_open(</kbd></small></td>
+		</tr>
+		<tr>
+			<td>242</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/accept4.2.html">
+			accept4</a></td>
+			<td><small><kbd>asmlinkage long sys_accept4(int, struct sockaddr 
+			__user *, int __user *, int);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>243</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/recvmmsg_time32.2.html">
+			recvmmsg_time32</a></td>
+			<td><small><kbd>asmlinkage long sys_recvmmsg_time32(int fd, struct 
+			mmsghdr __user *msg, unsigned int vlen, unsigned flags, struct 
+			old_timespec32 __user *timeout);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>260</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/wait4.2.html">
+			wait4</a></td>
+			<td><small><kbd>asmlinkage long sys_wait4(pid_t pid, int __user 
+			*stat_addr, int options, struct rusage __user *ru);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>261</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/prlimit64.2.html">
+			prlimit64</a></td>
+			<td><small><kbd>asmlinkage long sys_prlimit64(pid_t pid, unsigned 
+			int resource, const struct rlimit64 __user *new_rlim, struct 
+			rlimit64 __user *old_rlim);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>262</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fanotify_init.2.html">
+			fanotify_init</a></td>
+			<td><small><kbd>asmlinkage long sys_fanotify_init(unsigned int 
+			flags, unsigned int event_f_flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>263</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/fanotify_mark.2.html">
+			fanotify_mark</a></td>
+			<td><small><kbd>asmlinkage long sys_fanotify_mark(int fanotify_fd, 
+			unsigned int flags, u64 mask, int fd, const char __user *pathname);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>264</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/name_to_handle_at.2.html">
+			name_to_handle_at</a></td>
+			<td><small><kbd>asmlinkage long sys_name_to_handle_at(int dfd, const 
+			char __user *name, struct file_handle __user *handle, int __user 
+			*mnt_id, int flag);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>265</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/open_by_handle_at.2.html">
+			open_by_handle_at</a></td>
+			<td><small><kbd>asmlinkage long sys_open_by_handle_at(int 
+			mountdirfd, struct file_handle __user *handle, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>405</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/clock_adjtime.2.html">
+			clock_adjtime</a></td>
+			<td><small><kbd>asmlinkage long sys_clock_adjtime(clockid_t 
+			which_clock, struct __kernel_timex __user *tx);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>267</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/syncfs.2.html">
+			syncfs</a></td>
+			<td><small><kbd>asmlinkage long sys_syncfs(int fd);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>268</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/setns.2.html">
+			setns</a></td>
+			<td><small><kbd>asmlinkage long sys_setns(int fd, int nstype);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>269</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/sendmmsg.2.html">
+			sendmmsg</a></td>
+			<td><small><kbd>asmlinkage long sys_sendmmsg(int fd, struct mmsghdr 
+			__user *msg, unsigned int vlen, unsigned flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>270</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/process_vm_readv.2.html">
+			process_vm_readv</a></td>
+			<td><small><kbd>asmlinkage long sys_process_vm_readv(pid_t pid, 
+			const struct iovec __user *lvec, unsigned long liovcnt, const struct 
+			iovec __user *rvec, unsigned long riovcnt, unsigned long flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>271</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/process_vm_writev.2.html">
+			process_vm_writev</a></td>
+			<td><small><kbd>asmlinkage long sys_process_vm_writev(pid_t pid, 
+			const struct iovec __user *lvec, unsigned long liovcnt, const struct 
+			iovec __user *rvec, unsigned long riovcnt, unsigned long flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>272</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/kcmp.2.html">kcmp</a></td>
+			<td><small><kbd>asmlinkage long sys_kcmp(pid_t pid1, pid_t pid2, int 
+			type, unsigned long idx1, unsigned long idx2);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>273</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/finit_module.2.html">
+			finit_module</a></td>
+			<td><small><kbd>asmlinkage long sys_finit_module(int fd, const char 
+			__user *uargs, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>274</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_setattr.2.html">
+			sched_setattr</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_setattr(pid_t pid, struct 
+			sched_attr __user *attr, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>275</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/sched_getattr.2.html">
+			sched_getattr</a></td>
+			<td><small><kbd>asmlinkage long sys_sched_getattr(pid_t pid, struct 
+			sched_attr __user *attr, unsigned int size, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>276</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/renameat2.2.html">
+			renameat2</a></td>
+			<td><small><kbd>asmlinkage long sys_renameat2(int olddfd, const char 
+			__user *oldname, int newdfd, const char __user *newname, unsigned 
+			int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>277</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/seccomp.2.html">
+			seccomp</a></td>
+			<td><small><kbd>asmlinkage long sys_seccomp(unsigned int op, 
+			unsigned int flags, void __user *uargs);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>278</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/getrandom.2.html">
+			getrandom</a></td>
+			<td><small><kbd>asmlinkage long sys_getrandom(char __user *buf, 
+			size_t count, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>279</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/memfd_create.2.html">
+			memfd_create</a></td>
+			<td><small><kbd>asmlinkage long sys_memfd_create(const char __user 
+			*uname_ptr, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>280</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/bpf.2.html">bpf</a></td>
+			<td><small><kbd>asmlinkage long sys_bpf(int cmd, union bpf_attr 
+			*attr, unsigned int size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>281</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/execveat.2.html">
+			execveat</a></td>
+			<td><small><kbd>asmlinkage long sys_execveat(int dfd, const char 
+			__user *filename, const char __user *const __user *argv, const char 
+			__user *const __user *envp, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>282</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/userfaultfd.2.html">
+			userfaultfd</a></td>
+			<td><small><kbd>asmlinkage long sys_userfaultfd(int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>283</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/membarrier.2.html">
+			membarrier</a></td>
+			<td><small><kbd>asmlinkage long sys_membarrier(int cmd, unsigned int 
+			flags, int cpu_id);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>284</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/mlock2.2.html">
+			mlock2</a></td>
+			<td><small><kbd>asmlinkage long sys_mlock2(unsigned long start, 
+			size_t len, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>285</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/copy_file_range.2.html">
+			copy_file_range</a></td>
+			<td><small><kbd>asmlinkage long sys_copy_file_range(int fd_in, 
+			loff_t __user *off_in, int fd_out, loff_t __user *off_out, size_t 
+			len, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>286</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/preadv2.2.html">
+			preadv2</a></td>
+			<td><small><kbd>asmlinkage long sys_preadv2(unsigned long fd, const 
+			struct iovec __user *vec, unsigned long vlen, unsigned long pos_l, 
+			unsigned long pos_h, rwf_t flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>287</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/pwritev2.2.html">
+			pwritev2</a></td>
+			<td><small><kbd>asmlinkage long sys_pwritev2(unsigned long fd, const 
+			struct iovec __user *vec, unsigned long vlen, unsigned long pos_l, 
+			unsigned long pos_h, rwf_t flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>288</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pkey_mprotect.2.html">
+			pkey_mprotect</a></td>
+			<td><small><kbd>asmlinkage long sys_pkey_mprotect(unsigned long 
+			start, size_t len, unsigned long prot, int pkey);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>289</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pkey_alloc.2.html">
+			pkey_alloc</a></td>
+			<td><small><kbd>asmlinkage long sys_pkey_alloc(unsigned long flags, 
+			unsigned long init_val);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>290</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pkey_free.2.html">
+			pkey_free</a></td>
+			<td><small><kbd>asmlinkage long sys_pkey_free(int pkey);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>291</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/statx.2.html">
+			statx</a></td>
+			<td><small><kbd>asmlinkage long sys_statx(int dfd, const char __user 
+			*path, unsigned flags, unsigned mask, struct statx __user *buffer);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>416</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_pgetevents.2.html">
+			io_pgetevents</a></td>
+			<td><small><kbd>asmlinkage long sys_io_pgetevents(aio_context_t 
+			ctx_id, long min_nr, long nr, struct io_event __user *events, struct 
+			__kernel_timespec __user *timeout, const struct __aio_sigset *sig);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>293</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/rseq.2.html">rseq</a></td>
+			<td><small><kbd>asmlinkage long sys_rseq(struct rseq __user *rseq, 
+			uint32_t rseq_len, int flags, uint32_t sig);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>294</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/kexec_file_load.2.html">
+			kexec_file_load</a></td>
+			<td><small><kbd>asmlinkage long sys_kexec_file_load(int kernel_fd, 
+			int initrd_fd, unsigned long cmdline_len, const char __user 
+			*cmdline_ptr, unsigned long flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>424</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pidfd_send_signal.2.html">
+			pidfd_send_signal</a></td>
+			<td><small><kbd>asmlinkage long sys_pidfd_send_signal(int pidfd, int 
+			sig, siginfo_t __user *info, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>425</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_uring_setup.2.html">
+			io_uring_setup</a></td>
+			<td><small><kbd>asmlinkage long sys_io_uring_setup(u32 entries, 
+			struct io_uring_params __user *p);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>426</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_uring_enter.2.html">
+			io_uring_enter</a></td>
+			<td><small><kbd>asmlinkage long sys_io_uring_enter(unsigned int fd, 
+			u32 to_submit, u32 min_complete, u32 flags, const sigset_t __user 
+			*sig, size_t sigsz);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>427</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/io_uring_register.2.html">
+			io_uring_register</a></td>
+			<td><small><kbd>asmlinkage long sys_io_uring_register(unsigned int 
+			fd, unsigned int op, void __user *arg, unsigned int nr_args);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>428</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/open_tree.2.html">
+			open_tree</a></td>
+			<td><small><kbd>asmlinkage long sys_open_tree(int dfd, const char 
+			__user *path, unsigned flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>429</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/move_mount.2.html">
+			move_mount</a></td>
+			<td><small><kbd>asmlinkage long sys_move_mount(int from_dfd, const 
+			char __user *from_path, int to_dfd, const char __user *to_path, 
+			unsigned int ms_flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>430</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fsopen.2.html">
+			fsopen</a></td>
+			<td><small><kbd>asmlinkage long sys_fsopen(const char __user 
+			*fs_name, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>431</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fsconfig.2.html">
+			fsconfig</a></td>
+			<td><small><kbd>asmlinkage long sys_fsconfig(int fs_fd, unsigned int 
+			cmd, const char __user *key, const void __user *value, int aux);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>432</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fsmount.2.html">
+			fsmount</a></td>
+			<td><small><kbd>asmlinkage long sys_fsmount(int fs_fd, unsigned int 
+			flags, unsigned int ms_flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>433</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/fspick.2.html">
+			fspick</a></td>
+			<td><small><kbd>asmlinkage long sys_fspick(int dfd, const char 
+			__user *path, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>434</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pidfd_open.2.html">
+			pidfd_open</a></td>
+			<td><small><kbd>asmlinkage long sys_pidfd_open(pid_t pid, unsigned 
+			int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>435</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/clone3.2.html">
+			clone3</a></td>
+			<td><small><kbd>asmlinkage long sys_clone3(struct clone_args __user 
+			*uargs, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>436</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/close_range.2.html">
+			close_range</a></td>
+			<td><small><kbd>asmlinkage long sys_close_range(unsigned int fd, 
+			unsigned int max_fd, unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>437</td>
+			<td><a href="https://man7.org/linux/man-pages/man2/openat2.2.html">
+			openat2</a></td>
+			<td><small><kbd>asmlinkage long sys_openat2(int dfd, const char 
+			__user *filename, struct open_how *how, size_t size);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>438</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/pidfd_getfd.2.html">
+			pidfd_getfd</a></td>
+			<td><small><kbd>asmlinkage long sys_pidfd_getfd(int pidfd, int fd, 
+			unsigned int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>439</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/faccessat2.2.html">
+			faccessat2</a></td>
+			<td><small><kbd>asmlinkage long sys_faccessat2(int dfd, const char 
+			__user *filename, int mode, int flags);</kbd></small></td>
+		</tr>
+		<tr>
+			<td>440</td>
+			<td>
+			<a href="https://man7.org/linux/man-pages/man2/process_madvise.2.html">
+			process_madvise</a></td>
+			<td><small><kbd>asmlinkage long sys_process_madvise(int pidfd, const 
+			struct iovec __user *vec, size_t vlen, int behavior, unsigned int 
+			flags);</kbd></small></td>
+		</tr>
+</table>
+
+</body>
+
+</html>

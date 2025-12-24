@@ -1,0 +1,1700 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="es">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>URIUM - Practical course on Compiler Design</title>
+<style type="text/css">
+
+.auto-style1 {
+	font-size: x-large;
+	color: #000080;
+}
+.auto-style3 {
+	color: #FFFFFF;
+	font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<table border="0" width="740" cellspacing="10" cellpadding="0" >
+  <tr>
+    <td width="740" valign="top">
+   <p>
+   <img border="0" src="head.jpg" alt="URIUM - Practical course on Compiler Design" width="740"></p>
+   </td>
+  </tr>
+  
+  <tr>
+  <td width="740" valign="top">
+
+<p align="center">&nbsp;</p>
+
+<p style="text-align: center; " class="auto-style1">Practical Course on Compiler Design</p>
+
+<p align="center">&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber7">
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Lecture 06</font></td>
+  </tr>
+  <tr>
+    <td width="100%" align="center" bgcolor="#9999FF">
+    <font size="6" color="#000080">Using an automatic tool</font></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">GOALS</p></td>
+  </tr>
+  <tr>
+    <td width="100%"><p>&nbsp;</p>
+    <ul>
+      <li>Introduce the JavaCC automatic parser generation tool.</li>
+      <li>Describe the lexical specification of URIUM in the JavaCC tool format.</li>
+		<li>Describe the semantic specification for the first parsing pass of 
+		the URIUM compiler in JavaCC format.</li>
+		<li>Describe the semantic specification for the second parsing pass of 
+		the URIUM compiler in JavaCC format.</li>
+    </ul>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="AutoNumber2">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+    <font color="#FFFFFF"><span style="font-weight: 700">SOURCE CODE</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+    <p style="margin-right: 10px; margin-left: 10px">The code for this lecture 
+	is as follows:</p>
+    <ul>
+      <li><a href="lecture06/Lecture06.rar">Access to code</a></li>
+    </ul>
+     <p style="margin-right: 10px; margin-left: 10px; text-align: justify;">In 
+	 this lecture, we added the <strong><em>urium.parserjj</em></strong> 
+	 package, which contains the URIUM compiler parsers developed using the 
+	 JavaCC tool. The classes in this package are automatically generated based 
+	 on the JavaCC specification. These classes are similar to those included in 
+	 the <strong><em>urium.parser</em></strong> package, which were programmed 
+	 by hand as explained in the previous lectures. The only class not 
+	 automatically generated is <strong><em>urium.parserjj.SemanticException</em></strong>, 
+	 which was copied directly from the hand-developed package.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify;">The 
+	parser used for the first stage of parsing (the library headers) is 
+	described in the <strong><em>UriumHeaderParser.jj</em></strong> file. The 
+	parser used for the second stage of parsing (the procedure bodies) is 
+	described in the <strong><em>UriumBodyParser.jj</em></strong> file.</p>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="AutoNumber3">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><font color="#FFFFFF"><b>The JavaCC parser generator</b></font></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10">&nbsp;
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    JavaCC (Java Compiler Compiler) is the most popular parser generator among 
+	Java programmers. The tool works by analyzing an input file, which contains 
+	the description of a grammar, and generating a set of output files, written 
+	in Java, which contain the specification of a lexical analyzer and a 
+	syntactic analyzer for the specified grammar. The latest versions also allow 
+	generating the analyzers in C++ and C# languages. The official repository 
+	for the tool is <a href="https://javacc.github.io/javacc/">
+	https://javacc.github.io/javacc/</a>.</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The most important features of this tool are the following:</p>
+    <ul>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      It is based on a recursive top-down parsing.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      By default JavaCC analyzes LL(1) grammars, but allows setting a larger <em>
+	  Lookahead</em> (to analyze LL(k) grammars) and even using an adaptive <em>
+	  Lookahead</em>.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The lexical and syntactic specifications of the grammar to be analyzed are 
+	  included in the same file. The lexical specification is based on regular 
+	  expressions and the syntactic specification uses the EBNF format.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      Along with the main tool, two utilities are included: JJTree, to 
+	  automatically create a syntax tree generator, and JJDoc, to automatically 
+	  generate grammar documentation in HTML format.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The distribution includes several grammar examples, and there are 
+	  repositories on the Internet that specify many grammars in the JavaCC 
+	  format.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The parsers generated by JavaCC include exception-based lexical and 
+	  syntactic error handling, allowing for the easy development of error 
+	  synchronization schemes. These exceptions contain valuable information 
+	  regarding the source and location of the error.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      There are plugins to integrate JavaCC into various IDEs (Eclipse, 
+	  IntelliJ, Maven, Gradle).</p>
+      </li>
+    </ul>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+	 JavaCC uses the &quot;.jj&quot; extension to identify input files containing the 
+	 grammar specification to be parsed. The structure of these files is divided 
+	 into four sections.
+	</p>
+	<ul> 
+	 <li><p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+	 The first allows you to select a series of options, 
+	 such as the Lookahead value, whether static methods will be generated, 
+	 whether case will be sensitive, and so on.</p></li>
+	 <li><p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+	 The second part allows you to define the name of the parser and include the Java code that will be 
+	 added directly to this parser, such as the package name, the import 
+	 clauses, the class definition header, the class constructors, instance 
+	 variables, or methods that can be used in defining the grammar's semantics.</p></li>
+	 <li><p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+	 The third section contains the lexical specification of the grammar.</p></li>
+	 <li><p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+	 The last part of the file contains the description of the grammar's 
+	 syntactic rules.</p></li>
+	</ul>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        The following is a simplified example of the contents of a JavaCC 
+		specification file:</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="Table2">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+        
+  /*****************************************************************/
+  /* First section: General options                                */
+  /*****************************************************************/
+
+  options {
+     IGNORE_CASE = true;
+     STATIC = false;
+     ...
+  }
+
+  /*****************************************************************/
+  /* Second section: Parser definition and Java code to include    */
+  /*****************************************************************/
+
+  PARSER_BEGIN(MyGrammar)
+
+  public class MyGrammar {
+     ...
+  }
+
+  PARSER_END(MyGrammar)
+
+  /*****************************************************************/
+  /* Third section: Lexical specification                          */
+  /*****************************************************************/
+
+  TOKEN: 
+  {
+      &lt; ID: ( &lt;LETTER&gt; )+ ( "_" | "$" | "#" | &lt;DIGIT&gt; | &lt;LETTER&gt; )* &gt;
+    | &lt; #LETTER: ["A"-"Z", "a"-"z"] &gt;
+    | &lt; #DIGIT: ["0"-"9"] &gt;
+  } 
+
+  SKIP: 
+  {
+       " "
+     | "\n"
+     | "\r"
+     | "\t"
+  }
+
+  ...
+
+  /*****************************************************************/
+  /* Fourth section: Syntax specification                          */
+  /*****************************************************************/
+
+  void CreateTable() :
+  {  
+    Token token;
+  }
+  {
+      &lt;CREATE&gt; &lt;TABLE&gt;
+      token = &lt;ID&gt; { System.out.println("Table: " + token.image); }
+      "(" ColumnList() ")"
+  }  ...
+        
+        
+        </pre>
+        </td>
+      </tr>
+    </table>
+    	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        The name used in the PARSER_BEGIN and PARSER_END statements (which in 
+		the previous example would be MyGrammar) is used as a prefix to generate 
+		three files: “<em>MyGrammar.java</em>”, “<em>MyGrammarConstants.java</em>”, 
+		and “<em>MyGrammarTokenManager.java</em>”. The first of these develops 
+		the parser. The second file stores a set of constants related to lexical 
+		categories. The third file develops the lexical analyzer for the 
+		grammar. In addition to these files, the tool generates four other files 
+		whose content is always the same: “<em>JavaCharStream.java</em>” (which 
+		defines an input data stream based on ASCII characters), “<em>ParseException.java</em>” 
+		(which defines syntax errors), “<em>Token.java</em>” (which defines a 
+		lexical category), and “<em>TokenMgrError.java</em>” (which defines 
+		lexical errors).</p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        &nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table border="1" cellpadding="0" cellspacing="0" 
+          style="border-color: #111111; border-collapse: collapse" 
+          width="100%" id="AutoNumber10">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><font color="#FFFFFF"><b>General JavaCC Options</b></font></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10">&nbsp;
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The JavaCC options are included in the initial section of the grammar 
+	specification file. This section takes the form:</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+        
+&nbsp; options {
+&nbsp;&nbsp;&nbsp;&nbsp; OPTION_NAME = value;
+&nbsp;&nbsp;&nbsp;&nbsp; OPTION_NAME = value;
+&nbsp;&nbsp;&nbsp;&nbsp; ...
+&nbsp;}
+        </pre>
+        </td>
+      </tr>
+    </table>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The following table shows the different options supported by JavaCC, their 
+	type and their default value.</p>
+    <table border="1" align="center">
+      <tr>
+        <th rowspan="1" colspan="1">
+        <p class="CellHeading">Option</p></th>
+        <th rowspan="1" colspan="1">
+        <p class="CellHeading">Type</p></th>
+        <th rowspan="1" colspan="1">
+        <p class="CellHeading">Default value</p></th>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">LOOKAHEAD</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">int</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">1</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">CHOICE_AMBIGUITY_CHECK</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">int</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">2</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">OTHER_AMBIGUITY_CHECK</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">int</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">1</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">STATIC</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">true</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">DEBUG_PARSER</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">DEBUG_LOOKAHEAD</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">DEBUG_TOKEN_MANAGER</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">OPTIMIZE_TOKEN_MANAGER</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">ERROR_REPORTING</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">true</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">JAVA_UNICODE_ESCAPE</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">UNICODE_INPUT</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">IGNORE_CASE</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">USER_TOKEN_MANAGER</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">USER_CHAR_STREAM</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">BUILD_PARSER</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">true</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">BUILD_TOKEN_MANAGER</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">true</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">SANITY_CHECK</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">true</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">FORCE_LA_CHECK</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">COMMON_TOKEN_ACTION</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">CACHE_TOKENS</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">boolean</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">false</p></td>
+      </tr>
+      <tr>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">OUTPUT_DIRECTORY</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">String</p></td>
+        <td rowspan="1" colspan="1">
+        <p class="CellBody">present directory</p></td>
+      </tr>
+    </table>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    We will briefly explain the meaning of some of the tool's options. For a 
+	more detailed description of all of them, please consult the documentation 
+	distributed with the tool.</p>
+    <ul>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The LOOKAHEAD option is used to specify the number of tokens to consider 
+	  when predicting rule expansion. This option allows parsing LL(k) grammars.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The STATIC option is used to select the type of methods the analyzer will 
+	  use. By default, static methods are generated, so you must use the 
+	  ReInit() method to initialize all internal variables. It's important to 
+	  note that parallel analysis is not possible with a static description.</p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The UNICODE_INPUT option is used to create parsers that accept Unicode 
+	  files as input. By default, it is assumed that the input files to be 
+	  parsed are in ASCII format. </p>
+      </li>
+      <li>
+      <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+      The IGNORE_CASE option is used for languages &#8203;&#8203;that are case-independent 
+	  (such as SQL, for example).</p>
+      </li>
+    </ul>
+    <p>&nbsp;</p></td>
+  </tr>
+</table>
+
+
+<p>&nbsp;</p>
+
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse" width="100%" id="Table1">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><font color="#FFFFFF"><b>Lexical specifications in JavaCC</b></font></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10">&nbsp;
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        The lexical specification of a grammar defined in JavaCC is entered in 
+		the third section of the &quot;.jj&quot; input files used by the tool. This 
+		lexical section begins after the PARSER_END clause and consists of a set 
+		of definitions that describe the lexical categories used in the grammar 
+		to be parsed. </p>
+	<p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+        The basic syntax of a lexical definition in JavaCC is as follows:</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="Table2">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+        
+  DEFINITION : {
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; regular-expression
+&nbsp;&nbsp;&nbsp;&nbsp; | regular-expression
+&nbsp;&nbsp;&nbsp;&nbsp; | ...
+  } 
+        </pre>
+        </td>
+      </tr>
+    </table>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The JavaCC tool offers four types of lexical definitions:</p>
+    <ul>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    TOKEN: defines a set of lexical categories (tokens) that will be returned to 
+	the syntactic analyzer.</p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    SKIP: defines a set of lexical categories that will be filtered by the 
+	lexical analyzer, that is, they will not be sent to the syntactic analyzer. </p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    SPECIAL_TOKEN: defines a set of lexical categories that will not be sent 
+	directly to the syntactic analyzer, but will be added to the <em>
+	specialToken</em> field of the next lexical category to be sent.</p>
+      </li>
+      <li>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    MORE: defines a set of regular expressions that do not generate a lexical 
+	category, but are added as a prefix to the lexeme of the next recognized 
+	lexical category.</p>
+      </li>
+    </ul>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    JavaCC offers four ways to describe a regular expression:</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="Table2">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+        
+&nbsp;&nbsp; regular-expression ::= "string"
+&nbsp;&nbsp; regular-expression ::= &lt; identifier : complex-regular-expression &gt;
+&nbsp;&nbsp; regular-expression ::= &lt; identifier &gt;
+&nbsp;&nbsp; regular-expression ::= &lt; EOF &gt; 
+        </pre>
+        </td>
+      </tr>
+    </table>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The first method is used to define constant patterns, for example &quot;/*&quot; to 
+	start a comment or &quot;\n&quot; to indicate a line break. This type of expression 
+	does not assign an identifier to the regular expression, so it is usually 
+	used in definitions of type SKIP or MORE.</p>
+
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The second method is used to describe complex regular expressions and assign 
+	them an identifier. This format is commonly used in TOKEN and SPECIAL_TOKEN 
+	definitions. If the identifier begins with the # symbol, then the regular 
+	expression does not define a lexical category (a token), but is considered 
+	an auxiliary definition that can be used in other regular expressions.</p>
+    
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The last two ways of describing a regular expression represent a reference 
+	to other regular expressions. The third way represents a reference to a 
+	regular expression defined elsewhere, while the last way refers to the 
+	special end-of-entry symbol.</p>
+    
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    Complex regular expressions can contain strings of characters (e.g., &quot;<strong>import</strong>&quot;), 
+	lists of characters in square brackets (e.g.,<strong> 
+	[&quot;a&quot;-&quot;z&quot;,&quot;A&quot;-&quot;Z&quot;,&quot;0&quot;-&quot;9&quot;]</strong>), references to other regular expressions 
+	(e.g.,<strong> &lt;DIGIT&gt;</strong>), as well as closure operators (e.g.,
+	<strong>(&lt;DIGIT&gt;)*</strong>), positive closure (e.g.,<strong> (&lt;DIGIT&gt;)+</strong>), 
+	disjunctions (e.g., <strong>(&quot;import&quot; | &quot;IMPORT&quot;)</strong>), and optionality 
+	(e.g., <strong>(&lt;DIGIT&gt;)?</strong>). &#8203;&#8203;To represent any character except a 
+	few, ~ is used (e.g., <strong>~[&quot;\\&quot;]</strong> represents any character 
+	other than a backslash).</p>
+    
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The following is an example of a lexical specification:</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber19">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+        
+&nbsp; TOKEN:&nbsp; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;PLUS: &quot;+&quot;&gt;
+&nbsp; |&nbsp;&nbsp; &lt;MINUS: &quot;-&quot;&gt;
+&nbsp; |&nbsp;&nbsp; &lt;PROD: &quot;*&quot;&gt;
+&nbsp; |&nbsp;&nbsp; &lt;DIV: &quot;/&quot;&gt;
+&nbsp; |&nbsp;&nbsp; &lt;LPAREN: &quot;(&quot;&gt;
+&nbsp; |&nbsp;&nbsp; &lt;RPAREN: &quot;)&quot;&gt;
+&nbsp; |&nbsp;&nbsp; &lt;NUMBER: ([&quot;0&quot;-&quot;9&quot;])+ ( &quot;.&quot; ([&quot;0&quot;-&quot;9&quot;])* )? (&lt;EXPONENT&gt;)? &gt;
+&nbsp; |&nbsp;&nbsp; &lt; #EXPONENT: [&quot;e&quot;,&quot;E&quot;] ([&quot;+&quot;,&quot;-&quot;])? ([&quot;0&quot;-&quot;9&quot;])+ &gt;
+&nbsp;}      
+        
+&nbsp; SKIP: {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot; &quot;
+&nbsp; |&nbsp;&nbsp; &quot;\n&quot;
+&nbsp; |&nbsp;&nbsp; &quot;\r&quot;
+&nbsp; |&nbsp;&nbsp; &quot;\t&quot;
+&nbsp;}
+        </pre>
+        </td>
+      </tr>
+    </table>
+    <p style="margin-right: 10px; margin-left: 10px; text-align: justify">
+    The tool has more advanced features at the lexical level (such as the 
+	introduction of actions or lexical state changes) but these are not 
+	necessary for the development of the URIUM compiler.</p>
+    <p>&nbsp;</p>
+    </td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table6">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">Syntactic and semantic specifications in JavaCC</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+   <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    The syntactic specification of the grammar is described after the lexical 
+	specification (in reality, the lexical and syntactic definitions can be 
+	mixed, but it is much clearer if they are defined in an orderly fashion). 
+	This specification corresponds to the definition of the rules associated 
+	with each non-terminal symbol in the grammar. The basic syntax of a 
+	syntactic statement is as follows:</p>
+    <table border="1" cellpadding="0" cellspacing="0" 
+            style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" 
+            width="95%" id="AutoNumber15">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+
+&nbsp; type symbol ( parameters ) throws Exception1, Exception2 :
+&nbsp;&nbsp;{
+&nbsp;&nbsp;&nbsp; Java code
+&nbsp;&nbsp;}
+&nbsp;&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp; EBNF_definition
+&nbsp;&nbsp;}
+        </pre>
+        </td>
+      </tr>
+    </table>
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    JavaCC is based on recursive top-down parsing. In this type of parsing, each 
+	non-terminal symbol generates a function. The header of the syntax 
+	declaration corresponds to the header of the function associated with the 
+	described non-terminal symbol. The type refers to the data type that the 
+	function returns, which can be either a simple data type (including void if 
+	the function returns nothing) or an object of a specific class. The 
+	identifier corresponds to the name of the non-terminal symbol, which matches 
+	the name of the associated function. The parameter list refers to the 
+	parameters used in the function call and is described in the same way as in 
+	a Java method.
+	The throws clause is optional and indicates the exceptions that the function 
+	can throw (in addition to ParseException, which JavaCC includes by default).
+	The Java code that follows the header of the 
+	declaration is included verbatim in the generated function and is typically 
+	used to declare the variables that will be used within the function.</p>
+	
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    The EBNF description of the rule allows the use of all operations in this 
+	format: disjunction (using the character ‘|’), closure (following the format 
+	‘(‘ expression ‘)’* ), positive closure (with the format ‘(‘ expression ‘)’+ 
+	), and optionality (using ‘[‘ expression ‘]’ ). To refer to terminal 
+	symbols, that is, tokens, the expression ‘&lt;‘ token_name ‘&gt;’ is used. To 
+	refer to non-terminal symbols, the expression identifier(parameter_list) is 
+	used; that is, a call to the function associated with the non-terminal 
+	symbol is introduced.</p>
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    As we've discussed, the functions associated with terminal symbols can 
+	return a value of any valid type in Java. Terminal symbols themselves return 
+	a value of type Token. These values &#8203;&#8203;can be assigned to variables as 
+	follows:</p>
+    <table border="1" cellpadding="0" cellspacing="0" 
+            style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;"  
+            width="95%" id="AutoNumber16">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>        
+  variable = &lt;TOKEN_ID&gt;
+  variable = symbol(parameters)
+        </pre>
+        </td>
+      </tr>
+    </table>
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    These variables must have been declared in the Java block included at the 
+	beginning of the syntax declaration. The EBNF specification of a 
+	non-terminal symbol may include code blocks that will be included in the 
+	function associated with the symbol. These blocks typically contain calls to 
+	semantic checks and semantic actions included in the second section of the 
+	&quot;.jj&quot; file. The following is an example of a grammar rule definition:</p>
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+
+  FunctionDeclaration FunctionDecl(LibraryDeclaration library) :
+  {
+    int acc;
+    int type;
+    Token tid;
+    Variable arg;
+    Vector&lt;Variable&gt; args = new Vector&lt;Variable&gt;();
+    BlockStatement body;
+  }
+  {
+    acc = Access()
+    type = FunctionType()
+    tid = &lt;IDENTIFIER&gt;
+    &lt;LPAREN&gt;
+    [
+      arg=Argument(library) { args.addElement(arg); }
+      ( &lt;COMMA&gt; arg=Argument(library) { args.addElement(arg); } )*
+    ]
+    &lt;RPAREN&gt;
+    {
+      verifyNonDuplicatedFunction(library,tid,args);
+    }
+    body = FunctionBody(library)
+    {
+      return new FunctionDeclaration(acc,type,tid,args,body);
+    } 
+  }
+
+</pre>
+</td>
+      </tr>
+    </table>
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    Regarding error handling, JavaCC uses two types of exceptions: <em>
+	TokenMgrError</em> and <em>ParseException</em>. The Java language 
+	distinguishes between errors and exceptions. Errors are subclasses of the
+	<em>Error</em> class and describe serious problems from which recovery is 
+	not expected, and the Java compiler is not required to handle them. 
+	Exceptions, on the other hand, are subclasses of the <em>Exception</em> 
+	class and describe failures from which recovery might be possible, so the 
+	compiler requires them to be handled in the code.</p>
+
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    The JavaCC tool assumes that a correct lexical specification should cover 
+	all possibilities in the input, so it describes lexical errors as mistakes 
+	that it stores in objects of the <em>TokenMgrError</em> class. If this 
+	mistake is not caught, the parser writes a message describing the lexical 
+	error encountered and the position (line and column) in the input file where 
+	it occurred.</p>
+
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    Syntax errors are treated as exceptions and stored in objects of the <em>
+	ParseException</em> class. If these exceptions are not handled, the parser 
+	ends up writing a message such as “<em>Encountered ..., Was expecting one of 
+	...</em>” and reporting the position in the input file where the error 
+	occurred.</p>
+
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    All syntactic specifications described in EBNF notation can generate both 
+	lexical errors and syntactic exceptions. A rule described as “<em>type 
+	symbol() :</em>” generates a Java method with the header “<em>type symbol() 
+	throws ParseException</em>”. Given that code added to semantic actions can 
+	cause new exceptions of different types, JavaCC incorporates the ability to 
+	declare these exceptions in the header of definitions. Exceptions declared 
+	in this way are added to <em>ParseException</em> in the header of the Java 
+	method associated with the output in the parser code generated by the tool. 
+	The use of new exceptions is very useful for describing semantic errors. </p>
+	<p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    Error handling is not limited to simply detecting and reporting errors. 
+	JavaCC employs a technique that allows errors to be captured and handled, 
+	enabling the parser to recover from these errors using synchronization 
+	techniques. This technique is based on the use of try-catch blocks in EBNF 
+	specifications, in a way very similar to that used in Java. The following 
+	example illustrates the syntax of these try-catch blocks.</p>
+
+    <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber11">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+
+&nbsp; void Statement() :
+&nbsp; {}
+&nbsp; {
+&nbsp;&nbsp;&nbsp; try { ( IfStatement() | WhileStatement() | ForStatement() ) }
+&nbsp;&nbsp;&nbsp; catch(ParseException e) { catchError(e); skipTo(SEMICOLON); }
+&nbsp;&nbsp;&nbsp; catch(TokenMgrError e) { catchError(e); skipTo(SEMICOLON); }
+&nbsp; }
+        </pre>
+        </td>
+      </tr>
+    </table>
+    <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+    As you can see in the example, try blocks can include an EBNF specification 
+	just as we've been using them. These blocks function similarly to Java. The 
+	EBNF specification produces code that can generate different types of 
+	exceptions. If one of these exceptions occurs, it can be caught by catch 
+	blocks and handled within them. Generally, catch blocks store the error in 
+	an internal list and execute a synchronization function.</p>
+		
+
+     <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table6">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">Lexical specification of URIUM in JavaCC</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+
+      <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      Lexical specification in JavaCC relies on the use of regular expressions 
+	  to describe the lexical categories included in the grammar to be parsed. 
+	  The tool uses this description to internally calculate the Finite 
+	  Automaton associated with each lexical category and develop the tokenizer 
+	  based on these finite automata. This simplifies the compiler programmer's 
+	  task by eliminating the need for manual calculation of these automata.</p>
+	<p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      The URIUM lexical specification uses the SKIP type to define language 
+	  whitespace and comments (which are therefore filtered by the lexical 
+	  analyzer) and the TOKEN type to describe the lexical categories used in 
+	  the grammar. These categories include language keywords, identifiers, 
+	  integer and char literals, and URIUM separators and operators. MORE or 
+	  SPECIAL_TOKEN expressions are not required. The URIUM lexical definition, 
+	  using the JavaCC tool format, is detailed below.</p>
+
+      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber10">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+          <pre>
+&nbsp;  /* WHITE SPACE */
+
+  SKIP :
+  {
+    &quot; &quot;
+  | &quot;\t&quot;
+  | &quot;\n&quot;
+  | &quot;\r&quot;
+  | &quot;\f&quot;
+  }
+
+  /* COMMENTS */
+
+  SKIP :
+  {
+    &lt;SINGLE_LINE_COMMENT: &quot;//&quot; ( ~[&quot;\n&quot;,&quot;\r&quot;] )* (&quot;\n&quot; | &quot;\r&quot; | &quot;\r\n&quot;) &gt;
+  |
+    &lt;MULTI_LINE_COMMENT: &quot;/*&quot; ( ~[&quot;*&quot;] | (&quot;*&quot;)+ ~[&quot;*&quot;,&quot;/&quot;] )* (&quot;*&quot;)+ &quot;/&quot; &gt;
+  }
+
+  /* RESERVED WORDS */
+
+  TOKEN :
+  {
+    &lt; AS: &quot;as&quot; &gt;
+  | &lt; BOOLEAN: &quot;boolean&quot; &gt;
+  | &lt; CHAR: &quot;char&quot; &gt;
+  | &lt; ELSE: &quot;else&quot; &gt;
+  | &lt; ENDP: &quot;endp&quot; &gt;
+  | &lt; FALSE: &quot;false&quot; &gt;
+  | &lt; IF: &quot;if&quot; &gt;
+  | &lt; IMPORT: &quot;import&quot; &gt;
+  | &lt; INT: &quot;int&quot; &gt;
+  | &lt; LIBRARY: &quot;library&quot; &gt;
+  | &lt; NATIVE: &quot;native&quot; &gt;
+  | &lt; OUT: &quot;out&quot; &gt;
+  | &lt; PRIVATE: &quot;private&quot; &gt;
+  | &lt; PROC: &quot;proc&quot; &gt;
+  | &lt; PUBLIC: &quot;public&quot; &gt;
+  | &lt; TRUE: &quot;true&quot; &gt;
+  | &lt; WHILE: &quot;while&quot; &gt;
+  }
+
+  /* LITERALS */
+
+  TOKEN :
+  {
+    &lt; INTEGER_LITERAL: ( &lt;DECIMAL_LITERAL&gt; | &lt;HEX_LITERAL&gt; | 
+                         &lt;OCTAL_LITERAL&gt; | &lt;BINARY_LITERAL&gt; ) &gt;
+  |
+    &lt; #DECIMAL_LITERAL: [&quot;1&quot;-&quot;9&quot;] ([&quot;0&quot;-&quot;9&quot;])* &gt;
+  |
+    &lt; #HEX_LITERAL: &quot;0&quot; [&quot;x&quot;,&quot;X&quot;] ([&quot;0&quot;-&quot;9&quot;,&quot;a&quot;-&quot;f&quot;,&quot;A&quot;-&quot;F&quot;])+ &gt;
+  |
+    &lt; #OCTAL_LITERAL: &quot;0&quot; ([&quot;0&quot;-&quot;7&quot;])* &gt;
+  |
+    &lt; #BINARY_LITERAL: &quot;0&quot; [&quot;b&quot;,&quot;B&quot;] ([&quot;0&quot;-&quot;1&quot;])+ &gt;
+  |
+    &lt; CHAR_LITERAL:
+      &quot;'&quot;
+      ( (~[&quot;'&quot;,&quot;\\&quot;,&quot;\n&quot;,&quot;\r&quot;])
+      | (&quot;\\&quot; ( [&quot;n&quot;,&quot;t&quot;,&quot;b&quot;,&quot;r&quot;,&quot;f&quot;,&quot;\\&quot;,&quot;'&quot;,&quot;\&quot;&quot;]
+               | [&quot;0&quot;-&quot;7&quot;] ( [&quot;0&quot;-&quot;7&quot;] )?
+               | [&quot;0&quot;-&quot;3&quot;] [&quot;0&quot;-&quot;7&quot;] [&quot;0&quot;-&quot;7&quot;]
+              )
+        )
+      )
+      &quot;'&quot;
+    &gt;
+  }
+
+  /* IDENTIFIERS */
+
+  TOKEN :
+  {
+    &lt; IDENTIFIER: [&quot;a&quot;-&quot;z&quot;,&quot;A&quot;-&quot;Z&quot;,&quot;_&quot;] ( [&quot;a&quot;-&quot;z&quot;,&quot;A&quot;-&quot;Z&quot;,&quot;0&quot;-&quot;9&quot;,&quot;_&quot;] )* &gt;
+  }
+
+  /* SEPARATORS */
+
+  TOKEN :
+  {
+    &lt; LPAREN: &quot;(&quot; &gt;
+  | &lt; RPAREN: &quot;)&quot; &gt;
+  | &lt; LBRACE: &quot;{&quot; &gt;
+  | &lt; RBRACE: &quot;}&quot; &gt;
+  | &lt; SEMICOLON: &quot;;&quot; &gt;
+  | &lt; COMMA: &quot;,&quot; &gt;
+  | &lt; DOT: &quot;.&quot; &gt;
+  }
+
+  /* OPERATORS */
+
+  TOKEN :
+  {
+    &lt; ASSIGN: &quot;=&quot; &gt;
+  | &lt; EQ: &quot;==&quot; &gt;
+  | &lt; LE: &quot;&lt;=&quot; &gt;
+  | &lt; GT: &quot;&gt;&quot; &gt;
+  | &lt; LT: &quot;&lt;&quot; &gt;
+  | &lt; GE: &quot;&gt;=&quot; &gt;
+  | &lt; NE: &quot;!=&quot; &gt;
+  | &lt; OR: &quot;||&quot; &gt;
+  | &lt; AND: &quot;&amp;&amp;&quot; &gt;
+  | &lt; NOT: &quot;!&quot; &gt;
+  | &lt; PLUS: &quot;+&quot; &gt;
+  | &lt; MINUS: &quot;-&quot; &gt;
+  | &lt; PROD: &quot;*&quot; &gt;
+  | &lt; DIV: &quot;/&quot; &gt;
+  | &lt; MOD: &quot;%&quot; &gt;
+  }
+          </pre>
+          </td>
+        </tr>
+      </table>
+      <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      This lexical specification is used in the two semantic analyzers included 
+	  in the compiler: <strong>UriumHeaderParser</strong> and <strong>
+	  UriumBodyParser</strong>.</p>
+      <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table6">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">Semantic specification for the first parsing pass of the URIUM compiler in JavaCC</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+
+      <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      As described in previous lessons, the URIUM compiler performs parsing in 
+	  two steps. The first step is performed using a parser called <strong>
+	  UriumHeaderParser</strong>. The goal of this first step is to obtain the 
+	  declarations of the procedures defined in the parsed file without parsing 
+	  the bodies of these procedures. The result is a data structure called
+	  <strong>urium.ast.struct.LibraryDeclaration</strong>, which contains the 
+	  list of procedures described in the file. The compiler runs the <strong>
+	  UriumHeaderParser</strong> on the file &quot;Main.ur&quot; and all files imported 
+	  from it, storing the resulting <strong>urium.ast.struct.LibraryDeclaration</strong> 
+	  objects in the symbol table (<strong>urium.ast.struct.SymbolTable</strong>).</p>
+	<p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      The <strong>UriumHeaderParser.jj</strong> file defines the parser 
+	  responsible for performing the first pass. The contents of this file are 
+	  divided into the four sections discussed earlier. The second section 
+	  includes the parser name declaration and a set of fields and methods that 
+	  handle semantic checks, semantic actions, and error synchronization. The 
+	  contents of this section of the <strong>UriumHeaderParser.jj</strong> file 
+	  are shown below.</p>
+
+      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber10">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+          <pre>
+
+  PARSER_BEGIN(UriumHeaderParser)
+
+  package urium.parserjj;
+
+  import urium.ast.*;
+  import urium.ast.struct.*;
+  import java.util.Vector;
+
+  public class UriumHeaderParser {
+
+    /**
+    * Error count
+    */
+    private int errorCount;
+
+    /**
+    * Error message
+    */
+    private String errorMsg;
+
+    /**
+    * Method to parse an Urium file
+    */
+    public LibraryDeclaration parse(String libname) 
+    {
+      this.errorCount = 0;
+      this.errorMsg = "";
+      try
+      {
+        LibraryDeclaration library = parseCompilationUnit(libname);
+        return library;
+      }
+      catch(Throwable e)
+      {
+        catchError(e);
+        return null;
+      }
+    }
+
+    /**
+    * Gets the number of errors in the analysis
+    */
+    public int getErrorCount()
+    {
+      return this.errorCount;
+    }
+
+    /**
+    * Get the error message of the analysis
+    */
+    public String getErrorMsg()
+    {
+       return this.errorMsg;
+    }
+
+    //----------------------------------------------------------------//
+    // Semantic checks                                                //
+    //----------------------------------------------------------------//
+
+    /**
+    * Stores a parse error
+    */
+    private void catchError(Throwable ex)
+    {
+      this.errorCount++;
+      this.errorMsg += ex.toString();
+    }
+
+    /**
+    * Checks that the library name corresponds to the source file name 
+    */
+    private boolean verifyLibraryName(Token tk, String name,
+                                      LibraryDeclaration library)
+    {
+      if(!name.equals(library.getName()))
+      {
+        int errorcode = SemanticException.LIBRARY_NAME_EXCEPTION;
+        catchError(new SemanticException(errorcode,tk));
+        return false;
+      }
+      return true;
+    }
+
+    /**
+    * Checks that a certain procedure has not been previously defined in the library
+    */
+    private boolean verifyNonDuplicatedProcedure(Token tk, Procedure proc,
+                                                 LibraryDeclaration library)
+    {
+      DataType[] type = proc.getArgumentTypes();
+      Procedure dup = library.getAnyProcedure(tk.image,type);
+      if(dup != null)
+      {
+        int errorcode = SemanticException.DUPLICATE_PROCEDURE_EXCEPTION;
+        catchError(new SemanticException(errorcode,tk));
+        return false;
+      }
+      return true;
+    }
+
+    /**
+    * Checks that an argument name is not duplicated
+    */
+    private boolean verifyNonDuplicatedArgument(Token tk, Vector&lt;Variable&gt; arguments)
+    {
+      boolean duplicated = false;
+      for(Variable var: arguments) if(var.equals(tk.image)) duplicated = true;
+      if(duplicated)
+      { 
+        int errorcode = SemanticException.DUPLICATE_ARGUMENT_EXCEPTION;
+        catchError(new SemanticException(errorcode,tk));
+        return false;
+      }
+      return true;
+    }
+
+    //----------------------------------------------------------------//
+    // Semantic actions                                               //
+    //----------------------------------------------------------------//
+
+    /**
+    * Semantic action that creates a procedure in a library
+    */
+    private void actionLibraryProcedure(int acc, Token tid, Vector&lt;Variable&gt; arguments,
+                                        LibraryDeclaration library)
+    {
+      Procedure proc = new Procedure(acc, tid.image, library.getName());
+      proc.addArgumentList(arguments);
+      if(!verifyNonDuplicatedProcedure(tid,proc,library)) return;
+      library.addProcedure(proc); 
+    }
+
+    /**
+    * Semantic action that adds an argument to an argument list
+    */
+    private void actionAddArgument(DataType type, Token tk, Vector&lt;Variable&gt; arguments)
+    {
+      if(!verifyNonDuplicatedArgument(tk,arguments)) return;
+      arguments.add(new Variable(type, tk.image) );
+    }
+  }
+
+  PARSER_END(UriumHeaderParser)
+
+          </pre>
+          </td>
+        </tr>
+      </table>
+      <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      The final section includes the syntactic/semantic description of the URIUM 
+	  grammar. The definitions are based on the URIUM EBNF grammar presented in 
+	  Lecture 02. Since we are only parsing the procedure headers and not the 
+	  body, the <em>ProcedureBody</em> symbol has been replaced by a function 
+	  that consumes tokens by counting the number of opening and closing curly 
+	  braces to detect the end of the code block for each procedure. An excerpt 
+	  from the syntactic/semantic section of the <strong>UriumHeaderParser.jj
+	  </strong>file is shown below.</p>
+	  <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber10">
+      <tr>
+        <td width="100%" bgcolor="#9999FF">
+        <pre>
+        
+  /**************************************************************/
+  /*             SYNTACTIC DESCRIPTION STARTS HERE              */
+  /**************************************************************/
+
+  /**
+   * Parses the full content of a source file
+   *
+   * CompilationUnit ::= (InportClause)* UriumDecl
+   */
+  LibraryDeclaration parseCompilationUnit(String name):
+  {
+    LibraryDeclaration library = new LibraryDeclaration(name);
+
+    int[] lsync = { };
+    int[] rsync = { EOF };
+  }
+  { 
+    try
+    {
+      ( parseImportClause(library) )*
+      parseUriumDecl(library)
+      &lt;EOF&gt;
+    }
+    catch(Exception ex)
+    {
+      catchError(ex);
+      skipTo(lsync,rsync);
+    }
+    {
+      return library;
+    }
+  }
+
+  /**
+   * Parses an import clause
+   *
+   * ImportClause ::= &lt;IMPORT&gt; &lt;IDENTIFIER&gt; (&lt;DOT&gt; &lt;IDENTIFIER&gt;)* 
+   *                  (&lt;AS&gt; &lt;IDENTIFIER&gt;)? &lt;SEMICOLON&gt; 
+   */
+  void parseImportClause(LibraryDeclaration library):
+  {
+    Token tid;
+    String name;
+    String alias = null;
+
+    int[] lsync = { SEMICOLON };
+    int[] rsync = { IMPORT, LIBRARY, NATIVE };
+  }
+  {
+    try
+    {
+      &lt;IMPORT&gt;
+      tid = &lt;IDENTIFIER&gt;
+      {
+        name = tid.image;
+      }
+      (&lt;DOT&gt; tid = &lt;IDENTIFIER&gt; { name += &quot;.&quot;+tid.image; } )*
+      (&lt;AS&gt; tid = &lt;IDENTIFIER&gt; { alias = tid.image; })?
+      &lt;SEMICOLON&gt;
+      {
+        if(alias == null) alias = name;
+        library.addImportedLibrary(alias,name);
+      } 
+    }
+    catch(Exception ex)
+    {
+      catchError(ex);
+      skipTo(lsync,rsync);
+    }
+  }
+  
+  ...
+  
+  
+  JAVACODE
+  void parseProcedureBody()
+  {
+    Token tk = getNextToken(); // Consumes the first brace 
+    int level = 1;
+    while(level != 0)
+    {
+      tk = getNextToken();
+      if(tk.kind == EOF) break;
+      else if(tk.kind == LBRACE) level ++;
+      else if(tk.kind == RBRACE) level --;
+    }
+  }
+
+  JAVACODE
+  void skipTo(int[] left, int[] right)
+  {
+    Token prev = getToken(0);
+    Token next = getToken(1);
+    boolean flag = false;
+    if(prev.kind == EOF || next.kind == EOF) flag = true;
+    for(int i=0; i&lt;left.length; i++) if(prev.kind == left[i]) flag = true;
+    for(int i=0; i&lt;right.length; i++) if(next.kind == right[i]) flag = true;
+    
+    while(!flag)
+    {
+      getNextToken();
+      prev = getToken(0);
+      next = getToken(1);
+      if(prev.kind == EOF || next.kind == EOF) flag = true;
+      for(int i=0; i&lt;left.length; i++) if(prev.kind == left[i]) flag = true;
+      for(int i=0; i&lt;right.length; i++) if(next.kind == right[i]) flag = true;
+    }
+  }
+        </pre>
+        </td>
+      </tr>
+    </table>
+      <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table6">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center"><span style="background-color: #000080">
+        <font color="#FFFFFF"><span style="font-weight: 700">Semantic specification for the second parsing pass of the URIUM compiler in JavaCC</span></font></span></p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+
+      <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      The file <strong>UriumBodyParser.jj</strong> defines the parser that 
+	  performs the second phase of the analysis. The second section of this 
+	  specification file declares the parser's name and includes the methods 
+	  that perform the semantic checks and semantic actions. These checks and 
+	  actions are essentially the same as those described in Lecture 5, where 
+	  this parser was programmed by hand. A summary of this section's contents 
+	  follows.</p>
+
+      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber10">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+          <pre>
+          
+  PARSER_BEGIN(UriumBodyParser)
+
+  package urium.parserjj;
+
+  import java.util.Vector;
+  import urium.ast.*;
+  import urium.ast.expression.*;
+  import urium.ast.statement.*;
+  import urium.ast.struct.*;
+
+  public class UriumBodyParser {
+
+    //----------------------------------------------------------------//
+    // Private members                                                //
+    //----------------------------------------------------------------//
+
+    /**
+     * Error count
+     */
+    private int errorCount;
+
+    /**
+     * Error message
+     */
+    private String errorMsg;
+
+    //----------------------------------------------------------------//
+    // Public methods                                                 //
+    //----------------------------------------------------------------//
+
+    /**
+     * Method to parse an Urium file
+     */
+    public void parse(String name, SymbolTable symtab)
+    {
+      this.errorCount = 0;
+      this.errorMsg = &quot;&quot;;
+      try
+      {
+        symtab.setActiveLibrary(name);
+        CompilationUnit(symtab);
+      }
+      catch(Exception e)
+      {
+        catchError(e);
+      }
+    }
+
+    /**
+     * Gets the number of errors in the analysis
+     */
+    public int getErrorCount()
+    {
+      return this.errorCount;
+    }
+
+    /**
+     * Get the error message of the analysis
+     */
+    public String getErrorMsg()
+    {
+      return this.errorMsg;
+    }
+
+    //----------------------------------------------------------------//
+    // Semantic checks                                                //
+    //----------------------------------------------------------------//
+
+    /**
+     * Stores a parse error
+     */
+    private void catchError(Throwable ex)
+    {
+      this.errorCount++;
+      this.errorMsg += ex.toString();
+    }
+
+    /**
+     * Checks that the statement to be added to a block is reachable
+     */
+    private boolean verifyReachableCode(Statement stm, BlockStatement block)
+    {
+      if(stm != null &amp;&amp; block.returns() )
+      {
+        int errorcode = SemanticException.UNREACHABLE_CODE_EXCEPTION;
+        catchError(new SemanticException(errorcode,getToken(0)));
+        return false;
+      }
+      return true;
+    }
+
+    ...
+
+    //----------------------------------------------------------------//
+    // Semantic actions                                               //
+    //----------------------------------------------------------------//
+
+    /**
+     * Semantic action to add a statement to a block of statements.
+     */
+    private void actionAddStatement(BlockStatement block, Statement stm)
+    {
+      if(stm == null) return;
+      if(!verifyReachableCode(stm,block)) return;
+      block.addStatement(stm);
+    }
+  
+  
+    ...
+  
+  }
+  
+  PARSER_END(UriumBodyParser)
+
+          </pre>
+          </td>
+        </tr>
+      </table>
+      <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      The last section of the <strong>UriumBodyParser.jj</strong> file contains 
+	  the complete description of the URIUM EBNF grammar (as presented in 
+	  Lecture 02). The semantic description is dedicated to generating the 
+	  abstract syntax tree structures that store the statements and 
+	  expressions used in the function bodies. The definitions of some of the 
+	  grammar symbols included in this parser are shown below.</p>
+      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber10">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+          <pre>
+ 
+  /**************************************************************/
+  /*             SYNTACTIC DESCRIPTION STARTS HERE              */
+  /**************************************************************/
+
+  /**
+   * Parses the full content of a source file
+   *
+   * CompilationUnit ::= (InportClause)* UriumDecl
+   */
+  void CompilationUnit(SymbolTable symtab):
+  {}
+  { 
+    ( ImportClause() )*
+    UriumDecl(symtab)
+  }
+
+  ...
+
+  /**************************************************************/
+  /*            STATEMENT DESCRIPTIONS STARTS HERE              */
+  /**************************************************************/
+
+  /**
+   * Parses a language statement
+   *
+   * Statement ::= Decl | IdStm | IfStm | WhileStm | EndpStm | NoStm | BlockStm
+   */
+  Statement parseStatement(SymbolTable symtab) :
+  {
+    Statement stm = null;
+
+    int[] lsync = { SEMICOLON };
+    int[] rsync = { INT, CHAR, BOOLEAN, IF, WHILE, ENDP, RBRACE};
+  }
+  {
+    try
+    {
+      (
+        stm = parseDecl(symtab)
+      | stm = parseIdStm(symtab)
+      | stm = parseIfStm(symtab)
+      | stm = parseWhileStm(symtab)
+      | stm = parseEndpStm(symtab)
+      | stm = parseNoStm(symtab)
+      | stm = parseBlockStm(symtab)
+      )
+    }
+    catch(Exception ex)
+    {
+      catchError(ex);
+      skipTo(lsync,rsync);
+    }
+    {
+      return stm;
+    } 
+  }
+
+  ...
+
+  /**************************************************************/
+  /*             EXPRESSION DESCRIPTIONS STARTS HERE            */
+  /**************************************************************/
+
+  /**
+   * Parses an expression (considering the OR operator as the lowest priority)
+   *
+   * Expr ::= AndExpr ( &lt;OR&gt; AndExpr )*
+   */
+  Expression parseExpr(SymbolTable symtab) :
+  {
+    Expression exp = null;
+    Expression exp2;
+    Token tk;
+
+    int[] lsync = { };
+    int[] rsync = { SEMICOLON, COMMA, RPAREN };
+  }
+  {
+    try
+    {
+      exp = parseAndExpr(symtab)
+      (
+        tk = &lt;OR&gt;
+        exp2 = parseAndExpr(symtab)
+        { exp = actionOrExpression(tk, exp, exp2); }
+      )*
+    }
+    catch(Exception ex)
+    {
+      catchError(ex);
+      skipTo(lsync,rsync);
+    }
+    {
+      return exp;
+    }
+  }
+  
+  ...
+          </pre>
+          </td>
+        </tr>
+      </table>
+      <p>&nbsp;</p>  
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse"  width="100%" id="Table6">
+  <tr>
+    <td width="100%" bgcolor="#000080">
+    <p align="center" class="auto-style3">Examples</p></td>
+  </tr>
+  <tr>
+    <td width="100%" style="margin-left: 10; margin-right: 10"><p>&nbsp;</p>
+
+      <p style="text-align: justify; margin-right: 10px; margin-left: 10px">
+      To use the parsers developed by JavaCC instead of the hand-programmed 
+	  ones, minor modifications have been made to the <strong>UriumCompiler</strong> 
+	  class. This class now imports the <strong>urium.parserjj</strong> package 
+	  (containing the classes automatically generated by the JavaCC tool) 
+	  instead of the <strong>urium.parser</strong> package (containing the 
+	  hand-programmed parsers). These parsers are used in the <em>
+	  execHeaderParser()</em> and <em>parseBodies()</em> methods.</p>
+                  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      As in previous lectures, the source code includes a 
+					  directory called &quot;<em>examples</em>&quot; containing several 
+					  example applications programmed in URIUM. The included 
+					  examples are correct, so running the compiler generates 
+					  the file &quot;<em>UriumcOutput.txt</em>&quot; with the message &quot;<em>Correct</em>&quot;. 
+					  To check for errors in the parsers generated by JavaCC, 
+					  the directory &quot;<em>0.1_3+2_with_errors</em>&quot; has been 
+					  included with a version of the &quot;<em>3+2</em>&quot; example that 
+					  includes both syntactic and semantic errors. The code in 
+					  the &quot;<em>Main.ur</em>&quot; file within this directory is as 
+					  follows.</p>
+			      <table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber20">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+import urium.Console as Console;
+
+/**
+* Application that shows the result of a sum
+*/
+library Main {
+
+  /**
+   * Application start procedure
+   */
+  public proc main() {
+    int a=3;
+    int b=2;
+    int c= a b;          // ERROR: Operator '+' is removed
+
+    Consolee.print(a);   // ERROR: Unknown library
+    Console.println();   // ERROR: Unknown procedure 
+    Console.print('+')   // ERROR: Character ';' is removed
+    Console.print(' ');
+    Console.print(b);
+    Console.print(' ');
+    Console.print('=');
+    Console.print(' ');
+    Console.print(c);
+    
+    endp;
+    Console.print('\n'); // ERROR: Unreacheable code
+  }
+}
+            </pre>
+          </td>
+        </tr>
+      </table>
+				  <p style="margin-left: 10; margin-right: 10; text-align: justify;">
+                      The compiler generates the '<em>UriumCompilationErrors.txt</em>' 
+					  file with messages detecting syntactic and semantic 
+					  errors.</p>
+	<table border="1" cellpadding="0" cellspacing="0" style="border-color: #111111; border-collapse: collapse; margin-right: 10px; margin-left: 10px;" width="95%" id="AutoNumber21">
+        <tr>
+          <td width="100%" bgcolor="#9999FF">
+            <pre>
+
+ [File Main.ur] 5 errors found:
+ urium.parserjj.ParseException: Encountered &quot; &lt;IDENTIFIER&gt; &quot;b &quot;&quot; at line 15, column 14.
+ Was expecting one of:
+     &quot;;&quot; ...
+     &quot;,&quot; ...
+     &quot;==&quot; ...
+     &quot;&lt;=&quot; ...
+     &quot;&gt;&quot; ...
+     &quot;&lt;&quot; ...
+     &quot;&gt;=&quot; ...
+     &quot;!=&quot; ...
+     &quot;||&quot; ...
+     &quot;&amp;&amp;&quot; ...
+     &quot;+&quot; ...
+     &quot;-&quot; ...
+     &quot;*&quot; ...
+     &quot;/&quot; ...
+     &quot;%&quot; ...
+ Parse exception at row 17, column 5.
+     Unknown library.
+ Parse exception at row 18, column 5.
+     Unknown procedure.
+ urium.parserjj.ParseException: Encountered &quot; &lt;IDENTIFIER&gt; &quot;Console &quot;&quot; at line 20, 
+ column 5.
+ Was expecting:
+     &quot;;&quot; ...
+ Parse exception at row 28, column 24.
+     Unreachable code.
+            </pre>
+          </td>
+        </tr>
+      </table>				 
+      <p>&nbsp;</p>   
+    </td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+</td>
+</tr>
+</table>
+
+<p>&nbsp;</p>
+
+</body>
+</html>
